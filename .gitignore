@@ -2,6 +2,9 @@
 #ignore temp folders
 tmp/
 
+#ignore originals of KDiff
+*.orig
+
 #ignore thumbnails created by windows
 Thumbs.db
 
