@@ -12,12 +12,14 @@ namespace ControlsNOBD
     public partial class mainForm : Form
     {
         private string _current_state;
+
         public mainForm()
         {
             InitializeComponent();
             lDatchik.Visible = false;
             bGenMess.Visible = false;
         }
+
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             Program.WW.Close();
@@ -88,6 +90,7 @@ namespace ControlsNOBD
             db_set.ShowDialog();
             db_set.Dispose();
         }
+
         private void load_data_table(string state)
         {
             gw.Hide();
@@ -152,17 +155,21 @@ namespace ControlsNOBD
             string Port = gw.Rows[gw.CurrentRow.Index].Cells[1].Value.ToString();
             string Adress =gw.Rows[gw.CurrentRow.Index].Cells[2].Value.ToString();
             string Name = gw.Rows[gw.CurrentRow.Index].Cells[0].Value.ToString();
-            byte[] comand = new byte[3];
-            comand[0] = Convert.ToByte(Port);
-            comand[1] = Convert.ToByte(Adress);
-            comand[2] = 100;
+            byte[] comand = new byte[4];
+            comand[0] = 4;
+            comand[1] = Convert.ToByte(Port);
+            comand[2] = Convert.ToByte(Adress);
+            comand[3] = 100;
             Program.MCE.SendInform(comand);
             Program.data_module.UpdDevices(Name, Port, Adress, "Простой датчик", "1");
         }
 
         private void bMod_Click(object sender, EventArgs e)
         {
-            AddDev MyForm = new AddDev(gw.Rows[gw.CurrentRow.Index].Cells[0].Value.ToString(), gw.Rows[gw.CurrentRow.Index].Cells[1].Value.ToString(), gw.Rows[gw.CurrentRow.Index].Cells[2].Value.ToString(),this._current_state, gw.Rows[gw.CurrentRow.Index].Cells[3].Value.ToString());
+            AddDev MyForm = new AddDev(gw.Rows[gw.CurrentRow.Index].Cells[0].Value.ToString(),
+                gw.Rows[gw.CurrentRow.Index].Cells[1].Value.ToString(), 
+                gw.Rows[gw.CurrentRow.Index].Cells[2].Value.ToString(),this._current_state, 
+                gw.Rows[gw.CurrentRow.Index].Cells[3].Value.ToString());
             MyForm.ShowDialog();
         }
 

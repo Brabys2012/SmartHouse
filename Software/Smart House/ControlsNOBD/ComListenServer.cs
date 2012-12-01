@@ -10,6 +10,7 @@ namespace ControlsNOBD
     public class ComListenServer
     {
         SerialPort MyComListen=new SerialPort();
+
         public void OpenCom()
         {
             MyComListen.PortName = "COM12";
@@ -25,6 +26,7 @@ namespace ControlsNOBD
             //  MyComLisen.Encoding = Encoding.Default;
             MyComListen.Open();
         }
+
         public void SendInform(byte[] ByteArray)
         {
             try
@@ -41,6 +43,7 @@ namespace ControlsNOBD
                 MessageBox.Show("Ошибка сообщение не отправлено!" );
             }
          }
+
         public void Close()
         {
             MyComListen.Close();

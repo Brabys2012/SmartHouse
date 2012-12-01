@@ -5,6 +5,7 @@ using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Collections;
 
 
 namespace RUS_Project.TerminalConfigurator
@@ -270,12 +271,20 @@ namespace RUS_Project.TerminalConfigurator
         /// <param name="e">Данные о произошедшем событии.</param>
         void COM_Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-
-            //
-            // TODO: Дописать необходимый код при получении данных
-            //
-
-            WriteString(COM_Port.ReadExisting(), MessageType.Success, true);
+            SerialPort sp = (SerialPort)sender;
+            if (chkSendAsByte.Checked)
+            {
+                ArrayList ByteArr = new ArrayList();
+                while (sp.BytesToRead > 0)
+                {
+                    ByteArr.Add((object)(sp.ReadByte()));
+                }
+                WriteString(ParseByteToStr(ByteArr), MessageType.Success, true);
+            }
+            else
+            {
+                WriteString(COM_Port.ReadExisting(), MessageType.Success, true);
+            }
         }
 
         /// <summary>
@@ -285,11 +294,9 @@ namespace RUS_Project.TerminalConfigurator
         /// <param name="e">Данные о произошедшем событии.</param>
         void COM_Port_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
         {
-
-            //
-            // TODO: Дописать необходимый код при получении ошибки
-            // 
-
+            ///
+            ///TODO Доелать когда возникает ошибка 
+            ///
             WriteString(COM_Port.ReadExisting(), MessageType.Error, true);
         }
 
@@ -426,7 +433,20 @@ namespace RUS_Project.TerminalConfigurator
             string message = txtCommand.Text;
             try
             {
-                COM_Port.Write(message);
+                if (chkSendAsByte.Checked)
+                {
+                    string[] StrValues = message.Split(' ');
+                    byte[] ByteArr = new byte[StrValues.Count()] ;
+                    for (int i=0; i < StrValues.Count(); i++ )
+                    {
+                        ByteArr[i] = Convert.ToByte(StrValues[i]);
+                    }
+                    COM_Port.Write(ByteArr, 0, ByteArr.Length);
+                }
+                else
+                {
+                    COM_Port.Write(message);
+                }
             }
             catch (Exception exc)
             {
@@ -470,6 +490,20 @@ namespace RUS_Project.TerminalConfigurator
                 txtCommand.Focus();
             }
 
+        }
+
+        /// <summary>
+        /// Производит перевод массива байтов в строку по следующим правилам значение (сама цифра) + пробел данная строка служит для отображения байтов в сообщениях терминала
+        /// </summary>
+        /// <param name="ByteArray">Массив из байтов, котрые потом будут переведены в строку</param>
+        private string ParseByteToStr(ArrayList ByteArray)
+        {
+            string StrFromByte = "";
+            foreach (int a in ByteArray)
+            {
+                StrFromByte += Convert.ToString(a) + ' '; 
+            }
+            return StrFromByte;
         }
 
     }
