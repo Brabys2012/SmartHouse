@@ -6,71 +6,85 @@ using System.Windows.Forms;
 
 namespace ControlsNOBD
 {
+    /// <summary>
+    /// Клас который разбирает присланные команды и исполняет их
+    /// </summary>
     public class Parss_and_deter_mess
     {
-        public void ParssComand(string Comand)
+        /// <summary>
+        /// Метод, определения пришел запрос или управляющая команда
+        /// </summary>
+        /// <param name="Comand">Присланная команда</param>
+        public void ParssComand(byte[] Comand)
         {
-            string[] com = Comand.Split('/');
-            for (int i = 0; i < com.Length; i++)
+            if (Comand.Length == 5)
             {
-                if (com[i] != "")
-                {
-                    string[] strs = com[i].Split('.');
-                    ExeComand(strs);
-                }
+                ExeComand(Comand);
             }
-        }
-        public bool ExeComand(string[] Par)
-        {
-            string cv = "";
-            string comand;
-            bool res=false;
-            if (Par.Length == 2)
+            else if (Comand.Length == 2)
             {
-                cv = Program.data_module.FindCurentVal(Par[0], Par[1]);
-                if (cv != "Error")
-                {
-                    comand = Par[0].Replace(" ", "") + "." + Par[1].Replace(" ", "") + "." + cv.Replace(" ", "") + "/";
-                    Program.WW.SendInform(comand);
-                    res = true;
-                }
-                else
-                {
-                    MessageBox.Show("Ошибка");
-                    res = false;
-                }
-            }
-            else if (Par.Length == 4)
-            {
-                int parVal = 256 * Convert.ToInt32(Par[2]) + Convert.ToInt32(Par[3]);
-                if ((Convert.ToInt16(Par[2]) <= 255) & (Convert.ToInt16(Par[2]) <= 255))
-                {
-
-                    cv = Program.data_module.UpdDeviceVal(Par[0], Par[1], parVal.ToString());
-                    if (cv != "Error")
-                    {
-                        comand = Par[0].Replace(" ", "") + "." + Par[1].Replace(" ", "") + "." + 1 + "/";
-                        Program.WW.SendInform(comand);
-                        res = true;
-                    }
-                    else
-                    {
-                        comand = Par[0].Replace(" ", "") + "." + Par[1].Replace(" ", "") + "." + 0 + "/";
-                        Program.WW.SendInform(comand);
-                        MessageBox.Show("Ошибка");
-                        res = false;
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Получен неверный формат команды");
-                }
+                Query(Comand);
             }
             else
             {
-                MessageBox.Show("Получен неверный формат команды");
+                MessageBox.Show("Неверный формат команды");
             }
-            return res;
+        }
+
+        /// <summary>
+        /// Метод, который исполняет управляющие команды
+        /// </summary>
+        /// <param name="Par">Управляющая команда</param>
+        /// <returns></returns>
+        public void ExeComand(byte[] Par)
+        {
+            UInt64 Values =(UInt64) (Par[2] * Math.Pow(256, 2) + Par[3] * 256 + Par[4]);
+            byte[] Ansewr = new byte[3];
+            Ansewr[0] = Par[0];
+            Ansewr[1] = Par[1];
+            bool result = Program.data_module.UpdDeviceVal(Par[0].ToString(), Par[1].ToString(), Values.ToString());
+            if (result)
+            {
+                Ansewr[2] = 1;
+            }
+            else
+            {
+                Ansewr[2] = 0;
+            }
+
+            Program.WW.SendInform(Ansewr);
+        }
+
+        /// <summary>
+        /// Метод, который исполняет запрос
+        /// </summary>
+        /// <param name="Par">Запрос</param>
+        /// <returns></returns>
+        public void Query(byte[] Par)
+        {
+          
+            string Ansewr = Program.data_module.FindCurentVal(Par[0].ToString(), Par[1].ToString());
+            if (Ansewr == "Error")
+            {
+                byte[] QueryAnsewr = new byte[3];
+                QueryAnsewr[0] = Par[0];
+                QueryAnsewr[1] = Par[1];
+                QueryAnsewr[2] = 0;
+                Program.WW.SendInform(QueryAnsewr);
+            }
+            else
+            {
+                int A = Convert.ToInt32(Ansewr);
+                byte[] QueryAnsewr = new byte[5];
+                QueryAnsewr[0] = Par[0];
+                QueryAnsewr[1] = Par[1];
+                QueryAnsewr[2] = Convert.ToByte(A/(Math.Pow(256,2)));
+                A=Convert.ToInt32((A) % (Math.Pow(256,2)));
+                QueryAnsewr[3] = Convert.ToByte(A / 256);
+                A = Convert.ToInt32((A) % (256));
+                QueryAnsewr[4] = Convert.ToByte(A);
+                Program.WW.SendInform(QueryAnsewr);
+            }
         }
     }
 }

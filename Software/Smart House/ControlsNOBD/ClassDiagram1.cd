@@ -1,1 +1,67 @@
- 
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="ControlsNOBD.ComListenServer">
+    <Position X="8.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAAAgAAAAAAAAAAAAIAAAAAAAAAAACAAAA=</HashCode>
+      <FileName>ComListenServer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ControlsNOBD.Parss_and_deter_mess">
+    <Position X="5.25" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAgABAA=</HashCode>
+      <FileName>Parss_and_deter_mess.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ControlsNOBD.Program">
+    <Position X="5.25" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAABEAgAAQAAAAAABAAAAAA=</HashCode>
+      <FileName>Program.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ControlsNOBD.user_settings">
+    <Position X="3.5" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BA4AAABAACAAAAAAQAAAAAgAAAAAAAAAAAAAIAAgAAg=</HashCode>
+      <FileName>user_settings.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ControlsNOBD.data_source">
+    <Position X="7" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AoAIgAAAAAAAEEAAAACAAIAAgAABIAAoAAAAECABQAA=</HashCode>
+      <FileName>data_source.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ControlsNOBD.ExexutableComServer">
+    <Position X="8.75" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAAAgAAAAAAABAAAAAAQAAAAAAAAQCAAAA=</HashCode>
+      <FileName>ExecutableComServer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ControlsNOBD.AddDev" Collapsed="true">
+    <Position X="1.75" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AARgAgDAAKCEAAAACACBAIAKBAQJhAAAACAAAIAgBQA=</HashCode>
+      <FileName>AddConectDisconect.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ControlsNOBD.mainForm" Collapsed="true">
+    <Position X="1.75" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IQAQEAkAAGhECwCAAECBBQAGABAGAAAiAAxAgAwAMAE=</HashCode>
+      <FileName>mainForm.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ControlsNOBD.db_settings" Collapsed="true">
+    <Position X="1.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CQAAAAAkICAAAAABBgCAGIBCAAAIKICIIAAAAABAAAA=</HashCode>
+      <FileName>db_settings.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -246,39 +246,73 @@ namespace ControlsNOBD
         }
 
         //обновляет значение некоторого устройства
-        public string UpdDeviceVal(string Num_port, string Adress, string curVaul)
+        public bool UpdDeviceVal(string Num_port, string Adress, string curVaul)
         {
-            string query = "Update Devices set ";
-            if (curVaul != "")
+            string TypeDevice = FindTypeDev(Num_port, Adress);
+            if (TypeDevice == "Диммер" || ((TypeDevice == "Простое устройство")&(Convert.ToInt32(curVaul) >= 1)))
             {
-                query += "currentVaule = " + curVaul + "  ";
+                string query = "Update Devices set ";
+                if (curVaul != "")
+                {
+                    query += "currentVaule = " + curVaul + "  ";
+                }
+                else
+                {
+                    query += "currentVaule = null, ";
+                }
+                query += "Where Num_Port = " + Num_port + " and " + "Adress = " + Adress;
+                try
+                {
+                    SqlCommand com = this._conn.CreateCommand();
+                    com.CommandText = query;
+                    com.ExecuteNonQuery();
+                    com.Dispose();
+                }
+
+                catch (Exception ex)
+                {
+                    return (false);
+                }
+
+                return true;
             }
+
             else
             {
-                query += "currentVaule = null, ";
+                return false;
             }
-            query += "Where Num_Port = " + Num_port + " and " + "Adress = " + Adress;
+        }
+
+        public string FindTypeDev(string Num_port, string Adress)
+        {
+            string TypeDev = "";
+            string query = "Select TypeDev from Devices where Num_Port = " + Num_port + " and " + "Adress = " + Adress;
             try
             {
                 SqlCommand com = this._conn.CreateCommand();
                 com.CommandText = query;
-                com.ExecuteNonQuery();
+                SqlDataReader rd = com.ExecuteReader();
+                if (rd.Read())
+                {
+                    if (!rd.IsDBNull(0))
+                    {
+                        TypeDev = rd.GetString(0);
+                    }
+                    else
+                    {
+                        TypeDev = "";
+                    }
+                }
+                rd.Close();
+                rd.Dispose();
                 com.Dispose();
             }
-
             catch (Exception ex)
             {
-                return ("ERROR_" + ex.Message + " " + ex.Data);
+                TypeDev = "Error";
             }
+            return TypeDev;
 
-            return "OK";
         }
-
-    /*    public string FindTypeDev(string Num_port, string Adress)
-        {
-
-            string query = "Select TypeDev from Devices where Num_Port = " + Num_port + " and " + "Adress = " + Adress;
-
-        }*/
     }
 }

@@ -33,7 +33,7 @@
             this.t_schema = new System.Windows.Forms.TextBox();
             this.t_user = new System.Windows.Forms.TextBox();
             this.t_server = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
+            this.lPass = new System.Windows.Forms.Label();
             this.lschema = new System.Windows.Forms.Label();
             this.lUser = new System.Windows.Forms.Label();
             this.lServer = new System.Windows.Forms.Label();
@@ -52,7 +52,7 @@
             this.gDBSet.Controls.Add(this.t_schema);
             this.gDBSet.Controls.Add(this.t_user);
             this.gDBSet.Controls.Add(this.t_server);
-            this.gDBSet.Controls.Add(this.label1);
+            this.gDBSet.Controls.Add(this.lPass);
             this.gDBSet.Controls.Add(this.lschema);
             this.gDBSet.Controls.Add(this.lUser);
             this.gDBSet.Controls.Add(this.lServer);
@@ -91,14 +91,14 @@
             this.t_server.Size = new System.Drawing.Size(158, 20);
             this.t_server.TabIndex = 4;
             // 
-            // label1
+            // lPass
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(336, 68);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(55, 13);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "* Пароль:";
+            this.lPass.AutoSize = true;
+            this.lPass.Location = new System.Drawing.Point(336, 68);
+            this.lPass.Name = "lPass";
+            this.lPass.Size = new System.Drawing.Size(55, 13);
+            this.lPass.TabIndex = 3;
+            this.lPass.Text = "* Пароль:";
             // 
             // lschema
             // 
@@ -148,6 +148,7 @@
             this.cb_win_auth.TabStop = true;
             this.cb_win_auth.Text = "Проверка подлинности Windows";
             this.cb_win_auth.UseVisualStyleBackColor = true;
+            this.cb_win_auth.CheckedChanged += new System.EventHandler(this.cb_win_auth_CheckedChanged);
             // 
             // cb_psec
             // 
@@ -159,6 +160,7 @@
             this.cb_psec.TabStop = true;
             this.cb_psec.Text = "Persist Security (Использовать данный параметр подключения);";
             this.cb_psec.UseVisualStyleBackColor = true;
+            this.cb_psec.CheckedChanged += new System.EventHandler(this.cb_psec_CheckedChanged);
             // 
             // b_apply
             // 
@@ -210,7 +212,7 @@
         private System.Windows.Forms.TextBox t_schema;
         private System.Windows.Forms.TextBox t_user;
         private System.Windows.Forms.TextBox t_server;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label lPass;
         private System.Windows.Forms.Label lschema;
         private System.Windows.Forms.Label lUser;
         private System.Windows.Forms.Label lServer;

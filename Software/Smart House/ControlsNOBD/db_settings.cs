@@ -67,5 +67,21 @@ namespace ControlsNOBD
             
 
         }
+
+        private void cb_psec_CheckedChanged(object sender, EventArgs e)
+        {
+            t_user.Visible = true;
+            lUser.Visible = true;
+            t_pass.Visible = true;
+            lPass.Visible = true;
+        }
+
+        private void cb_win_auth_CheckedChanged(object sender, EventArgs e)
+        {
+            t_user.Visible = false;
+            lUser.Visible = false;
+            t_pass.Visible = false;
+            lPass.Visible = false;
+        }
     }
 }

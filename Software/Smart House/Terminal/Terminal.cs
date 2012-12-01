@@ -53,7 +53,6 @@ namespace RUS_Project.TerminalConfigurator
             cmbPortBaud.Items.AddRange(new object[] { "300", "600", "1200", "2400", "4800", "9600", "14400", "19200", "28800", "38400", "57600", "115200" });
             cmbPortData.Items.AddRange(new object[] { "7", "8" });
             cmbPortParity.Items.AddRange((object[])Enum.GetNames(typeof(Parity)));
-            cmbPortStopBits.Items.AddRange((object[])Enum.GetNames(typeof(StopBits)));
             cmbPortHandshake.Items.AddRange((object[])Enum.GetNames(typeof(Handshake)));
 
             // Инициируем COM-порт и необходимые флаги
@@ -235,7 +234,6 @@ namespace RUS_Project.TerminalConfigurator
                     COM_Port.BaudRate = Convert.ToInt32(cmbPortBaud.SelectedItem.ToString());
                     COM_Port.DataBits = Convert.ToInt32(cmbPortData.SelectedItem.ToString());
                     COM_Port.Parity = (Parity)cmbPortParity.SelectedIndex;
-                    COM_Port.StopBits = (StopBits)cmbPortStopBits.SelectedIndex;
                     COM_Port.Handshake = (Handshake)cmbPortHandshake.SelectedIndex;
                     COM_Port.ReadBufferSize = Convert.ToInt32(txtPortBuffer.Text);
                     COM_Port.ReadTimeout = Convert.ToInt32(txtPortTimeout.Text);

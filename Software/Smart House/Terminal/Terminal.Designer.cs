@@ -33,8 +33,6 @@
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.tabTerminal = new System.Windows.Forms.TabPage();
             this.grpParameters = new System.Windows.Forms.GroupBox();
-            this.lblPortStopBits = new System.Windows.Forms.Label();
-            this.cmbPortStopBits = new System.Windows.Forms.ComboBox();
             this.txtPortTimeout = new System.Windows.Forms.TextBox();
             this.lblPortReadTimeout = new System.Windows.Forms.Label();
             this.txtPortBuffer = new System.Windows.Forms.TextBox();
@@ -83,10 +81,8 @@
             // 
             // grpParameters
             // 
-            this.grpParameters.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.grpParameters.Controls.Add(this.lblPortStopBits);
-            this.grpParameters.Controls.Add(this.cmbPortStopBits);
+            this.grpParameters.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)));
             this.grpParameters.Controls.Add(this.txtPortTimeout);
             this.grpParameters.Controls.Add(this.lblPortReadTimeout);
             this.grpParameters.Controls.Add(this.txtPortBuffer);
@@ -102,35 +98,16 @@
             this.grpParameters.Controls.Add(this.lblPortName);
             this.grpParameters.Controls.Add(this.cmbPortBaud);
             this.grpParameters.Controls.Add(this.cmbPortName);
-            this.grpParameters.Location = new System.Drawing.Point(5, 6);
+            this.grpParameters.Location = new System.Drawing.Point(6, 6);
             this.grpParameters.Name = "grpParameters";
             this.grpParameters.Size = new System.Drawing.Size(154, 530);
             this.grpParameters.TabIndex = 9;
             this.grpParameters.TabStop = false;
             this.grpParameters.Text = "Параметры COM-порта";
             // 
-            // lblPortStopBits
-            // 
-            this.lblPortStopBits.AutoSize = true;
-            this.lblPortStopBits.Location = new System.Drawing.Point(6, 185);
-            this.lblPortStopBits.Name = "lblPortStopBits";
-            this.lblPortStopBits.Size = new System.Drawing.Size(110, 13);
-            this.lblPortStopBits.TabIndex = 8;
-            this.lblPortStopBits.Text = "Число стоповых бит";
-            // 
-            // cmbPortStopBits
-            // 
-            this.cmbPortStopBits.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbPortStopBits.FormattingEnabled = true;
-            this.cmbPortStopBits.Location = new System.Drawing.Point(6, 201);
-            this.cmbPortStopBits.Name = "cmbPortStopBits";
-            this.cmbPortStopBits.Size = new System.Drawing.Size(139, 21);
-            this.cmbPortStopBits.TabIndex = 9;
-            this.toolTip.SetToolTip(this.cmbPortStopBits, "Число стоповых бит:\r\nNone - нет\r\nOne - один\r\nTwo - два\r\nOnePointFive - полтора");
-            // 
             // txtPortTimeout
             // 
-            this.txtPortTimeout.Location = new System.Drawing.Point(6, 320);
+            this.txtPortTimeout.Location = new System.Drawing.Point(6, 288);
             this.txtPortTimeout.Name = "txtPortTimeout";
             this.txtPortTimeout.Size = new System.Drawing.Size(139, 20);
             this.txtPortTimeout.TabIndex = 19;
@@ -139,7 +116,7 @@
             // lblPortReadTimeout
             // 
             this.lblPortReadTimeout.AutoSize = true;
-            this.lblPortReadTimeout.Location = new System.Drawing.Point(6, 304);
+            this.lblPortReadTimeout.Location = new System.Drawing.Point(6, 272);
             this.lblPortReadTimeout.Name = "lblPortReadTimeout";
             this.lblPortReadTimeout.Size = new System.Drawing.Size(50, 13);
             this.lblPortReadTimeout.TabIndex = 18;
@@ -147,7 +124,7 @@
             // 
             // txtPortBuffer
             // 
-            this.txtPortBuffer.Location = new System.Drawing.Point(6, 281);
+            this.txtPortBuffer.Location = new System.Drawing.Point(6, 249);
             this.txtPortBuffer.Name = "txtPortBuffer";
             this.txtPortBuffer.Size = new System.Drawing.Size(139, 20);
             this.txtPortBuffer.TabIndex = 15;
@@ -156,7 +133,7 @@
             // lblPortReadBuffer
             // 
             this.lblPortReadBuffer.AutoSize = true;
-            this.lblPortReadBuffer.Location = new System.Drawing.Point(6, 265);
+            this.lblPortReadBuffer.Location = new System.Drawing.Point(6, 233);
             this.lblPortReadBuffer.Name = "lblPortReadBuffer";
             this.lblPortReadBuffer.Size = new System.Drawing.Size(126, 13);
             this.lblPortReadBuffer.TabIndex = 14;
@@ -164,7 +141,7 @@
             // 
             // btnPortOpen
             // 
-            this.btnPortOpen.Location = new System.Drawing.Point(6, 346);
+            this.btnPortOpen.Location = new System.Drawing.Point(6, 314);
             this.btnPortOpen.Name = "btnPortOpen";
             this.btnPortOpen.Size = new System.Drawing.Size(139, 23);
             this.btnPortOpen.TabIndex = 22;
@@ -176,7 +153,7 @@
             // lblPortHandshake
             // 
             this.lblPortHandshake.AutoSize = true;
-            this.lblPortHandshake.Location = new System.Drawing.Point(6, 225);
+            this.lblPortHandshake.Location = new System.Drawing.Point(6, 193);
             this.lblPortHandshake.Name = "lblPortHandshake";
             this.lblPortHandshake.Size = new System.Drawing.Size(89, 13);
             this.lblPortHandshake.TabIndex = 10;
@@ -186,12 +163,12 @@
             // 
             this.cmbPortHandshake.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbPortHandshake.FormattingEnabled = true;
-            this.cmbPortHandshake.Location = new System.Drawing.Point(6, 241);
+            this.cmbPortHandshake.Location = new System.Drawing.Point(6, 209);
             this.cmbPortHandshake.Name = "cmbPortHandshake";
             this.cmbPortHandshake.Size = new System.Drawing.Size(139, 21);
             this.cmbPortHandshake.TabIndex = 11;
             this.toolTip.SetToolTip(this.cmbPortHandshake, "Протокол управления:\r\nNone - нет\r\nXOnXOff - программный\r\nRequestToSend - аппаратн" +
-        "ый\r\nRequestToSendXOnXOff - смешанный");
+                    "ый\r\nRequestToSendXOnXOff - смешанный");
             // 
             // lblPortParity
             // 
@@ -211,7 +188,7 @@
             this.cmbPortParity.Size = new System.Drawing.Size(139, 21);
             this.cmbPortParity.TabIndex = 7;
             this.toolTip.SetToolTip(this.cmbPortParity, "Вид проверки четности:\r\nNone - без проверки\r\nOdd - нечет\r\nEven - чет\r\nSpace - нол" +
-        "ь\r\nMark - единица");
+                    "ь\r\nMark - единица");
             // 
             // lblPortData
             // 
@@ -273,9 +250,9 @@
             // 
             // grpCommand
             // 
-            this.grpCommand.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpCommand.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.grpCommand.Controls.Add(this.chkSendAsByte);
             this.grpCommand.Controls.Add(this.btnKey);
             this.grpCommand.Controls.Add(this.btnCRLF);
@@ -316,7 +293,7 @@
             this.btnKey.TabStop = false;
             this.btnKey.Text = "KEY";
             this.toolTip.SetToolTip(this.btnKey, "Прямой ввод - отправка символов, вводимых с клавиатуры без буферизации в поле вво" +
-        "да комманд (Ctrl + K)");
+                    "да комманд (Ctrl + K)");
             this.btnKey.UseVisualStyleBackColor = true;
             this.btnKey.Click += new System.EventHandler(this.btnKey_Click);
             // 
@@ -396,8 +373,8 @@
             // 
             // txtCommand
             // 
-            this.txtCommand.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCommand.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.txtCommand.FormattingEnabled = true;
             this.txtCommand.Location = new System.Drawing.Point(6, 503);
             this.txtCommand.Name = "txtCommand";
@@ -420,9 +397,9 @@
             // 
             // txtCommandBox
             // 
-            this.txtCommandBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCommandBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.txtCommandBox.Location = new System.Drawing.Point(6, 39);
             this.txtCommandBox.Name = "txtCommandBox";
             this.txtCommandBox.ReadOnly = true;
@@ -435,9 +412,9 @@
             // 
             // tabControl
             // 
-            this.tabControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.tabControl.Controls.Add(this.tabTerminal);
             this.tabControl.Location = new System.Drawing.Point(3, 4);
             this.tabControl.Name = "tabControl";
@@ -476,8 +453,6 @@
         private System.Windows.Forms.ToolTip toolTip;
         private System.Windows.Forms.TabPage tabTerminal;
         private System.Windows.Forms.GroupBox grpParameters;
-        private System.Windows.Forms.Label lblPortStopBits;
-        private System.Windows.Forms.ComboBox cmbPortStopBits;
         private System.Windows.Forms.TextBox txtPortTimeout;
         private System.Windows.Forms.Label lblPortReadTimeout;
         private System.Windows.Forms.TextBox txtPortBuffer;

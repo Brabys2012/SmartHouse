@@ -9,8 +9,9 @@ namespace ControlsNOBD
     {
         static public data_source data_module;
         static public user_settings user_set;
-        static public WorkWithCom WW;
-        static public MyCom MCE;
+        static public ExexutableComServer WW;
+        static public ComListenServer MCE;
+        static public Parss_and_deter_mess MyParser;
         /// <summary>
         /// Главная точка входа для приложения.
         /// </summary>
@@ -21,10 +22,11 @@ namespace ControlsNOBD
             Application.SetCompatibleTextRenderingDefault(false);
             data_module = new data_source();
             user_set = new user_settings();
-            WW = new WorkWithCom();
-            MCE = new MyCom();
+            WW = new ExexutableComServer();
+            MCE = new ComListenServer();
+            MyParser = new Parss_and_deter_mess();
             WW.OpenCom();
-            Application.Run(new Form1());
+            Application.Run(new mainForm());
         }
     }
 }

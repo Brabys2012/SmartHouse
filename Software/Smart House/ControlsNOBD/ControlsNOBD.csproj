@@ -49,8 +49,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Components.cs" />
-    <Compile Include="Controls.cs" />
     <Compile Include="data_source.cs" />
     <Compile Include="db_settings.cs">
       <SubType>Form</SubType>
@@ -58,32 +56,32 @@
     <Compile Include="db_settings.Designer.cs">
       <DependentUpon>db_settings.cs</DependentUpon>
     </Compile>
-    <Compile Include="Form1.cs">
+    <Compile Include="mainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="mainForm.Designer.cs">
+      <DependentUpon>mainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Form2.cs">
+    <Compile Include="AddConectDisconect.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form2.Designer.cs">
-      <DependentUpon>Form2.cs</DependentUpon>
+    <Compile Include="AddConectDisconect.Designer.cs">
+      <DependentUpon>AddConectDisconect.cs</DependentUpon>
     </Compile>
-    <Compile Include="MyCom.cs" />
+    <Compile Include="ComListenServer.cs" />
     <Compile Include="Parss_and_deter_mess.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="user_settings.cs" />
-    <Compile Include="WorkWithCom.cs" />
+    <Compile Include="ExecutableComServer.cs" />
     <EmbeddedResource Include="db_settings.resx">
       <DependentUpon>db_settings.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <EmbeddedResource Include="mainForm.resx">
+      <DependentUpon>mainForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Form2.resx">
-      <DependentUpon>Form2.cs</DependentUpon>
+    <EmbeddedResource Include="AddConectDisconect.resx">
+      <DependentUpon>AddConectDisconect.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
