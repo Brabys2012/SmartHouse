@@ -10,21 +10,21 @@
   <Class Name="Server.Storage">
     <Position X="2.25" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAABAAAAAAAAAAAAAAAAgAAAAAAAQAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAABAABAAAAAAAAAAAAAgAAAAAAAQAAAAAAA=</HashCode>
       <FileName>Storage.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Server.Core">
-    <Position X="2.25" Y="2.25" Width="1.5" />
+    <Position X="2.25" Y="3" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAIAAAAAAAAAAAAAAQAAAAAAAAAAAAAQAAAAAAAA=</HashCode>
       <FileName>Core.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Server.ComPortExecutable">
     <Position X="0.5" Y="2" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAIAAAAAAAAAAgAAAAAAABAAAAAAQAAAAAAAAQCAAAA=</HashCode>
       <FileName>ComPortExecutable.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -36,21 +36,14 @@
     </TypeIdentifier>
   </Class>
   <Class Name="Server.ExtremDecisionmaking">
-    <Position X="4" Y="2" Width="1.5" />
+    <Position X="4" Y="3" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAIAAAAAAAABAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>ExtremDecisionmaking.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Server.TableDatchik">
-    <Position X="5.75" Y="0.5" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>TableDatchik.cs</FileName>
-    </TypeIdentifier>
-  </Class>
   <Class Name="Server.TableDivice">
-    <Position X="5.75" Y="2" Width="1.5" />
+    <Position X="5.75" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>TableDivice.cs</FileName>

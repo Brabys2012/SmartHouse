@@ -23,5 +23,9 @@ namespace Server
         /// Массив объектов устройств, которые будут присылатся для обновления пользователям, у которых включен конфигуратор
         /// </summary>
         public static ArrayList ArrayUpdate;
+        /// <summary>
+        /// Флаг который показывает используется или нет база данных
+        /// </summary>
+        public static bool BD;
     }
 }

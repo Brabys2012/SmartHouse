@@ -10,5 +10,10 @@ namespace Server
     /// </summary>
     public class ExtremDecisionmaking
     {
+        private TableDivice BdDevice = new TableDivice();
+        public byte[] ParserComand(string comand)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }
