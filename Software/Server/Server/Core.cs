@@ -12,6 +12,14 @@ namespace Server
     public class Core
     {
         /// <summary>
+        /// Элемент класса для принятия экстренных решение
+        /// </summary>
+        private ExtremDecisionmaking ExDM = new ExtremDecisionmaking();
+        /// <summary>
+        /// Ком порт исполнитель
+        /// </summary>
+        private ComPortExecutable ExeComPort;
+        /// <summary>
         /// Главный метод ядра, просматривает очередь команд от слушателя и от пользователей и создает отдельный поток для каждой команды, который запускает обработку той или иной команды
         /// </summary>
         public void MainCore()
@@ -54,7 +62,35 @@ namespace Server
         /// <param name="comand">Команда от порта слушателя</param>
         public void ProcessThreadList(object comand)
         {
-            throw new System.NotImplementedException();
+            //Получаем команду для порта исполнителя
+            byte[] ProcComand = ExDM.ParserComand(comand);
+            if (ProcComand[0] != 0)
+            {
+                // Флаг который означает что КомПорт блокирован
+                bool podflag = false;
+                //Процедура отправки команды через ком порт исполнитель с соблюдением 
+                //синхронизации потоков
+                while (!podflag)
+                {
+                    lock (Storage.lockerComPort)
+                    {
+                        if (Storage.flagComPort)
+                        {
+                            podflag = true;
+                            Storage.flagComPort = false;
+                            ProcComand = ExeComPort.SendInform(ProcComand);
+                            Storage.flagComPort = true;
+                        }
+                    }
+                    //Что бы оптимизировать работу службы ожидание освобождения ком порта исполнителя 
+                    //поток засыпает на 300 мс
+                    if (!podflag)
+                    {
+                        Thread.Sleep(300);
+                    }
+                }
+            }
+
         }
 
         /// <summary>

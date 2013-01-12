@@ -27,5 +27,26 @@ namespace Server
         /// Флаг который показывает используется или нет база данных
         /// </summary>
         public static bool BD;
+        /// <summary>
+        /// Показывает занят или нет ком порт
+        /// </summary>
+        public static bool  flagComPort = true;
+        /// <summary>
+        /// Блокирует доступ к ком порту исполнителю, если он занят другим потоком.
+        /// </summary>
+        public static object lockerComPort;
+        /// <summary>
+        /// Очередь из сообщений, которые должен получить пользователь
+        /// </summary>
+        public static Queue MessegesForUser;
+    }
+
+    /// <summary>
+    /// Класс служит для того что бы в объект считать нужные данные в БД и вернуть их
+    /// </summary>
+    public class ConfigForMess
+    {
+        public byte[] number = new byte[2];
+        public string messege;
     }
 }

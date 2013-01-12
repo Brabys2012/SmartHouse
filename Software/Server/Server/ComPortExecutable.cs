@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO.Ports;
+using System.Threading;
 
 namespace Server
 {
@@ -12,7 +13,7 @@ namespace Server
     public class ComPortExecutable
     {
         SerialPort MyComExecutable=new SerialPort();
-
+        public byte[] ansewr = null;
         /// <summary>
         /// Метод инициализации COM - порта
         /// </summary>
@@ -38,22 +39,21 @@ namespace Server
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private static void DataReceivedHandler(object sender,SerialDataReceivedEventArgs e)
+        public void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
         {
             SerialPort sp = (SerialPort)sender;
-            while (sp.BytesToRead != 0)
+
+            int counter = sp.ReadByte();
+            byte[] BytArray = new byte[counter];
+            BytArray[0] = (byte)counter;
+            for (int i = 1; i < counter; i++)
             {
-                int counter = sp.ReadByte();
-                byte[] BytArray = new byte[counter - 1];
-                for (int i = 0; i < counter-1; i++)
-                {
-                    BytArray[i] = (byte)sp.ReadByte();
-                }
-
-                Program.MyParser.ParssComand(BytArray);
+                BytArray[i] = (byte)sp.ReadByte();
             }
+            // Program.MyParser.ParssComand(BytArray);
+            string Pank = sp.ReadExisting();
+            ansewr = BytArray;
         }
-
         /// <summary>
         /// Событие происходящее при какой-либо ошибке
         /// </summary>
@@ -76,9 +76,27 @@ namespace Server
         /// Метод отправки данных
         /// </summary>
         /// <param name="ByteArray">Данные для отправки</param>
-        public void SendInform(byte[] ByteArray)
+        public byte[] SendInform(byte[] ByteArray)
         {
+            OpenCom();
             MyComExecutable.Write(ByteArray, 0, ByteArray.Length);
+            byte[] comand = WaitAnswer();
+            Close();
+            return comand;
         }
+
+        /// <summary>
+        /// Ждет ответа от контролера и когда ответ приходит он возвращает его.
+        /// </summary>
+        public byte[] WaitAnswer()
+        {
+            while (ansewr == null)
+            {
+                Thread.Sleep(300);
+            }
+            byte[] result = ansewr;
+            ansewr = null;
+            return result;
+        }        
     }
 }
