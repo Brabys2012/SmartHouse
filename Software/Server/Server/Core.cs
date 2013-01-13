@@ -18,7 +18,7 @@ namespace Server
         /// <summary>
         /// Ком порт исполнитель
         /// </summary>
-        private ComPortExecutable ExeComPort;
+        private ComPortExecutable ExeComPort = new ComPortExecutable();
         /// <summary>
         /// Главный метод ядра, просматривает очередь команд от слушателя и от пользователей и создает отдельный поток для каждой команды, который запускает обработку той или иной команды
         /// </summary>
@@ -88,6 +88,7 @@ namespace Server
                     {
                         Thread.Sleep(300);
                     }
+                    ExDM.ParserAnswer(ProcComand);
                 }
             }
 
@@ -100,6 +101,19 @@ namespace Server
         public void ProcessThreadTCP(object comand)
         {
             throw new System.NotImplementedException();
+        }
+
+        /// <summary>
+        /// Метод через определенный интервал инициализирует обновление листа списка устройств
+        /// Работает в отдельном потоке
+        /// </summary>
+        public void UpdateClient()
+        {
+            while (true)
+            {
+                ExDM.BdDevice.UpdateUserApp();
+                Thread.Sleep(TimeSpan.FromMinutes(10)); 
+            }
         }
     }
 }
