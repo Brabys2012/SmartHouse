@@ -10,7 +10,7 @@ namespace Server
     /// </summary>
     public class ExtremDecisionmaking
     {
-        private TableDivice BdDevice = new TableDivice();
+        public TableDivice BdDevice = new TableDivice();
         /// <summary>
         /// Метод обработки команды
         /// </summary>
@@ -38,10 +38,15 @@ namespace Server
                     //Получаем по запросу какое устройство нужно выключить и сообщение на TCP сервер
 
                     ConfigForMess CFM = BdDevice.DeterDevice(numPort, numDev);
+                    if (CFM.messege != "")
+                    {
+                        lock (Storage.MessegesForUser)
+                        {
+                            Storage.MessegesForUser.Enqueue(CFM.messege);
+                        }
+                    }
 
-                    Storage.MessegesForUser.Enqueue(CFM.messege);
-
-                    if ((CFM.number != null) && (CFM.number[0] != null) && (CFM.number[1] != null))
+                    if ((CFM.number != null))
                     {
                         //Формируем команду для ComPort, которая отключит устройство которое нужно отключить
                         result = new byte[4];
@@ -58,6 +63,35 @@ namespace Server
                 }
             }
             return result;
+        }
+
+        /// <summary>
+        /// Метод обработки ответа от исполняющего ком порта, выключил он устройство или нет
+        /// </summary>
+        public void ParserAnswer(byte[] Answer)
+        {
+            //Проверяем соответсвует ли ответ заданному формату
+            if (Answer.Count() == 4)
+            {
+                //Удачно или не удачно выполнена команда
+                if (Answer[3] == 1)
+                {
+                    try
+                    {
+                        BdDevice.UpdateDeviceState(Answer[0], Answer[1], 0);
+                    }
+                    catch
+                    {
+                        lock (Storage.MessegesForUser)
+                            Storage.MessegesForUser.Enqueue("Произошла ошибка сервера");
+                    }
+                }
+                else
+                {
+                    lock (Storage.MessegesForUser)
+                        Storage.MessegesForUser.Enqueue("Произошла ошибка сервера");
+                }
+            }
         }
     }
 }

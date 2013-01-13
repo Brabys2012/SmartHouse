@@ -39,6 +39,14 @@ namespace Server
         /// Очередь из сообщений, которые должен получить пользователь
         /// </summary>
         public static Queue MessegesForUser;
+        /// <summary>
+        /// Блокирует доступ к БД если она занята другим потоком
+        /// </summary>
+        public static object lockerBdDev;
+        /// <summary>
+        /// Флаг показывает обновлен список устройств для бд или нет
+        /// </summary>
+        public static bool Updated;
     }
 
     /// <summary>
@@ -48,5 +56,18 @@ namespace Server
     {
         public byte[] number = new byte[2];
         public string messege;
+    }
+    /// <summary>
+    /// Класс который хранит информацию об устройтвах
+    /// нужен для обновления клиентских приложений
+    /// </summary>
+    public class Device
+    {
+        //Имя устройства
+        public string Name;
+        //Тип устройства
+        public string Type;
+        //Состояние устройства
+        public string State;
     }
 }

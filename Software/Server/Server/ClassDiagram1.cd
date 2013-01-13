@@ -10,14 +10,14 @@
   <Class Name="Server.Storage">
     <Position X="2.25" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAIBAABAAgAABAAAAAAAgAAAAAAAQAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAIBABBAAgAABAAAAAAAgAAAAQAAQAAAAAAA=</HashCode>
       <FileName>Storage.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Server.Core">
-    <Position X="2.25" Y="3" Width="1.5" />
+    <Position X="2.25" Y="4" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAIAAAAAAAAAAAAAAQAAAAAAAAAAAAAQAQQAAAAA=</HashCode>
+      <HashCode>AAAAAIAAAAAAAAAAAAAAQAAAAAAAAAAAAAQAQQAAAAQ=</HashCode>
       <FileName>Core.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -38,26 +38,26 @@
   <Class Name="Server.ExtremDecisionmaking">
     <Position X="4.25" Y="3" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAIAAAAAAAABAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAIAAAQAAAABAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>ExtremDecisionmaking.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Server.TableDivice">
     <Position X="6" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=</HashCode>
+      <HashCode>gAAACAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=</HashCode>
       <FileName>TableDivice.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Server.ComPortListener">
-    <Position X="7.5" Y="0.5" Width="1.5" />
+    <Position X="7.75" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>ComPortListener.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Server.TCPServer">
-    <Position X="9.25" Y="0.5" Width="1.5" />
+    <Position X="9.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAgAAAAAAACAAAAAAAAgAAAAAAAA=</HashCode>
       <FileName>TCPServer.cs</FileName>
