@@ -23,6 +23,8 @@ namespace Server
         /// </summary>
         public void HandleConnection(object state)
         {
+            //переменная для сообщения которое отправляется клиенту
+            string toSend = null;
             //локальная переменная для хранения размера в байтах принятого сообщения
             int recv;
             //локальная переменная для хранения принятого сообщения в байтах
@@ -38,16 +40,20 @@ namespace Server
             Console.WriteLine("Подключился клиент {0}", client.Client.RemoteEndPoint);
 
 
-            //При подключении клиент отсылает имя и пароль которые необходимо проверить
+            //при подключении клиент отсылает имя и пароль(зашифрованные) которые необходимо проверить
             recv = ns.Read(data, 0, data.Length);
             cldata = Encoding.Default.GetString(data, 0, recv);
+            //дешифруем сообщение клиента
+            cldata = Crypto.Decrypt(cldata);
+            //разбиваем на логин и пароль
             auth = cldata.Split('.');
             //Временные меры, вдальнейшем тут необходимо использовать метод для работы
-            //с БД 
+            //с БД ControlAuth(string login, string pass)
             if ((auth[0] == "adm") && (auth[1] == "123"))
             {
                 //Если пароль и имя правильные
                 string welcome = "Авторизация прошла успешно";
+                welcome = Crypto.Encrypt(welcome);
                 data = Encoding.Default.GetBytes(welcome);
                 ns.Write(data, 0, data.Length);
 
@@ -58,6 +64,7 @@ namespace Server
                         data = new byte[1024];
                         recv = ns.Read(data, 0, data.Length);
                         cldata = Encoding.Default.GetString(data, 0, recv);
+                        cldata = Crypto.Decrypt(cldata);
                         //Если клиент прислал команду на отключение
                         if (cldata == "EXIT")
                         {
@@ -69,8 +76,9 @@ namespace Server
                             Storage.QueueTCP.Enqueue(cldata);
                         }
                         Console.WriteLine("Клиент написал: {0}", cldata);
-                        // ns.Write(data, 0, recv);
-                        ns.Write(Encoding.Default.GetBytes("Данные приняты"), 0, Encoding.Default.GetBytes("Данные приняты").Length);
+                        toSend = "Данные приняты";
+                        toSend = Crypto.Encrypt(toSend);
+                        ns.Write(Encoding.Default.GetBytes(toSend), 0, Encoding.Default.GetBytes(toSend).Length);
                     }
                     catch (Exception e)
                     {
@@ -87,6 +95,7 @@ namespace Server
             {
                 //если имя и пароль неверные
                 string failure = "Неверное имя или пароль";
+                failure = Crypto.Encrypt(failure);
                 data = Encoding.Default.GetBytes(failure);
                 ns.Write(data, 0, data.Length);
                 ns.Close();

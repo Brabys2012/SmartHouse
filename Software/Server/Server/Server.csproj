@@ -49,6 +49,7 @@
     <Compile Include="ComPortExecutable.cs" />
     <Compile Include="ComPortListener.cs" />
     <Compile Include="Core.cs" />
+    <Compile Include="Crypto.cs" />
     <Compile Include="Decisionmaking.cs" />
     <Compile Include="ExtremDecisionmaking.cs" />
     <Compile Include="Program.cs" />
