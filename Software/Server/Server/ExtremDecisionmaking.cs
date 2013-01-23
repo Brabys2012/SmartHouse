@@ -14,7 +14,7 @@ namespace Server
         /// <summary>
         /// Метод обработки команды
         /// </summary>
-        public byte[] ParserComand(object comand)
+        public byte[] ParserComand(DevCommand comand)
         {
             //В данном массиве будет содержатся команда на порт исполнитель 
             byte[] result = null;

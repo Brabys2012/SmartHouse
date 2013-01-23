@@ -39,7 +39,8 @@ namespace Server
         /// <param name="e"></param>
         public void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
         {
-            SerialPort sp = (SerialPort)sender;
+             = CProtocol.Unpack(((SerialPort)sender).BaseStream);
+            
             try
             {
                 while (sp.WriteBufferSize != 0)

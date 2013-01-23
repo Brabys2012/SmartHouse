@@ -13,7 +13,7 @@ namespace Server
     public class ComPortExecutable
     {
         SerialPort MyComExecutable=new SerialPort();
-        public byte[] ansewr = null;
+        public byte[] answer = null;
         /// <summary>
         /// Метод инициализации COM - порта
         /// </summary>
@@ -52,7 +52,7 @@ namespace Server
             }
             // Program.MyParser.ParssComand(BytArray);
             string Pank = sp.ReadExisting();
-            ansewr = BytArray;
+            answer = BytArray;
         }
         /// <summary>
         /// Событие происходящее при какой-либо ошибке
@@ -90,12 +90,12 @@ namespace Server
         /// </summary>
         public byte[] WaitAnswer()
         {
-            while (ansewr == null)
+            while (answer == null)
             {
                 Thread.Sleep(300);
             }
-            byte[] result = ansewr;
-            ansewr = null;
+            byte[] result = answer;
+            answer = null;
             return result;
         }        
     }

@@ -49,6 +49,7 @@
     <Compile Include="ComPortExecutable.cs" />
     <Compile Include="ComPortListener.cs" />
     <Compile Include="Core.cs" />
+    <Compile Include="CProtocol.cs" />
     <Compile Include="Crypto.cs" />
     <Compile Include="Decisionmaking.cs" />
     <Compile Include="ExtremDecisionmaking.cs" />
@@ -57,6 +58,7 @@
     <Compile Include="Storage.cs" />
     <Compile Include="TableDivice.cs" />
     <Compile Include="TCPServer.cs" />
+    <Compile Include="WinLog.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,11 +7,22 @@ using System.Threading;
 
 namespace Server
 {
+
     /// <summary>
     /// Ядро, класс отвечающий за создание и правильную работы потоков связанных с командами Исполнительному компорту
     /// </summary>
-    public class Core
+    public partial class Core
     {
+
+        /// <summary>
+        /// Поток ядра.
+        /// </summary>
+        private Thread _coreThread;
+        /// <summary>
+        /// Список потоков, запущенных основным ядром как реакция на событие.
+        /// </summary>
+        private ArrayList _threads;
+
         /// <summary>
         /// Элемент класса для принятия экстренных решение
         /// </summary>
@@ -19,37 +31,78 @@ namespace Server
         /// Ком порт исполнитель
         /// </summary>
         private ComPortExecutable ExeComPort = new ComPortExecutable();
+
+        /// <summary>
+        /// Инициализирует экземпляр класса Core.
+        /// </summary>
+        public Core()
+        {
+            _threads = new ArrayList();
+        }
+        /// <summary>
+        /// Запускает работу ядра.
+        /// </summary>
+        /// <exception cref="Exception"></exception>
+        public void Start()
+        {
+            _coreThread = new Thread(new ThreadStart(MainCore));
+            _coreThread.IsBackground = true;
+            _coreThread.Priority = ThreadPriority.Highest;
+            _coreThread.Start();
+        }
+
+
         /// <summary>
         /// Главный метод ядра, просматривает очередь команд от слушателя и от пользователей и создает отдельный поток для каждой команды, который запускает обработку той или иной команды
         /// </summary>
         public void MainCore()
         {
+            // Признак наличия записей в очереди на обработку срочных сообщений
+            bool _qListQueue = false;
+            // Команда из очереди
+            object comandObj = null;
             while (true)
             {
-                //Проверка команд, от порта слушателя, он проверяется первым, так как приоритетней команд от пользователя
-                lock(Storage.QueueList)
+                lock (Storage.QueueList)
                 {
                     if (Storage.QueueList.Count != 0)
                     {
-                        //Операция извлечения команды из очереди команд слушателя
-                        object comandObj = Storage.QueueList.Dequeue();
-                        //Создаем поток для обработки команды
-                        Thread t = new Thread(ProcessThreadList);
-                        t.Start(comandObj);
+                        // Устанавливаем признак наличия команды
+                        _qListQueue = true;
+                        // Считываем команду
+                        comandObj = Storage.QueueList.Dequeue();
                     }
-                    else
+                }
+
+                if (_qListQueue)
+                {
+                    try
                     {
-                        //Проверка команд от пользователей
-                        lock (Storage.QueueTCP)
+                        // Создаем и запускаем поток для обработки команды
+                        Thread t = new Thread(ProcessThreadList);
+                        t.IsBackground = true;
+                        t.Start(comandObj);
+                        // Сохраняем поток в пул потоков
+                        _threads.Add(t);
+                    }
+                    catch (Exception exc)
+                    {
+                        // Сообщаем об ошибке + заносим в лог
+                        WinLog.Write("Произошла ошибка: " + exc.Message, System.Diagnostics.EventLogEntryType.Error);
+                    }
+                }
+                else
+                {
+                    //Проверка команд от пользователей
+                    lock (Storage.QueueTCP)
+                    {
+                        if (Storage.QueueTCP.Count != 0)
                         {
-                            if (Storage.QueueTCP.Count != 0)
-                            {
-                                //Операция извлечения команды из очереди команд слушателя
-                                object comandObj = Storage.QueueTCP.Dequeue();
-                                //Создаем поток для обработки команды
-                                Thread t = new Thread(ProcessThreadTCP);
-                                t.Start(comandObj);
-                            }
+                            //Операция извлечения команды из очереди команд слушателя
+                            comandObj = Storage.QueueTCP.Dequeue();
+                            //Создаем поток для обработки команды
+                            Thread t = new Thread(ProcessThreadTCP);
+                            t.Start(comandObj);
                         }
                     }
                 }
@@ -92,6 +145,8 @@ namespace Server
                 }
             }
 
+            // Удалем поток из пула потоков
+            _threads.Remove(Thread.CurrentThread);
         }
 
         /// <summary>
