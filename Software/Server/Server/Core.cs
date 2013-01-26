@@ -22,7 +22,6 @@ namespace Server
         /// Список потоков, запущенных основным ядром как реакция на событие.
         /// </summary>
         private ArrayList _threads;
-
         /// <summary>
         /// Элемент класса для принятия экстренных решение
         /// </summary>
@@ -98,11 +97,22 @@ namespace Server
                     {
                         if (Storage.QueueTCP.Count != 0)
                         {
-                            //Операция извлечения команды из очереди команд слушателя
-                            comandObj = Storage.QueueTCP.Dequeue();
-                            //Создаем поток для обработки команды
-                            Thread t = new Thread(ProcessThreadTCP);
-                            t.Start(comandObj);
+                            try
+                            {
+                                //Операция извлечения команды из очереди команд слушателя
+                                comandObj = Storage.QueueTCP.Dequeue();
+                                //Создаем поток для обработки команды
+                                Thread t = new Thread(ProcessThreadTCP);
+                                t.IsBackground = true;
+                                t.Start(comandObj);
+                                // Сохраняем поток в пул потоков
+                                _threads.Add(t);
+                            }
+                            catch (Exception exc)
+                            {
+                                // Сообщаем об ошибке + заносим в лог
+                                WinLog.Write("Произошла ошибка: " + exc.Message, System.Diagnostics.EventLogEntryType.Error);
+                            }
                         }
                     }
                 }
@@ -117,6 +127,7 @@ namespace Server
         {
             //Получаем команду для порта исполнителя
             byte[] ProcComand = ExDM.ParserComand(comand);
+            DevCommand Answer = new DevCommand();
             if (ProcComand[0] != 0)
             {
                 // Флаг который означает что КомПорт блокирован
@@ -131,7 +142,7 @@ namespace Server
                         {
                             podflag = true;
                             Storage.flagComPort = false;
-                            ProcComand = ExeComPort.SendInform(ProcComand);
+                            Answer = ExeComPort.SendInform(ProcComand);
                             Storage.flagComPort = true;
                         }
                     }
@@ -141,7 +152,7 @@ namespace Server
                     {
                         Thread.Sleep(300);
                     }
-                    ExDM.ParserAnswer(ProcComand);
+                    ExDM.ParserAnswer(Answer);
                 }
             }
 

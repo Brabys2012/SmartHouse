@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO.Ports;
 using System.Threading;
+using System.Collections;
 
 namespace Server
 {
@@ -13,7 +14,10 @@ namespace Server
     public class ComPortExecutable
     {
         SerialPort MyComExecutable=new SerialPort();
-        public byte[] answer = null;
+        CProtocol ProtocolForEx = new CProtocol();
+        bool IsFindCommand = false;
+        ArrayList Command;
+        DevCommand answer;
         /// <summary>
         /// Метод инициализации COM - порта
         /// </summary>
@@ -41,7 +45,13 @@ namespace Server
         /// <param name="e"></param>
         public void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
         {
-            SerialPort sp = (SerialPort)sender;
+            Command = ProtocolForEx.Unpack(((SerialPort)sender).BaseStream);
+            answer = (DevCommand)Command[0];
+            IsFindCommand = false;
+
+          
+
+            /*SerialPort sp = (SerialPort)sender;
 
             int counter = sp.ReadByte();
             byte[] BytArray = new byte[counter];
@@ -52,7 +62,7 @@ namespace Server
             }
             // Program.MyParser.ParssComand(BytArray);
             string Pank = sp.ReadExisting();
-            answer = BytArray;
+            answer = BytArray;*/
         }
         /// <summary>
         /// Событие происходящее при какой-либо ошибке
@@ -76,11 +86,11 @@ namespace Server
         /// Метод отправки данных
         /// </summary>
         /// <param name="ByteArray">Данные для отправки</param>
-        public byte[] SendInform(byte[] ByteArray)
+        public DevCommand SendInform(byte[] ByteArray)
         {
             OpenCom();
             MyComExecutable.Write(ByteArray, 0, ByteArray.Length);
-            byte[] comand = WaitAnswer();
+            DevCommand comand = WaitAnswer();
             Close();
             return comand;
         }
@@ -88,14 +98,13 @@ namespace Server
         /// <summary>
         /// Ждет ответа от контролера и когда ответ приходит он возвращает его.
         /// </summary>
-        public byte[] WaitAnswer()
+        public DevCommand WaitAnswer()
         {
-            while (answer == null)
+            while (!IsFindCommand)
             {
                 Thread.Sleep(300);
             }
-            byte[] result = answer;
-            answer = null;
+            DevCommand result = answer;
             return result;
         }        
     }
