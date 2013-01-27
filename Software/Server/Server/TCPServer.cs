@@ -4,104 +4,151 @@ using System.Linq;
 using System.Text;
 using System.Net.Sockets;
 using System.Threading;
+using System.Net;
 
 namespace Server
 {
-    class TCPServer
+     class AsynchronousIoServer
     {
-        public TcpListener threadListener;
+    // метод SetupServerSocket и конструктор - те же,
+        // что и в классе ThreadedServer
+    private Socket _serverSocket;
+    private int _port;
 
-        public TCPServer(TcpListener lis)
+    public AsynchronousIoServer(int port) { _port = port; }
+
+    private class ConnectionInfo
+    {
+        public Socket Socket;
+        public byte[] Buffer;
+    }
+
+    private void SetupServerSocket()
+    {
+        // Получаем информацию о локальном компьютере
+        IPHostEntry localMachineInfo =
+            Dns.GetHostEntry(Dns.GetHostName());
+         IPEndPoint myEndpoint = new IPEndPoint(
+           IPAddress.Any, _port);
+
+        // Создаем сокет, привязываем его к адресу
+        // и начинаем прослушивание
+        _serverSocket = new Socket(
+            AddressFamily.InterNetwork,
+            SocketType.Stream, ProtocolType.Tcp);
+        _serverSocket.Bind(myEndpoint);
+        _serverSocket.Listen((int)
+            SocketOptionName.MaxConnections);
+    }
+
+    private List<ConnectionInfo> _connections =
+        new List<ConnectionInfo>();
+
+    public void Start()
+    {
+        SetupServerSocket();
+        for (int i = 0; i < 10; i++)
+            _serverSocket.BeginAccept(new
+                AsyncCallback(AcceptCallback), _serverSocket);
+    }
+
+    private void AcceptCallback(IAsyncResult result)
+    {
+        ConnectionInfo connection = new ConnectionInfo();
+        try
         {
-            threadListener = lis;
-            ThreadPool.QueueUserWorkItem(new WaitCallback(HandleConnection));
+            // Завершение операции Accept
+            Socket s = (Socket)result.AsyncState;
+            connection.Socket = s.EndAccept(result);
+            connection.Buffer = new byte[255];
+            lock (_connections) _connections.Add(connection);
+
+            // Начало операции Receive и новой операции Accept
+            connection.Socket.BeginReceive(connection.Buffer,
+                    0, connection.Buffer.Length, SocketFlags.None,
+                    new AsyncCallback(ReceiveCallback),
+                    connection);
+
+            _serverSocket.BeginAccept(new AsyncCallback(
+                AcceptCallback), result.AsyncState);
 
         }
-
-        /// <summary>
-        /// Обработка подключённого клиента
-        /// </summary>
-        public void HandleConnection(object state)
+        catch (SocketException exc)
         {
-            //переменная для сообщения которое отправляется клиенту
-            string toSend = null;
-            //локальная переменная для хранения размера в байтах принятого сообщения
-            int recv;
-            //локальная переменная для хранения принятого сообщения в байтах
-            byte[] data = new byte[1024];
-            //локальная переменная для хранения данных авторизации
-            string[] auth = new string[2];
-            //локальная переменная для хранения принятого сообщения как строки
-            string cldata = null;
+            CloseConnection(connection);
+            Console.WriteLine("Socket exception: " +
+                exc.SocketErrorCode);
+        }
+        catch (Exception exc)
+        {
+            CloseConnection(connection);
+            Console.WriteLine("Exception: " + exc);
+        }
+    }
 
-            TcpClient client = threadListener.AcceptTcpClient();
-            NetworkStream ns = client.GetStream();
-
-            Console.WriteLine("Подключился клиент {0}", client.Client.RemoteEndPoint);
-
-
-            //при подключении клиент отсылает имя и пароль(зашифрованные) которые необходимо проверить
-            recv = ns.Read(data, 0, data.Length);
-            cldata = Encoding.Default.GetString(data, 0, recv);
-            //дешифруем сообщение клиента
-            cldata = Crypto.Decrypt(cldata);
-            //разбиваем на логин и пароль
-            auth = cldata.Split('.');
-            //Временные меры, вдальнейшем тут необходимо использовать метод для работы
-            //с БД ControlAuth(string login, string pass)
-            if ((auth[0] == "adm") && (auth[1] == "123"))
+    private void ReceiveCallback(IAsyncResult result)
+    {
+        ConnectionInfo connection =
+         (ConnectionInfo)result.AsyncState;
+        string message = "";
+        string[] authMess = null;
+        bool succesAuth = false;
+       
+        try
+        {
+            int bytesRead = connection.Socket.EndReceive(result);
+            if (bytesRead > 0)
             {
-                //Если пароль и имя правильные
-                string welcome = "Авторизация прошла успешно";
-                welcome = Crypto.Encrypt(welcome);
-                data = Encoding.Default.GetBytes(welcome);
-                ns.Write(data, 0, data.Length);
-
-                while (true)
+                message =Crypto.Decrypt(Encoding.ASCII.GetString(connection.Buffer, 0, bytesRead));
+                if (message[0] == 'a')
                 {
-                    try
+                    authMess = message.Split('.');
+                    if (authMess[1] == "adm" && authMess[2] == "123")
                     {
-                        data = new byte[1024];
-                        recv = ns.Read(data, 0, data.Length);
-                        cldata = Encoding.Default.GetString(data, 0, recv);
-                        cldata = Crypto.Decrypt(cldata);
-                        //Если клиент прислал команду на отключение
-                        if (cldata == "EXIT")
-                        {
-                            Console.WriteLine("Клиент {0} отключился", client.Client.RemoteEndPoint);
-                            break;
-                        }
-                        lock (Storage.QueueTCP)
-                        {
-                            Storage.QueueTCP.Enqueue(cldata);
-                        }
-                        Console.WriteLine("Клиент написал: {0}", cldata);
-                        toSend = "Данные приняты";
-                        toSend = Crypto.Encrypt(toSend);
-                        ns.Write(Encoding.Default.GetBytes(toSend), 0, Encoding.Default.GetBytes(toSend).Length);
+                        connection.Socket.Send(Encoding.ASCII.GetBytes(Crypto.Encrypt("successful authorization")));
+                        succesAuth = true;
                     }
-                    catch (Exception e)
+                    else
                     {
-                        Console.WriteLine("Ошибка: {0}", e.Message);
-                        break;
+                        connection.Socket.Send(Encoding.ASCII.GetBytes(Crypto.Encrypt("authorization fails")));
+                        CloseConnection(connection);
+                        
                     }
                 }
+                else
+                {
+                    connection.Socket.Send(Encoding.ASCII.GetBytes(Crypto.Encrypt("Data received")));
+                    Console.WriteLine("Клиент {0} написал: {1}", connection.Socket.RemoteEndPoint, message);
+                    succesAuth = true;
+                }
 
-
-                ns.Close();
-                client.Close();
+                if (succesAuth)
+                connection.Socket.BeginReceive(
+                    connection.Buffer, 0,
+                    connection.Buffer.Length, SocketFlags.None,
+                    new AsyncCallback(ReceiveCallback),
+                    connection);
             }
-            else
-            {
-                //если имя и пароль неверные
-                string failure = "Неверное имя или пароль";
-                failure = Crypto.Encrypt(failure);
-                data = Encoding.Default.GetBytes(failure);
-                ns.Write(data, 0, data.Length);
-                ns.Close();
-                client.Close();
-            }
+            else CloseConnection(connection);
         }
+        catch (SocketException exc)
+        {
+            CloseConnection(connection);
+            Console.WriteLine("Socket exception: " +
+                exc.SocketErrorCode);
+        }
+        catch (Exception exc)
+        {
+            CloseConnection(connection);
+            Console.WriteLine("Exception: " + exc);
+        }
+    }
+
+    private void CloseConnection(ConnectionInfo ci)
+    {
+        ci.Socket.Close();
+        lock (_connections) _connections.Remove(ci);
+    }
 
         /// <summary>
         /// Проверяет правильность логина и пароля
