@@ -10,34 +10,34 @@ namespace Server
     /// </summary>
     public class ExtremDecisionmaking
     {
+        public CProtocol ProtocolForExDM = new CProtocol();
+
         public TableDivice BdDevice = new TableDivice();
         /// <summary>
         /// Метод обработки команды
         /// </summary>
-        public byte[] ParserComand(DevCommand comand)
+        public byte[] ParserComand(object comand)
         {
             //В данном массиве будет содержатся команда на порт исполнитель 
             byte[] result = null;
             //Т.к. ComPort слушатель пересылает команды как массив из байтов то и приводим их к первоначальному виду
-            byte[] comandArray = (byte[])comand;
+            DevCommand comandArray = (DevCommand)comand;
             //Если команда меньше 4 байтов и больше 5 то это ошибочная команда ее не возможно обработать
-            //Приходится возврашать 0 в нулевом номере массиво, что значит, что никакой команды пересылать 
+            //Приходится возврашать 0 в нулевом номере массива, что значит, что никакой команды пересылать 
             //не нужно
-            if ((comandArray.Count() < 4) && (comandArray.Count() > 5))
+            if ((comandArray.len == 6) || (comandArray.len == 7))
             {
                 result = new byte[1];
                 result[0] = 0;
             }
             else
             {
-                byte numPort = comandArray[1];
-                byte numDev = comandArray[2];
                 //Сработал датчик
-                if (comandArray[3] == 100)
+                if (comandArray.command[3] == 100)
                 {
                     //Получаем по запросу какое устройство нужно выключить и сообщение на TCP сервер
 
-                    ConfigForMess CFM = BdDevice.DeterDevice(numPort, numDev);
+                    ConfigForMess CFM = BdDevice.DeterDevice(comandArray.port, comandArray.device);
                     if (CFM.messege != "")
                     {
                         lock (Storage.MessegesForUser)
@@ -48,12 +48,10 @@ namespace Server
 
                     if ((CFM.number != null))
                     {
-                        //Формируем команду для ComPort, которая отключит устройство которое нужно отключить
-                        result = new byte[4];
-                        result[0] = 4;
-                        result[1] = CFM.number[0];
-                        result[2] = CFM.number[1];
-                        result[3] = 0;
+                        //Формируем команду для ComPort, которая отключит устройство которое нужно отключи
+                        byte[] com = new byte[1];
+                        com[0] = 0;
+                        result = ProtocolForExDM.Pack(CFM.number[0], CFM.number[1], com);
                     }
                     else
                     {
@@ -68,17 +66,17 @@ namespace Server
         /// <summary>
         /// Метод обработки ответа от исполняющего ком порта, выключил он устройство или нет
         /// </summary>
-        public void ParserAnswer(byte[] Answer)
+        public void ParserAnswer(DevCommand Answer)
         {
             //Проверяем соответсвует ли ответ заданному формату
-            if (Answer.Count() == 4)
+            if (Answer.len == 6)
             {
                 //Удачно или не удачно выполнена команда
-                if (Answer[3] == 1)
+                if (Answer.command[0] == 1)
                 {
                     try
                     {
-                        BdDevice.UpdateDeviceState(Answer[0], Answer[1], 0);
+                        BdDevice.UpdateDeviceState(Answer.port, Answer.device, 0);
                     }
                     catch
                     {

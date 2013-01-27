@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO.Ports;
+using System.Collections;
 
 namespace Server
 {
@@ -12,6 +13,15 @@ namespace Server
     public class ComPortListener
     {
         SerialPort MyComListener=new SerialPort();
+
+        /// <summary>
+        /// Протокол для распаковки/упаковки пакета
+        /// </summary>
+        CProtocol ProtocolForLis = new CProtocol();
+        /// <summary>
+        /// Список команд, возвращаемый после распаковки пакета
+        /// </summary>
+        ArrayList comand = new ArrayList();
         /// <summary>
         /// Метод инициализации COM - порта
         /// </summary>
@@ -39,9 +49,19 @@ namespace Server
         /// <param name="e"></param>
         public void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
         {
-             = CProtocol.Unpack(((SerialPort)sender).BaseStream);
+            comand = ProtocolForLis.Unpack(((SerialPort)sender).BaseStream);
+            if (comand != null)
+            {
+                foreach (DevCommand DC in comand)
+                {
+                    lock (Storage.QueueList)
+                        Storage.QueueList.Enqueue(DC);
+                }
+            }
             
-            try
+
+            //Код закаменчен, потому что есть вероятность вернуться к данному варианту
+            /*try
             {
                 while (sp.WriteBufferSize != 0)
                 {
@@ -64,7 +84,7 @@ namespace Server
                 {
                     Storage.MessegesForUser.Enqueue("Ошибка в работе контролера");
                 }
-            }
+            }*/
         }
         /// <summary>
         /// Событие происходящее при какой-либо ошибке
