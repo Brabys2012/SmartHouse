@@ -33,7 +33,7 @@ namespace Server
             else
             {
                 //Сработал датчик
-                if (comandArray.command[3] == 100)
+                if (comandArray.command[0] == 100)
                 {
                     //Получаем по запросу какое устройство нужно выключить и сообщение на TCP сервер
 

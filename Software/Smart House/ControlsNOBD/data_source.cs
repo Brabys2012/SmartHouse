@@ -249,7 +249,7 @@ namespace ControlsNOBD
         public bool UpdDeviceVal(string Num_port, string Adress, string curVaul)
         {
             string TypeDevice = FindTypeDev(Num_port, Adress);
-            if (TypeDevice == "Диммер" || ((TypeDevice == "Простое устройство")&(Convert.ToInt32(curVaul) >= 1)))
+            if (TypeDevice == "Диммер" || ((TypeDevice == "Простое устройство")&(Convert.ToInt32(curVaul) <= 1)))
             {
                 string query = "Update Devices set ";
                 if (curVaul != "")

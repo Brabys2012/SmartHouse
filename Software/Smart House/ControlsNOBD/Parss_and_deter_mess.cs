@@ -44,7 +44,7 @@ namespace ControlsNOBD
             int masCounter = Par.Length;
             for (int i = 2; i < masCounter; i++)
             {
-                Value = (UInt64)(Value + Par[i] * Math.Pow(256, masCounter - tmpcount));
+                Value = (UInt64)(Value + Par[i] * Math.Pow(256, masCounter - 3 - tmpcount));
                 tmpcount++;
             }
 

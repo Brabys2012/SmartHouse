@@ -60,9 +60,10 @@ namespace Server
                         comand = new DevCommand();
                         count = (byte)dataStream.ReadByte();
                         comand.len = count;
+                        comand.command = new byte[count - 5];
                         comand.port = (byte)dataStream.ReadByte();
                         comand.device = (byte)dataStream.ReadByte();
-                        for (int i = 0; i < count - 4; i++)
+                        for (int i = 0; i < count - 5; i++)
                         {
                             comand.command[i] = (byte)dataStream.ReadByte();
                         }
