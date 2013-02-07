@@ -3,12 +3,20 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
-using RUS_Project.libExtendLog;
 
 
-namespace RUS_Project.libTCPServer
+namespace SimpleAsyncServer
 {
 
+    /// <summary>
+    /// Представляет универсальный метод, осуществляющий отправку данных в указанное место назначения.
+    /// </summary>
+    /// <param name="data">Массив данных для отправки.</param>
+    /// <param name="pos">Позиция в массиве начала передаваемых данных.</param>
+    /// <param name="len">Число полезных байт данных в массиве, начиная с заданной позиции.</param>
+    public delegate void IODataDelegate(byte[] data, int pos, int len);
+
+	
     /// <summary>
     /// Простой асинхронный TCP сервер.
     /// </summary>
@@ -25,14 +33,6 @@ namespace RUS_Project.libTCPServer
         /// Список текущих клиентских подключений.
         /// </summary>
         private List<SimpleAsyncClient> _curConnections;
-        /// <summary>
-        /// Журнал для записи происходящих событий.
-        /// </summary>
-        private ExtendLog _log;
-        /// <summary>
-        /// Буфферы данных для приема и отправки удаленным клиентам.
-        /// </summary>
-        private byte[] _rBuffer, _wBuffer;
 
 
         /// <summary>
@@ -75,8 +75,7 @@ namespace RUS_Project.libTCPServer
         /// </summary>
         /// <param name="name">Имя порта прозрачной переброски данных, в который входит данный TCP сервер.</param>
         /// <param name="ipPoint">IP:Port адрес сервера.</param>
-        /// <param name="eventLog">Журнал событий, в который будут записываться сообщения о работе сервера и состоянии клиентов.</param>
-        public SimpleAsyncServer(string name, IPEndPoint ipPoint, ExtendLog eventLog)
+        public SimpleAsyncServer(string name, IPEndPoint ipPoint)
         {
             // Устанавливаем значения свойств
             IsStarted = false;
@@ -87,8 +86,6 @@ namespace RUS_Project.libTCPServer
             // Устанавливаем значения параметров
             _sSocket = null;
             _curConnections = new List<SimpleAsyncClient>();
-            _log = eventLog;
-            _log.LogEntryWritedEvent += new LogEntryEventDelegate(log_LogEntryWritedEvent);
         }
         /// <summary>
         /// Запускает на исполнение данный TCP сервер.
@@ -119,20 +116,16 @@ namespace RUS_Project.libTCPServer
                 // Устанавливаем признак того, что сервер успешно запущен
                 IsStarted = true;
                 // Протоколируем успешный запуск
-                _log.Write(EventType.State, string.Format("Локальный TCP сервер {0} успешно запущен. Ожидание подключений.", ServerPoint));
+                if (ServerEventsEvent != null)
+                    ServerEventsEvent(EventRepresentetionType.SERVER_PORT_RUNNING, string.Format("TCP сервер {0} успешно запущен. Ожидание подключений.", ServerPoint));
                 // Принимаем соединения
                 for (int i = 0; i < 10; i++)
                     _sSocket.BeginAccept(new AsyncCallback(AceptCallback), _sSocket);
             }
-            catch (ExtendLogException exc)
-            {
-                throw new TCPServerException(String.Format("Ошибка запуска локального TCP сервера {0} (Причина: {1}).", ServerPoint, exc.Message));
-            }
             catch (Exception exc)
             {
-                if (_log != null)
-                    _log.Write(EventType.Error, String.Format("Ошибка запуска локального TCP сервера {0} (Причина: {1}).", ServerPoint, exc.Message));
-                throw new TCPServerException(String.Format("Ошибка запуска локального TCP сервера {0} (Причина: {1}).", ServerPoint, exc.Message));
+                if (ServerEventsEvent != null)
+                    ServerEventsEvent(EventRepresentetionType.SERVER_PORT_ERROR, String.Format("Ошибка запуска локального TCP сервера {0} (Причина: {1}).", ServerPoint, exc.Message));
             }
         }
         /// <summary>
@@ -148,15 +141,6 @@ namespace RUS_Project.libTCPServer
             }
             // Закрываем сокет
             _sSocket.Close();
-            // Записываем в журнал событий сообщение об становке сервера и закрываем журнал
-            try
-            {
-                _log.Write(EventType.State, string.Format("Cервер {0} успешно остановлен.", ServerPoint));
-                _log.LogEntryWritedEvent -= log_LogEntryWritedEvent;
-                _log.Close("остановка сервера");
-                _log = null;
-            }
-            catch (Exception) { }
         }
 
         /// <summary>
@@ -179,25 +163,16 @@ namespace RUS_Project.libTCPServer
                 // Сохраняем клиента
                 lock (_curConnections) { _curConnections.Add(_client); }
                 // Вносим запись в журнал событий
-                _log.Write(EventType.Connect, _client.RemoteEndPoint.ToString(), "", "Подключился локальный клиент.");
+                if (ServerEventsEvent != null)
+                    ServerEventsEvent(EventRepresentetionType.CLIENT_CONNECT, string.Format("Подключился клиент {0}.", _client.RemoteEndPoint));
                 // Запускаем новый слушатель сокета
                 _tsSocket.BeginAccept(new AsyncCallback(AceptCallback), result.AsyncState);
             }
-            catch (SocketException exc)
-            {
-                // Вносим запись в журнал событий
-                _log.Write(EventType.ConnectError, string.Format("При подключении клиента {0} произошла ошибка (Ошибка: {1}).", _client.RemoteEndPoint, exc.Message));
-                // Отключаем клиента
-                client_ClientNeedDisconnectEvent(_client, new SimpleClientEventArgs("произошла ошибка при подключении"));
-            }
             catch (Exception exc)
             {
-                if (!EventLog.SourceExists("EnergyNetService"))
-                    EventLog.CreateEventSource("EnergyNetService", "EnergyNetLog");
-                EventLog winLog = new EventLog();
-                winLog.Source = "EnergyNetService";
-                winLog.Log = "EnergyNetLog";
-                winLog.WriteEntry(string.Format("Ошибка простого TCP сервера {0} (Причина: {1}).", ServerPoint, exc.Message), EventLogEntryType.Error);
+                // Вносим запись в журнал событий
+                if (ServerEventsEvent != null)
+                    ServerEventsEvent(EventRepresentetionType.CLIENT_ERROR, string.Format("При подключении клиента {0} произошла ошибка (Ошибка: {1}).", _client.RemoteEndPoint, exc.Message));
                 // Отключаем клиента
                 client_ClientNeedDisconnectEvent(_client, new SimpleClientEventArgs("произошла ошибка при подключении"));
             }
@@ -231,19 +206,11 @@ namespace RUS_Project.libTCPServer
             _client.ClientSocket.Close();
             // Удаляем клиента из списка текущих подключений
             lock (_curConnections) { _curConnections.Remove(_client); }
-            // Записываем в лог
-            _log.Write(EventType.Connect, _client.RemoteEndPoint.ToString(), "", e.ToString());
-        }
-        /// <summary>
-        /// Обработчик события внесения записей в журнал событий сервера.
-        /// </summary>
-        /// <param name="sender">Экземпляр класса, соответствующий инициатору события.</param>
-        /// <param name="e">Параметры произошедшего события.</param>
-        private void log_LogEntryWritedEvent(object sender, LogEntryEventArgs e)
-        {
+            // Сообщаем об отключении клиента
             if (ServerEventsEvent != null)
-                ServerEventsEvent(EventRepresentetionType.SERVER_LOG_ENTRY, string.Format("{0};;{1}", e.SenderName, e.ToLogEntryString()));
+                ServerEventsEvent(EventRepresentetionType.CLIENT_DISCONNECT, string.Format("Клиент {0} отключен.", _client.RemoteEndPoint));
         }
+
 
 
         /// <summary>

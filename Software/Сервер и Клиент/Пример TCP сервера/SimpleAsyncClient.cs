@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace RUS_Project.libTCPServer
+namespace SimpleAsyncServer
 {
 
     /// <summary>
