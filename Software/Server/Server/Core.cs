@@ -23,7 +23,7 @@ namespace Server
         /// </summary>
         private ArrayList _threads;
         /// <summary>
-        /// Элемент класса для принятия экстренных решение
+        /// Элемент класса для принятия экстренных решений
         /// </summary>
         private ExtremDecisionmaking ExDM = new ExtremDecisionmaking();
         /// <summary>
@@ -146,7 +146,7 @@ namespace Server
                             Storage.flagComPort = true;
                         }
                     }
-                    //Что бы оптимизировать работу службы ожидание освобождения ком порта исполнителя 
+                    //Чтобы оптимизировать работу службы ожидаем освобождения ком порта исполнителя 
                     //поток засыпает на 300 мс
                     if (!podflag)
                     {

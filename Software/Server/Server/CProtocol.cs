@@ -25,8 +25,15 @@ namespace Server
         /*
          * Формат пакета протокола:
          * [0xB5][l][p][d][c]0x4A]
+         * [0xB5][l][p][d][c][0x4A]
+         * [0xB5]  - символ начала пакета;
+         * [l]     - длина пакета в байтах;
+         * [p]     - номер порта;
+         * [d]     - номер устройства, подключенного к порту;
+         * [c]     - команда или ответ на команду;
+         * [0x4A]  - символ конца пакета.
         */
-
+		 
         public byte[] Pack(byte addrController, byte addrDevice, byte[] command)
         {
             byte len = (byte)(5 + command.Count());

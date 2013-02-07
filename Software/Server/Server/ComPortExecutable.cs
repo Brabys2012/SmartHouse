@@ -45,8 +45,14 @@ namespace Server
         /// <param name="e"></param>
         public void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
         {
+
+            // TODO: Мы получаем одну команду или набор?
+
             Command = ProtocolForEx.Unpack(((SerialPort)sender).BaseStream);
-            answer = (DevCommand)Command[0];
+            
+			// TODO: А куда деваем команды 1, 2 и другие, если они есть?
+			
+			answer = (DevCommand)Command[0];
             IsFindCommand = false;
 
           

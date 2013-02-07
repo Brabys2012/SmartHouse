@@ -60,7 +60,46 @@ namespace ConsoleApplication2
         {
             // Завершение операции Accept
             Socket s = (Socket)result.AsyncState;
-            connection.Socket = s.EndAccept(result);
+            
+            Socket _cSocket = s.EndAccept(result);
+
+            _cSocket.ReceiveTimeout = 3000;
+            _cSocket.Blocking = true;
+            _cSocket.Send(Encoding.ASCII.GetBytes("WHO ARE YOU"));
+            try
+            {
+                
+                byte[] mess = new byte[1024];
+                int bytesRead = _cSocket.Receive(mess);
+                if (bytesRead > 0)
+                {
+                    string message = Encoding.ASCII.GetString(mess, 0, bytesRead);
+                    if (message[0] == 'a')
+                    {
+                        string[] authMess = message.Split('.');
+                        if (authMess[1] == "adm" && authMess[2] == "123")
+                        {
+                            _cSocket.Send(Encoding.ASCII.GetBytes("successful authorization"));
+                        }
+                        else
+                        {
+                            _cSocket.Send(Encoding.ASCII.GetBytes("authorization fails"));
+                            _cSocket.Close();
+                            _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), result.AsyncState);
+                            return;
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                _cSocket.Close();
+                _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), result.AsyncState);
+                return;
+            }
+
+
+            connection.Socket = _cSocket;
             connection.Buffer = new byte[255];
             lock (_connections) _connections.Add(connection);
 
@@ -70,8 +109,7 @@ namespace ConsoleApplication2
                     new AsyncCallback(ReceiveCallback),
                     connection);
 
-            _serverSocket.BeginAccept(new AsyncCallback(
-                AcceptCallback), result.AsyncState);
+            _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), result.AsyncState);
 
         }
         catch (SocketException exc)
@@ -89,8 +127,7 @@ namespace ConsoleApplication2
 
     private void ReceiveCallback(IAsyncResult result)
     {
-        ConnectionInfo connection =
-         (ConnectionInfo)result.AsyncState;
+        ConnectionInfo connection = (ConnectionInfo)result.AsyncState;
         string message = "";
         string[] authMess = null;
         bool succesAuth = false;
@@ -100,33 +137,31 @@ namespace ConsoleApplication2
             int bytesRead = connection.Socket.EndReceive(result);
             if (bytesRead > 0)
             {
-                message =Crypto.Decrypt(Encoding.ASCII.GetString(connection.Buffer, 0, bytesRead));
+                message =Encoding.ASCII.GetString(connection.Buffer, 0, bytesRead);
                 if (message[0] == 'a')
                 {
                     authMess = message.Split('.');
                     if (authMess[1] == "adm" && authMess[2] == "123")
                     {
-                        connection.Socket.Send(Encoding.ASCII.GetBytes(Crypto.Encrypt("successful authorization")));
+                        connection.Socket.Send(Encoding.ASCII.GetBytes("successful authorization"));
                         succesAuth = true;
                     }
                     else
                     {
-                        connection.Socket.Send(Encoding.ASCII.GetBytes(Crypto.Encrypt("authorization fails")));
+                        connection.Socket.Send(Encoding.ASCII.GetBytes("authorization fails"));
                         CloseConnection(connection);
                         
                     }
                 }
-                else
+                else if (succesAuth)
                 {
-                    connection.Socket.Send(Encoding.ASCII.GetBytes(Crypto.Encrypt("Data received")));
+                    connection.Socket.Send(Encoding.ASCII.GetBytes("Data received"));
                     Console.WriteLine("Клиент {0} написал: {1}", connection.Socket.RemoteEndPoint, message);
                     succesAuth = true;
                 }
 
                 if (succesAuth)
-                connection.Socket.BeginReceive(
-                    connection.Buffer, 0,
-                    connection.Buffer.Length, SocketFlags.None,
+                connection.Socket.BeginReceive(connection.Buffer, 0, connection.Buffer.Length, SocketFlags.None,
                     new AsyncCallback(ReceiveCallback),
                     connection);
             }
