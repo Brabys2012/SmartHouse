@@ -181,5 +181,15 @@ namespace Server
                 Thread.Sleep(TimeSpan.FromMinutes(10)); 
             }
         }
+
+        /// <summary>
+        /// Обновляет все датчики которые есть в наличии, этот метод должен запускаться не часто, например раз в сутки, что бы не загружать систему
+        /// </summary>
+        public void UpdateDatchikState()
+        {
+
+            //TODO доделать сам метод.
+            throw new System.NotImplementedException();
+        }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Collections;
+using System.Data;
 
 namespace Server
 {
@@ -22,7 +23,7 @@ namespace Server
         /// <summary>
         /// Массив объектов устройств, которые будут присылатся для обновления пользователям, у которых включен конфигуратор
         /// </summary>
-        public static ArrayList ArrayUpdate;
+        public static DataSet ArrayUpdate;
         /// <summary>
         /// Флаг который показывает используется или нет база данных
         /// </summary>
@@ -47,6 +48,10 @@ namespace Server
         /// Флаг показывает обновлен список устройств для бд или нет
         /// </summary>
         public static bool Updated;
+        /// <summary>
+        /// Команды для запроса состояния датчиков
+        /// </summary>
+        private static Queue DatchikComand;
     }
 
     /// <summary>

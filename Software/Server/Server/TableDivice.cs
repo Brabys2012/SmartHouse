@@ -5,6 +5,7 @@ using System.Text;
 using FirebirdSql.Data.FirebirdClient;
 using FirebirdSql.Data.Isql;
 using System.Collections;
+using System.Data;
 
 namespace Server
 {
@@ -138,19 +139,21 @@ namespace Server
                     FbTransaction Transaction = fbc.BeginTransaction();
                     FbCommand Query = new FbCommand("update Device set State = " + State.ToString() +
                                                     " where t1.NumOfPort = " + NumPort.ToString() +
-                                                    " t1.NumOfDev = " + NumDev.ToString(),
+                                                    " and t1.NumOfDev = " + NumDev.ToString(),
                                                      fbc, Transaction);
                     try
                     {
 
                         Transaction.Commit();
+                        Storage.ArrayUpdate.Tables[0].Select("NumOfPort = " + NumPort.ToString() + " and t1.NumOfDev = " + NumDev.ToString());   
                         fbc.Close();
                     }
                     catch
                     {
                         lock (Storage.MessegesForUser)
                         {
-                            Storage.MessegesForUser.Enqueue("Что то произошло с базой данных сервера, проверьте не поврежден ли сервер");
+                            Storage.MessegesForUser.Enqueue("Что то произошло с базой данных сервера");
+                            WinLog.Write("Ошибка базы данных!", System.Diagnostics.EventLogEntryType.Error);
                         }
                         fbc.Close();
                     }
@@ -166,58 +169,18 @@ namespace Server
             //Создаем класс соединения
             using (FbConnection fbc = new FbConnection(fbParam.ToString()))
             {
-                Device result;
                 lock (Storage.lockerBdDev)
                 {
-                    //Открываем соединение
-                    fbc.Open();
-                    //Создаем транзакцию
-                    FbTransaction Transaction = fbc.BeginTransaction();
-                    FbCommand Query = new FbCommand("select Name, Type, State" +
-                                                    " from Device ",fbc, Transaction);
                     try
                     {
-                        using (FbDataReader r = Query.ExecuteReader())
-                        {
-                            lock (Storage.ArrayUpdate)
-                            {
-                                Storage.ArrayUpdate = new ArrayList();
-                            
-                            // Читаем результат запроса построчно - строка за строкой
-                                while (r.Read())
-                                {
-                                    result = new Device();
-                                    if (!r.IsDBNull(0))
-                                    {
-                                        result.Name = r.GetString(0);
-                                    }
-                                    else
-                                    {
-                                        result.Name = "";
-                                    }
-                                    if (!r.IsDBNull(1))
-                                    {
-                                        result.Type = r.GetString(1);
-                                    }
-                                    else
-                                    {
-                                        result.Type = "";
-                                    }
-                                    if (!r.IsDBNull(2))
-                                    {
-                                        result.State = r.GetInt32(2).ToString();
-                                    }
-                                    else
-                                    {
-                                        result.State = "";
-                                    }
-                                    Storage.ArrayUpdate.Add(result);
-                                }
-                            }
-                        }
-                        Transaction.Commit();
+                        Storage.ArrayUpdate = new DataSet();
+                        //Создаем fbDataAdapter, что бы потом перенести обновления в DataSet
+                        FbDataAdapter DAFB = new FbDataAdapter("select Name, Type, State" +
+                                                               " from Device ", fbc);
+                        //Заполнили dataSet обновления, который будет пересылаться 
+                        //пользователям
+                        DAFB.Fill(Storage.ArrayUpdate);
                         fbc.Close();
-                        Storage.Updated = true;
                     }
                     catch
                     {
