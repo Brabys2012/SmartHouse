@@ -13,6 +13,7 @@ namespace Server
         /// Поток, в котором происходит проверка активности клиентов.
         /// </summary>
         private Thread _clientChecker;
+        TableUser TabUser;
 
         private Socket _serverSocket;
         private int _port;
@@ -71,6 +72,10 @@ namespace Server
             _clientChecker = new Thread(new ThreadStart(ClientCheckerThread));
             _clientChecker.IsBackground = true;
             _clientChecker.Start();
+
+            //Объект для работы с таблицей USER базы данных
+            TabUser = new TableUser();
+
             // Получаем информацию о локальном компьютере
             IPHostEntry localMachineInfo = Dns.GetHostEntry(Dns.GetHostName());
             IPEndPoint myEndpoint = new IPEndPoint(localMachineInfo.AddressList[2], _port);
@@ -186,6 +191,7 @@ namespace Server
         private void AuthCallback(IAsyncResult result)
         {
             Client authClient = (Client)result.AsyncState;
+            string role = "";
             try
             {
                 if (authClient.AuthCount <= 2)
@@ -196,15 +202,16 @@ namespace Server
                         int count = 0;
                         count = authClient.Socket.EndReceive(result);
                         authData = Encoding.ASCII.GetString(authClient.Buffer, 0, count).Split('.');
+                        role = TabUser.CheckUser(authData[0],authData[1]);
                         //TODO создать метод обращающийся к базе для проверки логина и пароля
-                        if (authData[0] == "adm" && authData[1] == "123")
+                        if (role != "")
                         {
                             authClient.IsAuth = true;
                             authClient.IsActive = true;
                             authClient.login = authData[0];
                             WinLog.Write("Клиент " + authClient.login + " авторизован",
                                          System.Diagnostics.EventLogEntryType.SuccessAudit);
-                            Send(authClient, "successful authorization", true);
+                            Send(authClient, "Aut/successful authorization/" + role, true);
                             authClient.Socket.BeginReceive(authClient.Buffer,
                                 0, authClient.Buffer.Length, SocketFlags.None,
                                 new AsyncCallback(ReceiveCallback),
@@ -212,7 +219,7 @@ namespace Server
                         }
                         else
                         {
-                            Send(authClient, "authorization error", true);
+                            Send(authClient, "Aut/authorization error/" + role, true);
                             authClient.IsAuth = false;
                             // Начало операции авторизации 
                             authClient.Socket.BeginReceive(authClient.Buffer,
@@ -245,34 +252,26 @@ namespace Server
         /// <param name="result"></param>
         private void ReceiveCallback(IAsyncResult result)
         {
-            string[] messDate = null;
+            string messData = "";
+            string[] Data = null; 
             int ReadedByte = 0;
             Client processClient = (Client)result.AsyncState;
             ReadedByte = processClient.Socket.EndReceive(result);
             try
             {
+                messData = Crypto.Decrypt(Encoding.ASCII.GetString(processClient.Buffer, 0, ReadedByte));
+                Data = messData.Split('/');
 
-                messDate = Crypto.Decrypt(Encoding.ASCII.GetString(processClient.Buffer, 0, ReadedByte)).Split('.');
-
-                switch (messDate[0])
+                if (Data[0] == "EXIT")
                 {
-                    case "COMMAND":
-                        {
-                            //TODO поместить команду в очередь комманд.
-                        }
-                        break;
-                    case "EXIT":
-                        {
-                            CloseConnection(processClient);
-                            processClient.IsActive = false;
-                        }
-                        break;
-                    default:
-                        {
-                            Send(processClient, "Incorrect command format!", true);
-                        }
-                        break;
+                    CloseConnection(processClient);
+                    processClient.IsActive = false;
                 }
+                else
+                {
+                    Storage.QueueTCP.Enqueue(messData + "/" + processClient.login);
+                }
+
                 if (processClient.IsActive)
                 {
                     processClient.Socket.BeginReceive(processClient.Buffer,
@@ -297,11 +296,43 @@ namespace Server
         }
 
         /// <summary>
-        /// Отправляет данные определённому клиенту.
+        /// Отправка данных определённому клиенту, определяемого по ссылке из списка клиентов.
+        /// </summary>
+        /// <param name="client">Ссылка на клиента</param>
+        /// <param name="data">данные для отправки</param>
+        /// <param name="NeedEncrypt">флаг необходимости шифрования</param>
+        private void Send(Client client, String data, bool NeedEncrypt)
+        {
+            try
+            {
+                byte[] byteData = Encoding.ASCII.GetBytes(data);
+                if (NeedEncrypt)
+                {
+                    byteData = Encoding.ASCII.GetBytes(Crypto.Encrypt(data));
+                }
+                else
+                {
+                    byteData = Encoding.ASCII.GetBytes(data);
+                }
+
+
+                // Начинаем отправку данных.
+                client.Socket.BeginSend(byteData, 0, byteData.Length, 0,
+                  new AsyncCallback(SendCallback), client);
+            }
+            catch (Exception ex)
+            {
+                WinLog.Write(ex.Message, System.Diagnostics.EventLogEntryType.Error);
+                Console.WriteLine("Ошибка: {0}", ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Отправляет данные определённому клиенту, определяемого логином.
         /// </summary>
         /// <param name="client">клиент которому необходимо отправить данные</param>
         /// <param name="data">данные для отправки</param>
-        private static void Send(Client client, string login, String data, bool NeedEncrypt)
+        private void Send(string ClLogin, String data, bool NeedEncrypt)
         {
             try
             {
@@ -314,11 +345,16 @@ namespace Server
                 {
                      byteData = Encoding.ASCII.GetBytes(data);
                 }
-                
-                // Начинаем отправку данных.
-                client.Socket.BeginSend(byteData, 0, byteData.Length, 0,
-                    new AsyncCallback(SendCallback), client);
 
+                foreach (var cl in _clients)
+                {
+                    if (cl.login == ClLogin)
+                    {
+                        // Начинаем отправку данных.
+                        cl.Socket.BeginSend(byteData, 0, byteData.Length, 0,
+                          new AsyncCallback(SendCallback), cl);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -387,6 +423,7 @@ namespace Server
             cl.IsActive = false;
             lock (_clients) _clients.Remove(cl);
         }
+
     }
 
 }
