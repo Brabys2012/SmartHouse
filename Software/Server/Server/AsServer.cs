@@ -301,7 +301,7 @@ namespace Server
         /// </summary>
         /// <param name="client">клиент которому необходимо отправить данные</param>
         /// <param name="data">данные для отправки</param>
-        private static void Send(Client client, String data, bool NeedEncrypt)
+        private static void Send(Client client, string login, String data, bool NeedEncrypt)
         {
             try
             {
@@ -318,6 +318,7 @@ namespace Server
                 // Начинаем отправку данных.
                 client.Socket.BeginSend(byteData, 0, byteData.Length, 0,
                     new AsyncCallback(SendCallback), client);
+
             }
             catch (Exception ex)
             {
