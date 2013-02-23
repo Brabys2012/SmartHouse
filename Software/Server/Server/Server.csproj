@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsServer.cs" />
     <Compile Include="ComPortExecutable.cs" />
     <Compile Include="ComPortListener.cs" />
     <Compile Include="Core.cs" />
@@ -57,7 +58,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Storage.cs" />
     <Compile Include="TableDivice.cs" />
-    <Compile Include="TCPServer.cs" />
     <Compile Include="WinLog.cs" />
   </ItemGroup>
   <ItemGroup>
