@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Net.Sockets;
 using System.Net;
+using System.Data;
 
 namespace Server
 {
@@ -13,6 +14,17 @@ namespace Server
         /// Поток, в котором происходит проверка активности клиентов.
         /// </summary>
         private Thread _clientChecker;
+
+        /// <summary>
+        /// Поток, в котором проверяется очередь сообщений для пользователей;
+        /// </summary>
+        private Thread _QueueChecker;
+
+        /// <summary>
+        /// Поток в котором отправляются данные о текущей конфигурации системы.
+        /// </summary>
+        private Thread _Updater;
+
         TableUser TabUser;
 
         private Socket _serverSocket;
@@ -73,6 +85,11 @@ namespace Server
             _clientChecker.IsBackground = true;
             _clientChecker.Start();
 
+            //Запускаем поток для проверки наличия сообщений для отправки в очереди.
+            _QueueChecker = new Thread(new ThreadStart(QueueCheckerThread));
+            _QueueChecker.IsBackground = true;
+            _QueueChecker.Start();
+
             //Объект для работы с таблицей USER базы данных
             TabUser = new TableUser();
 
@@ -88,11 +105,35 @@ namespace Server
             for (int i = 0; i < 10; i++)
                 _serverSocket.BeginAccept(new
                     AsyncCallback(AcceptCallback), _serverSocket);
-            WinLog.Write("Сервер успешно запущен. Порт - " + _port.ToString() + ", IP - " 
+            WinLog.Write("Сервер успешно запущен. Порт - " + _port.ToString() + ", IP - "
                           + localMachineInfo.AddressList[2].ToString(),
                           System.Diagnostics.EventLogEntryType.Information);
         }
 
+
+        /// <summary>
+        /// Поток в котором проверяется наличие данных в очереди на отправку клиенту
+        /// </summary>
+        private void QueueCheckerThread()
+        {
+            string data = "";
+            string[] DataToSend = null;
+            while (true)
+            {
+                lock (Storage.MessegesForUser)
+                {
+                    while (Storage.MessegesForUser.Count != 0)
+                    {
+                        data = (string)Storage.MessegesForUser.Dequeue();
+                        DataToSend = data.Split('@');
+                        Send(DataToSend[1], DataToSend[0], true);
+                        data = "";
+                        DataToSend = null;
+                    }
+                }
+                Thread.Sleep(30000);
+            }
+        }
 
         /// <summary>
         /// Поток, в котором выполняется проверка клиентов.
@@ -107,7 +148,7 @@ namespace Server
                     int i = 0;
                     lock (_clients)
                     {
-                        while(i < _clients.Count)
+                        while (i < _clients.Count)
                         {
                             try
                             {
@@ -163,7 +204,7 @@ namespace Server
                 WinLog.Write("Клиент с IP - " + aceptClient.Socket.RemoteEndPoint + " запросил авторизацию",
                              System.Diagnostics.EventLogEntryType.Information);
 
-                Send(aceptClient, "ENTER_LOGIN_AND_PASSWORD",true);
+                Send(aceptClient, "ENTER_LOGIN_AND_PASSWORD", true);
 
                 //Начало новой операции приёма подключения
                 _serverSocket.BeginAccept(new AsyncCallback(
@@ -202,7 +243,7 @@ namespace Server
                         int count = 0;
                         count = authClient.Socket.EndReceive(result);
                         authData = Encoding.ASCII.GetString(authClient.Buffer, 0, count).Split('.');
-                        role = TabUser.CheckUser(authData[0],authData[1]);
+                        role = TabUser.CheckUser(authData[0], authData[1]);
                         //TODO создать метод обращающийся к базе для проверки логина и пароля
                         if (role != "")
                         {
@@ -253,7 +294,7 @@ namespace Server
         private void ReceiveCallback(IAsyncResult result)
         {
             string messData = "";
-            string[] Data = null; 
+            string[] Data = null;
             int ReadedByte = 0;
             Client processClient = (Client)result.AsyncState;
             ReadedByte = processClient.Socket.EndReceive(result);
@@ -262,14 +303,25 @@ namespace Server
                 messData = Crypto.Decrypt(Encoding.ASCII.GetString(processClient.Buffer, 0, ReadedByte));
                 Data = messData.Split('/');
 
-                if (Data[0] == "EXIT")
-                {
-                    CloseConnection(processClient);
-                    processClient.IsActive = false;
-                }
-                else
-                {
-                    Storage.QueueTCP.Enqueue(messData + "/" + processClient.login);
+                switch (Data[0])
+                { 
+                    case "Exit":
+                        CloseConnection(processClient);
+                        processClient.IsActive = false;
+                        break;
+                    case "GetUpdate":
+                        _Updater = new Thread(delegate() { UpdateData(processClient.login); });
+                        _Updater.IsBackground = true;
+                        _Updater.Start();
+                        break;
+                    case "GetCounterRec":
+                    case "AddUser":
+                    case "AddDev":
+                        Storage.QueueTCP.Enqueue(messData + "/" + processClient.login);
+                        break;
+                    default:
+                        Send(processClient.login, "Incorrect command format!", true);
+                        break;
                 }
 
                 if (processClient.IsActive)
@@ -289,7 +341,7 @@ namespace Server
             }
             catch (Exception exc)
             {
-                WinLog.Write(exc.Message, System.Diagnostics.EventLogEntryType.Error); 
+                WinLog.Write(exc.Message, System.Diagnostics.EventLogEntryType.Error);
                 CloseConnection(processClient);
                 Console.WriteLine("Exception: " + exc);
             }
@@ -339,11 +391,11 @@ namespace Server
                 byte[] byteData = Encoding.ASCII.GetBytes(data);
                 if (NeedEncrypt)
                 {
-                     byteData = Encoding.ASCII.GetBytes(Crypto.Encrypt(data));
+                    byteData = Encoding.ASCII.GetBytes(Crypto.Encrypt(data));
                 }
                 else
                 {
-                     byteData = Encoding.ASCII.GetBytes(data);
+                    byteData = Encoding.ASCII.GetBytes(data);
                 }
 
                 foreach (var cl in _clients)
@@ -424,6 +476,25 @@ namespace Server
             lock (_clients) _clients.Remove(cl);
         }
 
+        /// <summary>
+        /// Поток отправляет данные клиенту для построения списка устройств. 
+        /// </summary>
+        /// <param name="login">логин клиента которому необходимо отправить данные</param>
+        private void UpdateData(string login)
+        {
+            string CommandString = "";
+            foreach (DataRow row in Storage.ArrayUpdate.Tables[0].Rows)
+            {
+                foreach (DataColumn col in Storage.ArrayUpdate.Tables[0].Columns)
+                {
+                    CommandString += @"\" + row[col].ToString();
+                }
+                CommandString += "\r\n";
+                Send(login, CommandString, true);
+                CommandString = "Update";
+            }
+            Send(login, @"STOP\", true);
+            //TODO как закрыть поток?
+        }
     }
-
 }
