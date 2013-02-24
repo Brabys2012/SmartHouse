@@ -81,7 +81,7 @@ namespace Server
                                 {
                                     result.messege = "";
                                 }
-                                if (!r.IsDBNull(1))
+                                if (r.IsDBNull(1))
                                 {
                                     result.number = null;
                                 }
@@ -145,16 +145,19 @@ namespace Server
                     {
 
                         Transaction.Commit();
-                        Storage.ArrayUpdate.Tables[0].Select("NumOfPort = " + NumPort.ToString() + " and t1.NumOfDev = " + NumDev.ToString());   
+                        string Name = DeterDevByNumber(NumPort,NumDev);
+                        if (Name != "")
+                           lock (Storage.ArrayUpdate)
+                           {
+                               Storage.ArrayUpdate.Tables[0].Rows.Find(Name).SetField<int>(Storage.ArrayUpdate.Tables[0].Columns["State"], State); 
+                           }
+                        else
+                            WinLog.Write("Ошибка обновления устройства!",System.Diagnostics.EventLogEntryType.Error);
                         fbc.Close();
                     }
                     catch
                     {
-                        lock (Storage.MessegesForUser)
-                        {
-                            Storage.MessegesForUser.Enqueue("Что то произошло с базой данных сервера");
-                            WinLog.Write("Ошибка базы данных!", System.Diagnostics.EventLogEntryType.Error);
-                        }
+                        WinLog.Write("Ошибка: базы данных при обновления статуса утсройства!", System.Diagnostics.EventLogEntryType.Error);
                         fbc.Close();
                     }
                 }
@@ -179,7 +182,12 @@ namespace Server
                                                                " from Device ", fbc);
                         //Заполнили dataSet обновления, который будет пересылаться 
                         //пользователям
-                        DAFB.Fill(Storage.ArrayUpdate);
+                        lock (Storage.ArrayUpdate)
+                        {
+                            Storage.ArrayUpdate.Clear();
+                            DAFB.Fill(Storage.ArrayUpdate);
+                            Storage.ArrayUpdate.Tables[0].PrimaryKey = new DataColumn[] { Storage.ArrayUpdate.Tables[0].Columns["Name"] }; ;
+                        }
                         fbc.Close();
                     }
                     catch
@@ -188,6 +196,114 @@ namespace Server
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Метод возвращает номер порта и номер устройства по имени
+        /// </summary>
+        /// <param name="Name">Имя устройства</param>
+        /// <returns></returns>
+        public DevCommand DeterDevByName(string Name)
+        {
+            DevCommand Result = new DevCommand();
+            using (FbConnection fbc = new FbConnection(fbParam.ToString()))
+            {
+                lock (Storage.lockerBdDev)
+                {
+                    //Открываем соединение
+                    fbc.Open();
+                    //Создаем транзакцию
+                    FbTransaction Transaction = fbc.BeginTransaction();
+                    FbCommand Query = new FbCommand("select NumOfPort, NumOfDev" +
+                                                    " from Device " +
+                                                    " where Name = " + Name + " Rows(1)",
+                                                     fbc, Transaction);
+                    try
+                    {
+                        using (FbDataReader r = Query.ExecuteReader())
+                        {
+                            if (r.Read())
+                            {
+                                if (r.IsDBNull(0))
+                                {
+                                    Result.len = 0;
+                                }
+                                else
+                                {
+                                    if (!r.IsDBNull(1))
+                                    {
+                                        Result.port = (byte)r.GetInt32(0);
+                                        Result.device = (byte)r.GetInt16(1);
+                                        Result.len = 3;
+                                    }
+                                    else
+                                    {
+                                        Result.len = 0;
+                                    }
+                                }
+                            }
+                        }
+                        Transaction.Commit();
+                        fbc.Close();
+                    }
+                    catch
+                    {
+                        Result.len = 0;
+                        fbc.Close();
+                        return Result;
+
+                    }
+                }
+            }
+            return Result;
+
+        }
+
+        /// <summary>
+        /// Метод возвращает имя устройства по номеру порта и номеру устройства
+        /// </summary>
+        /// <param name="NumPort">номер порта</param>
+        /// <param name="NumDev">номер устройства</param>
+        /// <returns>имя устройства</returns>
+        public String DeterDevByNumber(byte NumPort, byte NumDev)
+        {
+            String Result = "";
+            using (FbConnection fbc = new FbConnection(fbParam.ToString()))
+            {
+                lock (Storage.lockerBdDev)
+                {
+                    //Открываем соединение
+                    fbc.Open();
+                    //Создаем транзакцию
+                    FbTransaction Transaction = fbc.BeginTransaction();
+                    FbCommand Query = new FbCommand("select Name" +
+                                                    " from Device " +
+                                                    " where NumOfPort = " + NumPort.ToString() + " and NumOfDev = " + NumDev.ToString() + " Rows(1)",
+                                                     fbc, Transaction);
+                    try
+                    {
+                        using (FbDataReader r = Query.ExecuteReader())
+                        {
+                            if (r.Read())
+                            {
+                                if (!r.IsDBNull(0))
+                                {
+                                    Result = r.GetString(0);
+                                }
+                            } 
+                        }
+                        Transaction.Commit();
+                        fbc.Close();
+                    }
+                    catch
+                    {
+                        fbc.Close();
+                        return Result;
+
+                    }
+                }
+            }
+            return Result;
         }
     }
 }
