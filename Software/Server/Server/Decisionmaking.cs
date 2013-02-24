@@ -22,12 +22,14 @@ namespace Server
         public DevCommand Parser(string comand)
         {
             string[] SplitComand = comand.Split('/');
-            DevCommand Result = new DevCommand();
             switch (SplitComand[0])
             {
                 case "SetParam":
                     Result = SetParam(SplitComand);
                     break;
+                case "AddUser":
+
+
             }
             return Result;
         }
