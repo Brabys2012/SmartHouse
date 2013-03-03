@@ -12,6 +12,7 @@ namespace Server
     {
         private TableDivice BdDevice = new TableDivice();
         private CProtocol ProtocolForDM = new CProtocol();
+        private TableUser BDUsers = new TableUser();
 
         /// <summary>
         /// Основной парсер команд от пользователя, который определяеть тип команды 
@@ -21,6 +22,7 @@ namespace Server
         /// <returns></returns>
         public DevCommand Parser(string comand)
         {
+            DevCommand Result = new DevCommand();
             string[] SplitComand = comand.Split('/');
             switch (SplitComand[0])
             {
@@ -28,7 +30,6 @@ namespace Server
                     Result = SetParam(SplitComand);
                     break;
                 case "AddUser":
-
 
             }
             return Result;

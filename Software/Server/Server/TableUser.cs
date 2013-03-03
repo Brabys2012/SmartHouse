@@ -75,5 +75,45 @@ namespace Server
             }
             return res;
         }
-    }
+
+        /// <summary>
+        /// Добавляет пользователя с заданными параметрами в базу
+        /// </summary>
+        /// <param name="login">логин</param>
+        /// <param name="pass">пароль</param>
+        /// <returns></returns>
+        public bool AddUser(string login, string pass, string Role)
+        {
+            bool Result = false;
+            //Создаем класс соединения
+            using (FbConnection fbc = new FbConnection(fbParam.ToString()))
+            {
+                lock (Storage.lockerBdDev)
+                {
+                    //Открываем соединение
+                    fbc.Open();
+                    //Создаем транзакцию
+                    FbTransaction Transaction = fbc.BeginTransaction();
+                    FbCommand Query = new FbCommand("insert into Useres (login, password, role)  " + 
+                                                    "values (" + login + pass + Role + ")",
+                                                     fbc, Transaction);
+                    try
+                    {
+
+                        Transaction.Commit();
+                        fbc.Close();
+                        Result = true;
+                    }
+                    catch
+                    {
+                        WinLog.Write("Ошибка: базы данных при добавление пользователя!", System.Diagnostics.EventLogEntryType.Error);
+                        fbc.Close();
+                        return Result;
+                    }
+                }
+            }
+            return Result;
+        }
+        
+        }
 }
