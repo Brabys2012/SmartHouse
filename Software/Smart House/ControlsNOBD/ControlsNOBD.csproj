@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CProtocol.cs" />
     <Compile Include="data_source.cs" />
     <Compile Include="db_settings.cs">
       <SubType>Form</SubType>

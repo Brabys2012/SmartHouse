@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Collections;
 
-namespace Server
+namespace ControlsNOBD
 {
 
     public struct DevCommand
@@ -33,13 +33,13 @@ namespace Server
          * [c]     - команда или ответ на команду;
          * [0x4A]  - символ конца пакета.
         */
-		 
+
         public byte[] Pack(byte addrController, byte addrDevice, byte[] command)
         {
             byte len = (byte)(5 + command.Count());
-            byte[] result = new byte[len]; 
+            byte[] result = new byte[len];
             result[0] = 181;
-            result[1] = len; 
+            result[1] = len;
             result[2] = addrController;
             result[3] = addrDevice;
             for (int i = 4; i < command.Count() + 4; i++)
@@ -50,18 +50,19 @@ namespace Server
             return result;
         }
 
-        public ArrayList Unpack(Stream dataStream)
+       public ArrayList Unpack(Stream dataStream)
         {
             byte buffer;
             byte count;
             bool IsFindComand = false;
             DevCommand comand;
             ArrayList result = new ArrayList();
-            while (dataStream.Length > 0)
+            int SubBuffer = (int)dataStream.ReadByte(); 
+            while (SubBuffer != -1)
             {
-                buffer = (byte) dataStream.ReadByte();
                 try
                 {
+                    buffer = (byte)SubBuffer;
                     if ((buffer == 181) || (IsFindComand))
                     {
                         comand = new DevCommand();
@@ -76,7 +77,6 @@ namespace Server
                         }
                         if (dataStream.ReadByte() != 74)
                         {
-                            WinLog.Write("Пакет поврежден");
                         }
                         else
                         {
@@ -86,11 +86,12 @@ namespace Server
                     }
                     else
                     {
-                        while (buffer != 181)
+                        while ((SubBuffer != 181) || (SubBuffer != -1))
                         {
-                            buffer = (byte)dataStream.ReadByte();
+                            SubBuffer = (byte)dataStream.ReadByte();
                         }
                     }
+                    SubBuffer = (int)dataStream.ReadByte(); 
                 }
                 catch
                 {
@@ -101,3 +102,4 @@ namespace Server
         }
     }
 }
+

@@ -51,11 +51,14 @@ namespace Server
             Command = ProtocolForEx.Unpack(((SerialPort)sender).BaseStream);
             
 			// TODO: А куда деваем команды 1, 2 и другие, если они есть?
-			
-			answer = (DevCommand)Command[0];
-            IsFindCommand = false;
-
-          
+            //Если мы получаем более одной команды, то это уже противоречит 
+            //Логике работы нашего умного дома (одна команда - один ответ)
+            if (Command != null)
+            {
+                answer = (DevCommand)Command[0];
+                IsFindCommand = false;
+            }
+            
 
             /*SerialPort sp = (SerialPort)sender;
 

@@ -188,8 +188,6 @@ namespace Server
         public void UpdateDatchikState()
         {
 
-            //TODO доделать сам метод.
-            throw new System.NotImplementedException();
         }
     }
 }

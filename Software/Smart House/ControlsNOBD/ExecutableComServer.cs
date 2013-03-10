@@ -4,14 +4,17 @@ using System.Linq;
 using System.Text;
 using System.IO.Ports;
 using System.Windows.Forms;
+using System.Collections;
 
 
 namespace ControlsNOBD
 {
     class ExexutableComServer
     {
-
+        CProtocol ProtocolForExCom = new CProtocol();
+        Parss_and_deter_mess ParsExe = new Parss_and_deter_mess();
         SerialPort MyComExecutable=new SerialPort();
+        ArrayList Command = new ArrayList();
 
         /// <summary>
         /// Метод инициализации COM - порта
@@ -38,20 +41,13 @@ namespace ControlsNOBD
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private static void DataReceivedHandler(object sender,SerialDataReceivedEventArgs e)
+        private void DataReceivedHandler(object sender,SerialDataReceivedEventArgs e)
         {
-            SerialPort sp = (SerialPort)sender;
-            while (sp.BytesToRead != 0)
-            {
-                int counter = sp.ReadByte();
-                byte[] BytArray = new byte[counter - 1];
-                for (int i = 0; i < counter-1; i++)
-                {
-                    BytArray[i] = (byte)sp.ReadByte();
-                }
+            Command = null;
+            Command = ProtocolForExCom.Unpack(((SerialPort)sender).BaseStream);
+            if (Command != null) 
+              ParsExe.ParssComand((DevCommand) Command[0]);
 
-                Program.MyParser.ParssComand(BytArray);
-            }
         }
 
         /// <summary>

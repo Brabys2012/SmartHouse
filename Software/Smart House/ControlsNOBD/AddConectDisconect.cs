@@ -75,24 +75,21 @@ namespace ControlsNOBD
                 result = Program.data_module.AddDevices(tbName.Text, cbPort.Text, cbAdress.Text, cbType.Text, tbCurrentValue.Text);
                 if (result == "OK")
                 {
-                    try 
-                    {
-                       byte[] comand = new byte[3];
-                       comand[0] = Convert.ToByte(cbPort.Text);
-                       comand[1] = Convert.ToByte(cbAdress.Text);
-                       comand[2] = 255;
-                       Program.MCE.SendInform(comand);
-                       this.Close();
+                   try
+                   {
                        MessageBox.Show("Устройство подключено успешно");
+                       this.Close();
                     }
                     catch (Exception ex)
                     {
                         MessageBox.Show("Ошибка:" + ex);
+                        this.Close();
                     }
                 }
                 else
                 {
                     MessageBox.Show("Ошибка " + result);
+                    this.Close();
                 }
             }
             else if (status == "Mod") 
@@ -103,18 +100,12 @@ namespace ControlsNOBD
                     try
                     {
                         MessageBox.Show("Устройство переподключено успешно");
-                        byte[] comand =new byte[3];
-                        comand[0] = Convert.ToByte(FPort);
-                        comand[1] = Convert.ToByte(FAdress);
-                        comand[2] = 128;
-                        Program.MCE.SendInform(comand);
-                        comand[2] = 255;
-                        Program.MCE.SendInform(comand);
                         this.Close();
                     }
                     catch (Exception ex)
                     {
                         MessageBox.Show("Ошибка: " + ex);
+                        this.Close();
                     }
                 }
             }
@@ -133,11 +124,6 @@ namespace ControlsNOBD
                 try
                 {
                     MessageBox.Show("Устройство успешно отключено");
-                    byte[] comand = new byte[3];
-                    comand[0] = Convert.ToByte(FPort);
-                    comand[1] = Convert.ToByte(FAdress);
-                    comand[2] = 128;
-                    Program.MCE.SendInform(comand);
                     this.Close();
                 }
                 catch (Exception ex)

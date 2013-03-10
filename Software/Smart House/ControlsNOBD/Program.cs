@@ -9,8 +9,8 @@ namespace ControlsNOBD
     {
         static public data_source data_module;
         static public user_settings user_set;
-        static public ExexutableComServer WW;
-        static public ComListenServer MCE;
+        static public ExexutableComServer WW = new ExexutableComServer();
+        static public ComListenServer MCE = new ComListenServer();
         static public Parss_and_deter_mess MyParser;
         /// <summary>
         /// Главная точка входа для приложения.

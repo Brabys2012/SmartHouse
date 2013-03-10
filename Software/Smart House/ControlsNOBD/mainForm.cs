@@ -12,7 +12,7 @@ namespace ControlsNOBD
     public partial class mainForm : Form
     {
         private string _current_state;
-
+        CProtocol ProtocolForMainForm = new CProtocol();
         public mainForm()
         {
             InitializeComponent();
@@ -155,11 +155,10 @@ namespace ControlsNOBD
             string Port = gw.Rows[gw.CurrentRow.Index].Cells[1].Value.ToString();
             string Adress =gw.Rows[gw.CurrentRow.Index].Cells[2].Value.ToString();
             string Name = gw.Rows[gw.CurrentRow.Index].Cells[0].Value.ToString();
-            byte[] comand = new byte[4];
-            comand[0] = 4;
-            comand[1] = Convert.ToByte(Port);
-            comand[2] = Convert.ToByte(Adress);
-            comand[3] = 100;
+            byte[] comand = new byte[1];
+            comand[0] = 100;
+            string s;
+            comand = ProtocolForMainForm.Pack(Convert.ToByte(Port), Convert.ToByte(Adress), comand);
             Program.MCE.SendInform(comand);
             Program.data_module.UpdDevices(Name, Port, Adress, "Простой датчик", "1");
         }

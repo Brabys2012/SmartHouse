@@ -20,7 +20,7 @@ namespace Server
         /// </summary>
         /// <param name="comand"></param>
         /// <returns></returns>
-        public DevCommand Parser(string comand)
+        public DevCommand Parser(string comand, string users)
         {
             DevCommand Result = new DevCommand();
             string[] SplitComand = comand.Split('/');
@@ -30,6 +30,11 @@ namespace Server
                     Result = SetParam(SplitComand);
                     break;
                 case "AddUser":
+                    bool ResCom = BDUsers.AddUser(SplitComand[1], SplitComand[2], SplitComand[3]);
+                    Storage.MessegesForUser.Enqueue("ResAddUser/" + ResCom.ToString() + "@" + users);
+                    break;
+                case "AddDev":
+
 
             }
             return Result;
