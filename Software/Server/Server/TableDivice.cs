@@ -143,16 +143,7 @@ namespace Server
                                                      fbc, Transaction);
                     try
                     {
-
                         Transaction.Commit();
-                        string Name = DeterDevByNumber(NumPort,NumDev);
-                        if (Name != "")
-                           lock (Storage.ArrayUpdate)
-                           {
-                               Storage.ArrayUpdate.Tables[0].Rows.Find(Name).SetField<int>(Storage.ArrayUpdate.Tables[0].Columns["State"], State); 
-                           }
-                        else
-                            WinLog.Write("Ошибка обновления устройства!",System.Diagnostics.EventLogEntryType.Error);
                         fbc.Close();
                     }
                     catch
@@ -162,6 +153,14 @@ namespace Server
                     }
                 }
             }
+            string Name = DeterDevByNumber(NumPort,NumDev);
+            if (Name != "")
+            lock (Storage.ArrayUpdate)
+            {
+               Storage.ArrayUpdate.Tables[0].Rows.Find(Name).SetField<int>(Storage.ArrayUpdate.Tables[0].Columns["State"], State); 
+            }
+            else
+            WinLog.Write("Ошибка обновления устройства!",System.Diagnostics.EventLogEntryType.Error);           
         }
 
         /// <summary>
@@ -304,6 +303,129 @@ namespace Server
                 }
             }
             return Result;
+        }
+
+        /// <summary>
+        /// Возвращает по имение устройства его ID
+        /// </summary>
+        /// <param name="NameDev">имя устройства</param>
+        /// <returns>ID устройства</returns>
+        public String DeterIdDevByName(string NameDev)
+        {
+             String result = "";
+            //Создаем класс соединения
+            using (FbConnection fbc = new FbConnection(fbParam.ToString()))
+            {
+                lock (Storage.lockerBdDev)
+                {
+                    //Открываем соединение
+                    fbc.Open();
+                    //Создаем транзакцию
+                    FbTransaction Transaction = fbc.BeginTransaction();
+                    FbCommand Query = new FbCommand("select ID" + 
+                                                    " from Device " +
+                                                    " where Name = " + NameDev,
+                                                     fbc, Transaction);
+                    try
+                    {
+                        using (FbDataReader r = Query.ExecuteReader())
+                        {
+                            // Читаем результат запроса построчно - строка за строкой
+                            if (r.Read())
+                            {
+                                if (!r.IsDBNull(0))
+                                {
+                                    byte IdDev = r.GetByte(0);
+                                    result = IdDev.ToString();
+                                }
+                            }
+                            else
+                            {
+                                result = "";
+                            }
+                        }
+                        Transaction.Commit();
+                        fbc.Close();
+                    }
+                    catch
+                    {
+                        result = "";
+                        fbc.Close();
+                        return result;
+
+                    }
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Добавляет новое устройства
+        /// </summary>
+        /// <param name="NumPort">Номер порта</param>
+        /// <param name="NumDev">Номер устройства</param>
+        /// <param name="NameDev">Имя устройство</param>
+        /// <param name="TypeDev">Тип устройства</param>
+        /// <param name="Messege">Сообщение</param>
+        /// <param name="NameParent">Имя родителя</param>
+        /// <returns></returns>
+        public bool AddNewDevice(string NumPort, string NumDev, string NameDev,
+                                 string TypeDev, string Messege, string NameParent)
+        {
+            //Создаем класс соединения
+            using (FbConnection fbc = new FbConnection(fbParam.ToString()))
+            {
+                
+                string query = " (" + NumPort + "," + NumDev + ", '" + NameDev + "', '" +
+                    TypeDev + "', "; 
+                if (Messege != "") 
+                {
+                    query += " '" + Messege + "', ";
+                }
+                else
+                    query += " null, ";
+
+                if (NameParent != "")
+                {
+                    string ParentID = DeterIdDevByName(NameParent);
+                    query +=  ParentID + ")";
+                }
+                else
+                    query += " null)";
+                lock (Storage.lockerBdDev)
+                {
+                    //Открываем соединение
+                    fbc.Open();
+                    //Создаем транзакцию
+                    FbTransaction Transaction = fbc.BeginTransaction();
+                    FbCommand Query = new FbCommand("insert into Device (NUMOFPORT, NUMOFDEV," +
+                                                    " Name, Type, MESSEGE, IDFK) " + query, 
+                                                     fbc, Transaction);
+                    try
+                    {
+
+                        Transaction.Commit();
+                        if (NameDev != "")
+                            lock (Storage.ArrayUpdate)
+                            {
+                                DataRow RowDev = Storage.ArrayUpdate.Tables[0].NewRow();
+                                RowDev[0] = NameDev;
+                                RowDev[1] = TypeDev;
+                                Storage.ArrayUpdate.Tables[0].Rows.Add(RowDev);
+                            }
+                        else
+                            WinLog.Write("Ошибка обновления устройства!", System.Diagnostics.EventLogEntryType.Error);
+                        fbc.Close();
+                    }
+                    catch
+                    {
+                        WinLog.Write("Ошибка: базы данных при обновления статуса утсройства!", System.Diagnostics.EventLogEntryType.Error);
+                        fbc.Close();
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
     }
 }
