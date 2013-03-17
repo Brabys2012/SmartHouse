@@ -144,8 +144,8 @@ namespace AsyncClient
             private void Parser(int bytesRead)
             {
 
-                string[] tmpString; 
-                string[] message = Encoding.ASCII.GetString(_srv.buffer, 0, bytesRead).Split('?');
+                string[] tmpString;
+                string[] message = Crypto.Decrypt(Encoding.ASCII.GetString(_srv.buffer, 0, bytesRead)).Split('?');
 
                 for (int i = 0; i < message.Length; i++)
                 {
@@ -201,11 +201,19 @@ namespace AsyncClient
 
             public void Send(String data)
             {
-                // Convert the string data to byte data using ASCII encoding.
-                byte[] byteData = Encoding.ASCII.GetBytes(data);
+                try
+                {
+                    // Convert the string data to byte data using ASCII encoding.
+                    byte[] byteData = Encoding.ASCII.GetBytes(Crypto.Encrypt(data));
 
-                // Begin sending the data to the remote device.
-                _srv.workSocket.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), _srv.workSocket);
+                    // Begin sending the data to the remote device.
+                    _srv.workSocket.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), _srv.workSocket);
+                }
+                catch (Exception ex)
+                {
+
+                    IsNeedShowDataEvent(ex.Message);
+                }
             }
 
             private void SendCallback(IAsyncResult ar)

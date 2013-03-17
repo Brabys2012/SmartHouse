@@ -248,6 +248,7 @@ namespace AsyncClient
                     grpSensor.Enabled = false;
                     grpCounters.Enabled = false;
                     this.lDevName_.Text = trvDevice.SelectedNode.Text;
+                    this.butAction.Enabled = false;
                     
                 }
                 else if (trvDevice.SelectedNode.Tag.ToString() == "Simple sensor")
@@ -263,6 +264,8 @@ namespace AsyncClient
                     grpDimmers.Enabled = true;
                     grpSensor.Enabled = false;
                     grpCounters.Enabled = false;
+                    this.tbDimmersPower.Enabled = false;
+                    this.butDimmersSet.Enabled = false;
                 }
                 else if (trvDevice.SelectedNode.Tag.ToString() == "Sensors with multi-state")
                 {
@@ -270,6 +273,7 @@ namespace AsyncClient
                     grpDimmers.Enabled = false;
                     grpSensor.Enabled = false;
                     grpCounters.Enabled = true;
+                    this.butReport.Enabled = false;
                 }
             }
             else

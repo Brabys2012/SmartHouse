@@ -60,6 +60,7 @@
     <Compile Include="ConnectParams.Designer.cs">
       <DependentUpon>ConnectParams.cs</DependentUpon>
     </Compile>
+    <Compile Include="Crypto.cs" />
     <Compile Include="DataForReport.cs">
       <SubType>Form</SubType>
     </Compile>
