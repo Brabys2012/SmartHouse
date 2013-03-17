@@ -32,6 +32,11 @@ namespace Server
         private ComPortExecutable ExeComPort = new ComPortExecutable();
 
         /// <summary>
+        /// Приняети решение и обработка пользовательских команд
+        /// </summary>
+        private Decisionmaking DM = new Decisionmaking();
+
+        /// <summary>
         /// Инициализирует экземпляр класса Core.
         /// </summary>
         public Core()
@@ -166,7 +171,40 @@ namespace Server
         /// <param name="comand">Команда пользователя</param>
         public void ProcessThreadTCP(object comand)
         {
-            throw new System.NotImplementedException();
+            string MainComand = comand.ToString();
+            string[] SplitByUser = MainComand.Split('@');
+            byte[] ComandForComPort = DM.Parser(SplitByUser[0], SplitByUser[1]);
+            DevCommand Answer = new DevCommand();
+            if (ComandForComPort[0] != 0)
+            {
+                // Флаг который означает что КомПорт блокирован
+                bool podflag = false;
+                //Процедура отправки команды через ком порт исполнитель с соблюдением 
+                //синхронизации потоков
+                while (!podflag)
+                {
+                    lock (Storage.lockerComPort)
+                    {
+                        if (Storage.flagComPort)
+                        {
+                            podflag = true;
+                            Storage.flagComPort = false;
+                            Answer = ExeComPort.SendInform(ComandForComPort);
+                            Storage.flagComPort = true;
+                        }
+                    }
+                    //Чтобы оптимизировать работу службы ожидаем освобождения ком порта исполнителя 
+                    //поток засыпает на 300 мс
+                    if (!podflag)
+                    {
+                        Thread.Sleep(300);
+                    }
+                    DM.ParseAnswer(Answer, SplitByUser[1]);
+                }
+            }
+
+            // Удалем поток из пула потоков
+            _threads.Remove(Thread.CurrentThread);
         }
 
         /// <summary>

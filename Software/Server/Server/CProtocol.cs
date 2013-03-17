@@ -36,17 +36,32 @@ namespace Server
 		 
         public byte[] Pack(byte addrController, byte addrDevice, byte[] command)
         {
-            byte len = (byte)(5 + command.Count());
+            byte len = 0;
+            if (command != null)
+            {
+                len = (byte)(5 + command.Count());
+            }
+            else
+            {
+                len = 5;
+            }
             byte[] result = new byte[len]; 
             result[0] = 181;
             result[1] = len; 
             result[2] = addrController;
             result[3] = addrDevice;
-            for (int i = 4; i < command.Count() + 4; i++)
+            if (command != null)
             {
-                result[i] = command[i - 4];
+                for (int i = 4; i < command.Count() + 4; i++)
+                {
+                    result[i] = command[i - 4];
+                }
+                result[4 + command.Count()] = 74;
             }
-            result[4 + command.Count()] = 74;
+            else
+            {
+                result[4] = 74;
+            }
             return result;
         }
 
