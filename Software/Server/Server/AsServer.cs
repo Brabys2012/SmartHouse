@@ -204,7 +204,7 @@ namespace Server
                 WinLog.Write("Клиент с IP - " + aceptClient.Socket.RemoteEndPoint + " запросил авторизацию",
                              System.Diagnostics.EventLogEntryType.Information);
 
-                Send(aceptClient, "ENTER_LOGIN_AND_PASSWORD", true);
+                Send(aceptClient, "Auth?", true);
 
                 //Начало новой операции приёма подключения
                 _serverSocket.BeginAccept(new AsyncCallback(
@@ -252,7 +252,7 @@ namespace Server
                             authClient.login = authData[0];
                             WinLog.Write("Клиент " + authClient.login + " авторизован",
                                          System.Diagnostics.EventLogEntryType.SuccessAudit);
-                            Send(authClient, "Aut/successful authorization/" + role, true);
+                            Send(authClient, "AuthAnsver/1*" + role + "?", true);
                             authClient.Socket.BeginReceive(authClient.Buffer,
                                 0, authClient.Buffer.Length, SocketFlags.None,
                                 new AsyncCallback(ReceiveCallback),
@@ -260,7 +260,7 @@ namespace Server
                         }
                         else
                         {
-                            Send(authClient, "Aut/authorization error/" + role, true);
+                            Send(authClient, "AuthAnsver/0/" + role + "?", true);
                             authClient.IsAuth = false;
                             // Начало операции авторизации 
                             authClient.Socket.BeginReceive(authClient.Buffer,
@@ -482,18 +482,19 @@ namespace Server
         /// <param name="login">логин клиента которому необходимо отправить данные</param>
         private void UpdateData(string login)
         {
-            string CommandString = "";
+            string CommandString = "Update/";
             foreach (DataRow row in Storage.ArrayUpdate.Tables[0].Rows)
             {
                 foreach (DataColumn col in Storage.ArrayUpdate.Tables[0].Columns)
                 {
-                    CommandString += @"\" + row[col].ToString();
+                    if (!(col.Ordinal == 0))
+                    CommandString += "*" + row[col].ToString();
+                    else CommandString += row[col].ToString();
                 }
-                CommandString += "\r\n";
+                CommandString += "?";
                 Send(login, CommandString, true);
-                CommandString = "Update";
+                CommandString = "Update/";
             }
-            Send(login, @"STOP\", true);
             //TODO как закрыть поток?
         }
     }
