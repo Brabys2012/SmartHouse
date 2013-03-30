@@ -382,8 +382,9 @@ namespace Server
         /// <summary>
         /// Отправляет данные определённому клиенту, определяемого логином.
         /// </summary>
-        /// <param name="client">клиент которому необходимо отправить данные</param>
+        /// <param name="ClLogin">логин клиента</param>
         /// <param name="data">данные для отправки</param>
+        /// <param name="NeedEncrypt">необходимость шифрования</param>
         private void Send(string ClLogin, String data, bool NeedEncrypt)
         {
             try
@@ -424,11 +425,11 @@ namespace Server
             int i = 0;
             try
             {
-                for (i = 0; i < _clients.Count; i++)
+                lock (_clients)
                 {
-                    lock (_clients)
+                    for (i = 0; i < _clients.Count; i++)
                     {
-                        Send(_clients[i], data, true);
+
                     }
                 }
 
