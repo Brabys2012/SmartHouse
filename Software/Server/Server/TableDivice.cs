@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using FirebirdSql.Data.FirebirdClient;
-using FirebirdSql.Data.Isql;
+using FirebirdSql.Data;
 using System.Collections;
 using System.Data;
 
@@ -24,11 +24,11 @@ namespace Server
         public TableDivice()
         {
             // Указываем тип используемого сервера
-            fbParam.ServerType = FbServerType.Embedded;
+            fbParam.ServerType = FbServerType.Context;
 
             // Путь до файла с базой данных
-            fbParam.Database = @"DataBase\DIVICES.FB";
-
+            fbParam.Database = @"DIVICES.FB";
+            fbParam.Pooling = true;
             // Настройка параметров "общения" клиента с сервером
             fbParam.Charset = "WIN1251";
             fbParam.Dialect = 3;
@@ -36,9 +36,8 @@ namespace Server
             // Если библиотека находится в тойже папке
             // что и exe фаил - указывать путь не надо
             // Если используется не embedded - эта строчка не нужна
-            fbParam.ClientLibrary = @"DataBase\fbclient.dll";
-
-
+            fbParam.ClientLibrary = @"localhost:D:\Program Files\Firebird\Firebird_2_1\bin\fbclient.dll";
+            fbParam.DataSource = "User-ПК";
             // Настройки аутентификации
             fbParam.UserID = "SYSDBA";
             fbParam.Password = "masterkey";
@@ -175,6 +174,7 @@ namespace Server
                 {
                     try
                     {
+                        fbc.Open();
                         Storage.ArrayUpdate = new DataSet();
                         //Создаем fbDataAdapter, что бы потом перенести обновления в DataSet
                         FbDataAdapter DAFB = new FbDataAdapter("select Name, Type, State" +

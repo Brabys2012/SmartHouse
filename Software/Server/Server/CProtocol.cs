@@ -72,11 +72,12 @@ namespace Server
             bool IsFindComand = false;
             DevCommand comand;
             ArrayList result = new ArrayList();
-            while (dataStream.Length > 0)
+            int SubBuffer = (int)dataStream.ReadByte();
+            while (SubBuffer != -1)
             {
-                buffer = (byte) dataStream.ReadByte();
                 try
                 {
+                    buffer = (byte)SubBuffer;
                     if ((buffer == 181) || (IsFindComand))
                     {
                         comand = new DevCommand();
@@ -91,7 +92,6 @@ namespace Server
                         }
                         if (dataStream.ReadByte() != 74)
                         {
-                            WinLog.Write("Пакет поврежден");
                         }
                         else
                         {
@@ -101,11 +101,12 @@ namespace Server
                     }
                     else
                     {
-                        while (buffer != 181)
+                        while ((SubBuffer != 181) || (SubBuffer != -1))
                         {
-                            buffer = (byte)dataStream.ReadByte();
+                            SubBuffer = (byte)dataStream.ReadByte();
                         }
                     }
+                    SubBuffer = (int)dataStream.ReadByte();
                 }
                 catch
                 {

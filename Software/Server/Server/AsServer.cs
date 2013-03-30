@@ -152,7 +152,7 @@ namespace Server
                         {
                             try
                             {
-                                if (!_clients[i].IsAuth && (_clients[i].ConnDate > DateTime.Now))
+                                if (!_clients[i].IsAuth && (_clients[i].ConnDate <= DateTime.Now))
                                 {
                                     CloseConnection(_clients[i]);
                                     i--;
@@ -193,7 +193,7 @@ namespace Server
                 lock (_clients) _clients.Add(aceptClient);
 
                 // Установка даты подключения
-                aceptClient.ConnDate = DateTime.Now.AddSeconds(30);
+                aceptClient.ConnDate = DateTime.Now.AddSeconds(60);
                 aceptClient.IsActive = true;
 
                 // Начало операции авторизации 

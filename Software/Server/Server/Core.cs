@@ -88,6 +88,7 @@ namespace Server
                         t.Start(comandObj);
                         // Сохраняем поток в пул потоков
                         _threads.Add(t);
+                        _qListQueue = false;
                     }
                     catch (Exception exc)
                     {
@@ -213,11 +214,7 @@ namespace Server
         /// </summary>
         public void UpdateClient()
         {
-            while (true)
-            {
-                ExDM.BdDevice.UpdateUserApp();
-                Thread.Sleep(TimeSpan.FromMinutes(10)); 
-            }
+           ExDM.BdDevice.UpdateUserApp();
         }
 
         /// <summary>

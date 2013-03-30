@@ -15,19 +15,19 @@ namespace Server
         /// <summary>
         /// Очередь из команд присланных пользователями
         /// </summary>
-        public static Queue QueueTCP;
+        public static Queue QueueTCP = new Queue();
         /// <summary>
         /// Очередь из команд присланных компортом слушателем
         /// </summary>
-        public static Queue QueueList;
+        public static Queue QueueList = new Queue();
         /// <summary>
         /// Массив объектов устройств, которые будут присылатся для обновления пользователям, у которых включен конфигуратор
         /// </summary>
-        public static DataSet ArrayUpdate;
+        public static DataSet ArrayUpdate = new DataSet();
         /// <summary>
         /// Флаг который показывает используется или нет база данных
         /// </summary>
-        public static bool BD;
+        public static bool BD = false;
         /// <summary>
         /// Показывает занят или нет ком порт
         /// </summary>
@@ -35,15 +35,15 @@ namespace Server
         /// <summary>
         /// Блокирует доступ к ком порту исполнителю, если он занят другим потоком.
         /// </summary>
-        public static object lockerComPort;
+        public static object lockerComPort = new object();
         /// <summary>
         /// Очередь из сообщений, которые должен получить пользователь
         /// </summary>
-        public static Queue MessegesForUser;
+        public static Queue MessegesForUser = new Queue();
         /// <summary>
         /// Блокирует доступ к БД если она занята другим потоком
         /// </summary>
-        public static object lockerBdDev;
+        public static object lockerBdDev = new object();
         /// <summary>
         /// Флаг показывает обновлен список устройств для бд или нет
         /// </summary>
@@ -51,7 +51,7 @@ namespace Server
         /// <summary>
         /// Команды для запроса состояния датчиков
         /// </summary>
-        private static Queue DatchikComand;
+        private static Queue DatchikComand = new Queue();
     }
 
     /// <summary>
