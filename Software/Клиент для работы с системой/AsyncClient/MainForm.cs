@@ -12,12 +12,19 @@ namespace AsyncClient
         /// Экземпляр для работы с сервером.
         /// </summary>
         AsynchronousClient Client = new AsynchronousClient();
+
+        /// <summary>
+        /// Указывает на необходимость шифрования данных
+        /// </summary>
+        bool encryptIt = false;
+
+        string[] allParam;
+        string[] loginAndPass;
         
 
         public MainForm()
         {
             InitializeComponent();
-
             //Инициализация базовых узлов дерева.
             trvDevice.BeginUpdate();
             trvDevice.Nodes.Add("SimpleDev", "SimpleDev");
@@ -43,13 +50,15 @@ namespace AsyncClient
 
             //Автоподключение
             string FileData;
-            string[] tempArray;
+            char[] trimChar = new char[2] {'\r','\n'};
             using (var sr = new StreamReader("Config.dat", Encoding.GetEncoding(1251)))
             {
-                FileData = sr.ReadLine();
+                FileData = sr.ReadToEnd();
             }
-            tempArray = FileData.Split(',');
-            Client.StartClient(tempArray[0], Convert.ToInt32(tempArray[1]));
+            allParam = FileData.Split(';');
+            loginAndPass = allParam[0].Split(',');
+            encryptIt = Convert.ToBoolean(allParam[1].TrimStart(trimChar));
+            Client.StartClient(loginAndPass[0], Convert.ToInt32(loginAndPass[1]));
         }
 
         /// <summary>
@@ -153,7 +162,7 @@ namespace AsyncClient
                 _frm = new AuthForm();
                 if (_frm.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    Client.Send(_frm.tbLogin.Text + "." + _frm.tbPassword.Text);
+                    Client.Send(_frm.tbLogin.Text + "." + _frm.tbPassword.Text,encryptIt);
                 }
             }
         
@@ -173,7 +182,7 @@ namespace AsyncClient
         {
             if (this.stLabel.Text == "Подключён")
             {
-                Client.Send("EXIT");
+                Client.Send("EXIT",encryptIt);
                 Client.CloseConnection();
             } 
         }
@@ -198,8 +207,10 @@ namespace AsyncClient
         /// <param name="e"></param>
         private void Connect_Click(object sender, EventArgs e)
         {
+            char[] charToTrim = new char[1] { ';' };
+            //проверка текущего подключения
             if (!Client._srv.status)
-            {
+            { //если в екущий момент отключены
                 string FileData;
                 string[] tempArray;
                 using (var sr = new StreamReader("Config.dat", Encoding.GetEncoding(1251)))
@@ -207,10 +218,11 @@ namespace AsyncClient
                     FileData = sr.ReadLine();
                 }
                 tempArray = FileData.Split(',');
-                Client.StartClient(tempArray[0], Convert.ToInt32(tempArray[1]));
+                Client.StartClient(tempArray[0], Convert.ToInt32(tempArray[1].TrimEnd(charToTrim)));
+               
             }
             else 
-            {
+            { //если уже подключены
                 MessageBox.Show("Соединение уже установлено", "Состояние подключения",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -225,7 +237,7 @@ namespace AsyncClient
         {
             if (this.stLabel.Text == "Подключён")
             {
-                Client.Send("EXIT");
+                Client.Send("EXIT", encryptIt);
                 Client.CloseConnection();
                 Client._srv.status = false;
                 
@@ -287,6 +299,7 @@ namespace AsyncClient
                     if (trvDevice.SelectedNode.Tag.ToString() == "0")
                         butAction.Text = "Включить";
                     else butAction.Text = "Выключить";
+                    this.butAction.Enabled = true;
                 }
                 else if (trvDevice.SelectedNode.Parent.Tag.ToString() == "Simple sensor")
                 {
@@ -325,7 +338,7 @@ namespace AsyncClient
             {
 
                 Client.Send("GetCounterRec/" + _ReportDataForm.BegDate +"/" +
-                    _ReportDataForm.EndDate + "/" + this.trvDevice.SelectedNode.Text + "?");
+                    _ReportDataForm.EndDate + "/" + this.trvDevice.SelectedNode.Text + "?", encryptIt);
             }
         }
 
@@ -337,17 +350,17 @@ namespace AsyncClient
                 param = "0";
             }
             else param = "1";
-            Client.Send("SetParam/" + trvDevice.SelectedNode.Text + "/" + param + "?");
+            Client.Send("SetParam/" + trvDevice.SelectedNode.Text + "/" + param + "?", encryptIt);
         }
 
         private void butGetUpdate_Click(object sender, EventArgs e)
         {
-            Client.Send("GetUpdate?");
+            Client.Send("GetUpdate?", encryptIt);
         }
 
         private void butDimmersSet_Click(object sender, EventArgs e)
         {
-            Client.Send("SetParam/" + trvDevice.SelectedNode.Text + "/" + tbDimmersPower.Text + "?");
+            Client.Send("SetParam/" + trvDevice.SelectedNode.Text + "/" + tbDimmersPower.Text + "?", encryptIt);
         }
     }
 }

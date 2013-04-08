@@ -33,6 +33,8 @@ namespace AsyncClient
                 public bool status = false;
                 //Роль пользователя
                 public string role = "";
+                //Необходимость шифрования
+                public bool encryptIt = false;
             }
 
             string reportString = "";
@@ -128,7 +130,7 @@ namespace AsyncClient
 
                     if (bytesRead > 0)
                     {
-                        Parser(bytesRead);
+                        Parser(bytesRead, _srv.encryptIt);
                     }
                     // Get the rest of the data.
                     client.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallback), state);
@@ -141,11 +143,13 @@ namespace AsyncClient
                 }
             }
 
-            private void Parser(int bytesRead)
-            {
-
+            private void Parser(int bytesRead, bool needToEncrypt)
+            {   string[] message;
                 string[] tmpString;
-                string[] message = Crypto.Decrypt(Encoding.ASCII.GetString(_srv.buffer, 0, bytesRead)).Split('?');
+                if (needToEncrypt)
+                    message = Crypto.Decrypt(Encoding.ASCII.GetString(_srv.buffer, 0, bytesRead)).Split('?');
+                else
+                    message = Encoding.ASCII.GetString(_srv.buffer, 0, bytesRead).Split('?');
 
                 for (int i = 0; i < message.Length; i++)
                 {
@@ -199,13 +203,16 @@ namespace AsyncClient
                    
             }
 
-            public void Send(String data)
+            public void Send(String data, bool needToEncrypt)
             {
                 try
                 {
-                    // Convert the string data to byte data using ASCII encoding.
-                    byte[] byteData = Encoding.ASCII.GetBytes(Crypto.Encrypt(data));
-
+                    byte[] byteData = Encoding.ASCII.GetBytes(data);
+                    if (needToEncrypt)
+                    {
+                        // Convert the string data to byte data using ASCII encoding.
+                        byteData = Encoding.ASCII.GetBytes(Crypto.Encrypt(data));
+                    }
                     // Begin sending the data to the remote device.
                     _srv.workSocket.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), _srv.workSocket);
                 }
