@@ -122,6 +122,7 @@ namespace Server
                         }
                     }
                 }
+                Thread.Sleep(10);
             }
         }
 

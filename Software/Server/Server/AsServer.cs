@@ -1,39 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Net.Sockets;
-using System.Net;
-using System.Data;
 
 namespace Server
 {
-    class AsServer
+
+    /// <summary>
+    /// Класс представляющий асинхронный TCP сервер.
+    /// </summary>
+    public class AsServer
     {
-        /// <summary>
-        /// Поток, в котором происходит проверка активности клиентов.
-        /// </summary>
-        private Thread _clientChecker;
 
         /// <summary>
-        /// Поток, в котором проверяется очередь сообщений для пользователей;
-        /// </summary>
-        private Thread _QueueChecker;
-
-        /// <summary>
-        /// Поток в котором отправляются данные о текущей конфигурации системы.
-        /// </summary>
-        private Thread _Updater;
-
-        TableUser TabUser;
-
-        private Socket _serverSocket;
-        private int _port;
-
-        public AsServer(int port) { _port = port; }
-
-        /// <summary>
-        /// Данный тип хранит информацию о клиенте.
+        /// Класс, предоставляющий информацию о клиенте.
         /// </summary>
         private class Client
         {
@@ -62,17 +45,54 @@ namespace Server
             /// </summary>
             public bool IsActive;
             /// <summary>
-            /// логин 
+            /// Логин клиента.
             /// </summary>
             public string login = "";
             /// <summary>
-            /// пароль
+            /// Пароль клиента.
             /// </summary>
             public string password = "";
         }
 
-        //Лист содержит информацию о всех активных подключениях.
+        /// <summary>
+        /// Поток, в котором происходит проверка активности клиентов.
+        /// </summary>
+        private Thread _clientChecker;
+        /// <summary>
+        /// Поток, в котором проверяется очередь сообщений для пользователей.
+        /// </summary>
+        private Thread _QueueChecker;
+        /// <summary>
+        /// Поток в котором отправляются данные о текущей конфигурации системы.
+        /// </summary>
+        private Thread _Updater;
+        /// <summary>
+        /// Сокет сервера.
+        /// </summary>
+        private Socket _serverSocket;
+        /// <summary>
+        /// IP адрес сетевого интерфеса который будет прослушивать сервер.
+        /// </summary>
+        private IPAddress _serverAddress;
+        /// <summary>
+        /// Порт сервера.
+        /// </summary>
+        private int _serverPort;
+        /// <summary>
+        /// Лист содержит информацию о всех активных подключениях.
+        /// </summary>
         private List<Client> _clients = new List<Client>();
+
+        /// <summary>
+        /// Инициализирует экземпляр класса AsServer.
+        /// </summary>
+        /// <param name="address">IP адрес сетевого интерфейса, на котором будет прослушиваться указанный порт.</param>
+        /// <param name="port">Порт, который будет прослушивать сервер.</param>
+        public AsServer(IPAddress address, int port)
+        {
+            _serverAddress = address;
+            _serverPort = port;
+        }
 
         /// <summary>
         /// Запускает на выполнение сервер.
@@ -85,34 +105,25 @@ namespace Server
             _clientChecker.IsBackground = true;
             _clientChecker.Start();
 
-            //Запускаем поток для проверки наличия сообщений для отправки в очереди.
+            // Запускаем поток для проверки наличия сообщений для отправки в очереди.
             _QueueChecker = new Thread(new ThreadStart(QueueCheckerThread));
             _QueueChecker.IsBackground = true;
             _QueueChecker.Start();
 
-            //Объект для работы с таблицей USER базы данных
-            TabUser = new TableUser();
-
             // Получаем информацию о локальном компьютере
-            IPHostEntry localMachineInfo = Dns.GetHostEntry(Dns.GetHostName());
-            IPEndPoint myEndpoint = new IPEndPoint(localMachineInfo.AddressList[2], _port);
-            Console.WriteLine("IP - {0}", localMachineInfo.AddressList[2].ToString());
+            IPEndPoint _endPoint = new IPEndPoint(_serverAddress, _serverPort);
             // Создаем сокет, привязываем его к адресу и начинаем прослушивание
-            _serverSocket = new Socket(myEndpoint.Address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            _serverSocket.Bind(myEndpoint);
+            _serverSocket = new Socket(_endPoint.Address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            _serverSocket.Bind(_endPoint);
             _serverSocket.Listen((int)SocketOptionName.MaxConnections);
             // Начинаем прослушивание
             for (int i = 0; i < 10; i++)
-                _serverSocket.BeginAccept(new
-                    AsyncCallback(AcceptCallback), _serverSocket);
-            WinLog.Write("Сервер успешно запущен. Порт - " + _port.ToString() + ", IP - "
-                          + localMachineInfo.AddressList[2].ToString(),
-                          System.Diagnostics.EventLogEntryType.Information);
+                _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), _serverSocket);
+            WinLog.Write(string.Format("Сервер {0}:{1} успешно запущен.", _serverAddress, _serverPort), System.Diagnostics.EventLogEntryType.Information);
         }
 
-
         /// <summary>
-        /// Поток в котором проверяется наличие данных в очереди на отправку клиенту
+        /// Поток в котором проверяется наличие данных в очереди на отправку клиенту.
         /// </summary>
         private void QueueCheckerThread()
         {
@@ -131,7 +142,7 @@ namespace Server
                         DataToSend = null;
                     }
                 }
-                Thread.Sleep(30000);
+                Thread.Sleep(1000);
             }
         }
 
@@ -197,25 +208,21 @@ namespace Server
                 aceptClient.IsActive = true;
 
                 // Начало операции авторизации 
-                aceptClient.Socket.BeginReceive(aceptClient.Buffer,
-                    0, aceptClient.Buffer.Length, SocketFlags.None,
-                    new AsyncCallback(AuthCallback),
-                    aceptClient);
-                WinLog.Write("Клиент с IP - " + aceptClient.Socket.RemoteEndPoint + " запросил авторизацию",
-                             System.Diagnostics.EventLogEntryType.Information);
-
+                aceptClient.Socket.BeginReceive(aceptClient.Buffer, 0, aceptClient.Buffer.Length, SocketFlags.None, new AsyncCallback(AuthCallback), aceptClient);
+                WinLog.Write(string.Format("Попытка авторизации клиента {0}.", aceptClient.Socket.RemoteEndPoint), System.Diagnostics.EventLogEntryType.Information);
                 Send(aceptClient, "Auth?", true);
 
                 //Начало новой операции приёма подключения
-                _serverSocket.BeginAccept(new AsyncCallback(
-                    AcceptCallback), result.AsyncState);
+                _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), result.AsyncState);
             }
             catch (SocketException exc)
             {
                 WinLog.Write(exc.Message, System.Diagnostics.EventLogEntryType.Error);
                 CloseConnection(aceptClient);
-                Console.WriteLine("Socket exception: " +
-                    exc.SocketErrorCode + exc.Message);
+
+                // TODO: В блоках catch если выводится некоторое сообщение следует делать это сообщение уникальным, чтобы однозначно идентифицировать его. Бедет полезно при исправлении ошибок. Легко найти участок кода где произошла ошибка.
+
+                Console.WriteLine("Socket exception: " + exc.SocketErrorCode + exc.Message);
             }
             catch (Exception exc)
             {
@@ -243,7 +250,7 @@ namespace Server
                         int count = 0;
                         count = authClient.Socket.EndReceive(result);
                         authData = Encoding.ASCII.GetString(authClient.Buffer, 0, count).Split('.');
-                        role = TabUser.CheckUser(authData[0], authData[1]);
+                        role = TableUser.CheckUser(authData[0], authData[1]);
                         //TODO создать метод обращающийся к базе для проверки логина и пароля
                         if (role != "")
                         {

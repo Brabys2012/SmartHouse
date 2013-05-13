@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Net;
 using System.Threading;
 
 
@@ -12,8 +10,9 @@ namespace Server
 
         static void StartService()
         {
+            SQL.Init();
             Core CoreInSer = new Core();
-            AsServer Server = new AsServer(5000);
+            AsServer Server = new AsServer(IPAddress.Any, 5000);
             ComPortListener ComPotrList = new ComPortListener();
             WinLog.Init();
             CoreInSer.Start();
@@ -27,8 +26,12 @@ namespace Server
         }
         static void Main(string[] args)
         {
+            SQL.Init();
             Core CoreInSer = new Core();
-            AsServer Server = new AsServer(5000);
+
+            // TODO: Настройки вынести в отдельный конфигурационный файл
+
+            AsServer Server = new AsServer(IPAddress.Any, 5000);
             ComPortListener ComPotrList = new ComPortListener();
             WinLog.Init();
             CoreInSer.Start();
@@ -39,6 +42,9 @@ namespace Server
             CPList.IsBackground = true;
             CPList.Start();
             CoreInSer.UpdateClient();
+            Console.WriteLine("Server started");
+            Console.WriteLine(TableUser.CheckUser("admin", "admin"));
+            Console.WriteLine("OK");
             Console.ReadLine();
         }
     }

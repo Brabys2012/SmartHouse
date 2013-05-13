@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Data;
-using System.Diagnostics;
 using System.Threading;
 using FirebirdSql.Data.FirebirdClient;
 
-namespace RUS_Project.libTCPServer
+namespace Server
 {
 
     /// <summary>
@@ -14,50 +12,36 @@ namespace RUS_Project.libTCPServer
     public class SQL
     {
 
-        /*
-         * TODO: README:
-         * 
-         * Перед использованием необходимо задать корректные значения четырех следующих констант.
-         * Кроме того, чтобы программа запускалась без ошибок необходимо, чтобы:
-         * 1. Желательно чтобы все проекты были на .Net Framework 3.5 (полный, а не ClientProfile).
-         * 2. Добавить в ссылки проекта библиотеку FirebirdSql.Data.FirebirdClient (ее лучше поместить
-         * вместе с исходными файлами каждого проекта). Брать из каталога Ресурсы для проекта.
-         * 3. Правой клавишей по файлу FirebirdSql.Data.FirebirdClient в обозревателе решений
-         * в свойствах задать флаг Копировать локально = True.
-         * 4. При компиляции проекта помещать в выходную папку каталог fbdb из Ресурсы для проекта.
-         */
-
-
         /// <summary>
         /// Полное имя файла базы данных.
         /// </summary>
-        private const string _DB_FullFileName = AppDomain.CurrentDomain.BaseDirectory + "\\ENERGYNET.FDB";
+        private static string _DB_FullFileName;
         /// <summary>
         /// Имя пользователя для доступа к БД.
         /// </summary>
-        private const string _DB_Login = "admin";
+        private const string _DB_Login = "SYSDBA";
         /// <summary>
         /// Пароль для доступа к БД.
         /// </summary>
-        private const string _DB_Paswd = "admin";
+        private const string _DB_Paswd = "masterkey";
         /// <summary>
         /// Полное имя файла базы данных.
         /// </summary>
-        private const string _DB_ClientLibraryPath = AppDomain.CurrentDomain.BaseDirectory + "\\fbdb\\fbembed.dll";
+        private static string _DB_ClientLibraryPath;
 
 
         /// <summary>
         /// Подключение к БД Firebird.
         /// </summary>
-        private static FbConnection FB_dbConnection;
+        public static FbConnection FB_dbConnection;
         /// <summary>
         /// Опции транзакции чтения в БД Firebird.
         /// </summary>
-        private static FbTransactionOptions FB_dbReadTransactionOptions;
+        public static FbTransactionOptions FB_dbReadTransactionOptions;
         /// <summary>
         /// Опции транзакции исполнения в БД Firebird.
         /// </summary>
-        private static FbTransactionOptions FB_dbCommitTransactionOptions;
+        public static FbTransactionOptions FB_dbCommitTransactionOptions;
 
         /// <summary>
         /// Осуществляет инициализацию работы с БД службы.
@@ -65,6 +49,8 @@ namespace RUS_Project.libTCPServer
         public static void Init()
         {
             // Инициализируем подключение к базе данных
+            _DB_FullFileName = AppDomain.CurrentDomain.BaseDirectory + "\\DEVICES.FB";
+            _DB_ClientLibraryPath = AppDomain.CurrentDomain.BaseDirectory + "\\fbdb\\fbembed.dll";
             try
             {
                 // Задаем параметры подключения
@@ -94,13 +80,15 @@ namespace RUS_Project.libTCPServer
             }
             catch (Exception exc)
             {
+                // Делаем запись в журнал событий
+                WinLog.Write(string.Format("Ошибка инициализации БД: ", exc.Message), System.Diagnostics.EventLogEntryType.Error);
                 // Освобождаем ресурсы
                 if (FB_dbConnection != null)
                     FB_dbConnection.Dispose();
                 FB_dbConnection = null;
             }
             // Устанавливаем признак того, что в данный момент транзакций нет
-            _isLockedTransaction = false;
+            IsLockedTransaction = false;
         }
         /// <summary>
         /// Закрывает подключение к БД службы.
@@ -122,18 +110,18 @@ namespace RUS_Project.libTCPServer
         /// <summary>
         /// Признак того, что в данный момент выполняется транзакция.
         /// </summary>
-        private static bool _isLockedTransaction;
+        public static bool IsLockedTransaction { set; get; }
         /// <summary>
         /// Выполняет определенный пользователем SQL запрос, не возвращающий каких-либо данных.
         /// </summary>
         /// <param name="sqlProcedureName">SQL запрос для выполнения в БД.</param>
-        private static void SQL_ExecuteNoneQueryCommitTransaction(string sqlQuery)
+        public static bool SQL_ExecuteNoneQueryCommitTransaction(string sqlQuery)
         {
             // Ожадаем пока не закончится начатая транзакция
-            while (_isLockedTransaction)
+            while (IsLockedTransaction)
                 Thread.Sleep(5);
             // Устанавливаем признак начала транзакции
-            _isLockedTransaction = true;
+            IsLockedTransaction = true;
             // Выполняем транзакцию
             if (FB_dbConnection != null)
                 try
@@ -141,32 +129,25 @@ namespace RUS_Project.libTCPServer
                     if (FB_dbConnection.State == ConnectionState.Closed)
                         FB_dbConnection.Open();
                     using (FbTransaction transaction = FB_dbConnection.BeginTransaction(FB_dbCommitTransactionOptions))
-                    using (FbCommand command = new FbCommand(sqlQuery, FB_dbConnection, transaction))
-                        command.ExecuteNonQuery();
-                    transaction.Commit();
+                    {
+                        using (FbCommand command = new FbCommand(sqlQuery, FB_dbConnection, transaction))
+                            command.ExecuteNonQuery();
+                        transaction.Commit();
+                    }
                 }
-                catch (Exception) { }
+                catch (Exception exc)
+                {
+                    // Делаем запись в журнал событий
+                    WinLog.Write(string.Format("Ошибка выполнения запроса к БД: ", exc.Message), System.Diagnostics.EventLogEntryType.Error);
+                    // Сбрасываем признак транзакции
+                    IsLockedTransaction = false;
+                    // Возвращаем результ
+                    return false;
+                }
             // Сбрасываем признак транзакции
-            _isLockedTransaction = false;
-        }
-
-
-        /*
-         * TODO: README:
-         * 
-         * Любое выполнение процедуры или запроса (которые не возвращают никаких данных)
-         * можно вынести в отдельный метод (как в примере ниже).
-         * Чтобы обрабатывать результат выполнения запроса необходимо сделать метод
-         * аналогичный SQL_ExecuteNoneQueryTransaction, в котором осуществлять чтение полученных из БД данных.
-         */
-
-        /// <summary>
-        /// Выполняет скрипт SQL запроса для обновления состояния клиента.
-        /// </summary>
-        /// <param name="state">Новое состояние.</param>
-        public static void sqlQuery_AnyQuery(string state)
-        {
-            SQL_ExecuteNoneQueryCommitTransaction(string.Format("execute procedure UPDATE_CLIENT_STATE ('{0}')", state));
+            IsLockedTransaction = false;
+            // Возвращаем результ
+            return true;
         }
 
     }

@@ -1,119 +1,74 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Data;
+using System.Threading;
 using FirebirdSql.Data.FirebirdClient;
 
 namespace Server
 {
+    /// <summary>
+    /// Класс, предоставляющий методы для работы с таблицей USER базы данных.
+    /// </summary>
     public class TableUser
     {
-           /// <summary>
-        /// Строка настроек БД
-        /// </summary>
-        private FbConnectionStringBuilder fbParam = new FbConnectionStringBuilder();
         /// <summary>
-        /// При инициализации класса происходит создание строки настройки базы данных
+        /// Инициализирует экземпляр класса TableUser.
         /// </summary>
-        public TableUser()
-        {
-            // Указываем тип используемого сервера
-            fbParam.ServerType = FbServerType.Embedded;
-
-            // Путь до файла с базой данных
-            fbParam.Database = @"DataBase\DIVICES.FB";
-
-            // Настройка параметров "общения" клиента с сервером
-            fbParam.Charset = "WIN1251";
-            fbParam.Dialect = 3;
-            // Путь до бибилиотеки-сервера Firebird
-            // Если библиотека находится в тойже папке
-            // что и exe фаил - указывать путь не надо
-            // Если используется не embedded - эта строчка не нужна
-            fbParam.ClientLibrary = @"DataBase\fbclient.dll";
-
-
-            // Настройки аутентификации
-            fbParam.UserID = "SYSDBA";
-            fbParam.Password = "masterkey";
-        }
+        public TableUser() { }
         /// <summary>
-        /// Проверяет есть ли такой пользователь с таким логином и паролем в Базе.
+        /// Проверяет есть ли такой пользователь с указанным логином и паролем в базе данных.
         /// </summary>
-        /// <param name="login">Логин пользователя, сушествование которого нужно проверить</param>
-        /// <param name="Password">Пароль этого пользователся</param>
-        public string CheckUser(string login, string Password)
+        /// <param name="login">Логин пользователя, сушествование которого нужно проверить.</param>
+        /// <param name="password">Пароль пользователя.</param>
+        public static string CheckUser(string login, string password)
         {
             string res = "";
             lock (Storage.lockerBdDev)
             {
-                using (FbConnection fbc = new FbConnection(fbParam.ToString()))
-                {
-                    //Открывает соединение
-                    fbc.Open();
-                    FbTransaction Transaction = fbc.BeginTransaction();
-                    FbCommand Query = new FbCommand("select U.Role from Users U" + 
-                                                     "where U.Login = " + login + " and U.Password = " + Password,
-                                                     fbc, Transaction);
+                // Ожадаем пока не закончится начатая транзакция
+                while (SQL.IsLockedTransaction)
+                    Thread.Sleep(5);
+                // Устанавливаем признак начала транзакции
+                SQL.IsLockedTransaction = true;
+                // Выполняем транзакцию
+                if (SQL.FB_dbConnection != null)
                     try
                     {
-                        using (FbDataReader r = Query.ExecuteReader())
+                        if (SQL.FB_dbConnection.State == ConnectionState.Closed)
+                            SQL.FB_dbConnection.Open();
+                        using (FbTransaction transaction = SQL.FB_dbConnection.BeginTransaction(SQL.FB_dbReadTransactionOptions))
                         {
-                            // Читаем результат запроса построчно - строка за строкой
-                            if (r.Read())
+                            string sqlQuery = string.Format("select U.Role from Users U where U.Login = '{0}' and U.Password = '{1}'", login, password);
+                            using (FbCommand command = new FbCommand(sqlQuery, SQL.FB_dbConnection, transaction))
+                            using (FbDataReader r = command.ExecuteReader())
                             {
-                                res = r.GetString(0);
+                                // Читаем результат запроса построчно - строка за строкой
+                                if (r.Read())
+                                    res = r.GetString(0);
                             }
+                            transaction.Commit();
                         }
                     }
-                    catch
+                    catch (Exception exc)
                     {
-                        WinLog.Write("Ошибка работы с базой данных, таблицей пользователь");
-                        return res;
+                        // Делаем запись в журнал событий
+                        WinLog.Write(string.Format("Ошибка получения данных о пользователе из БД: ", exc.Message), System.Diagnostics.EventLogEntryType.Error);
                     }
-                }
+                // Сбрасываем признак транзакции
+                SQL.IsLockedTransaction = false;
             }
             return res;
         }
-
         /// <summary>
-        /// Добавляет пользователя с заданными параметрами в базу
+        /// Добавляет пользователя с заданными параметрами в базу данных.
         /// </summary>
-        /// <param name="login">логин</param>
-        /// <param name="pass">пароль</param>
-        /// <returns></returns>
-        public bool AddUser(string login, string pass, string Role)
+        /// <param name="login">Логин пользователя.</param>
+        /// <param name="pass">Пароль пользователя.</param>
+        /// <param name="role">Роль пользователя.</param>
+        /// <returns>Признак успешного завершения операции.</returns>
+        public static bool AddUser(string login, string pass, string role)
         {
-            bool Result = false;
-            //Создаем класс соединения
-            using (FbConnection fbc = new FbConnection(fbParam.ToString()))
-            {
-                lock (Storage.lockerBdDev)
-                {
-                    //Открываем соединение
-                    fbc.Open();
-                    //Создаем транзакцию
-                    FbTransaction Transaction = fbc.BeginTransaction();
-                    FbCommand Query = new FbCommand("insert into Useres (login, password, role)  " + 
-                                                    "values (" + login + pass + Role + ")",
-                                                     fbc, Transaction);
-                    try
-                    {
-
-                        Transaction.Commit();
-                        fbc.Close();
-                        Result = true;
-                    }
-                    catch
-                    {
-                        WinLog.Write("Ошибка: базы данных при добавление пользователя!", System.Diagnostics.EventLogEntryType.Error);
-                        fbc.Close();
-                        return Result;
-                    }
-                }
-            }
-            return Result;
+            return SQL.SQL_ExecuteNoneQueryCommitTransaction(string.Format("insert into Useres ('login', 'password', 'role') values ({0}, {1}, {2})", login, pass, role));
         }
         
-        }
+    }
 }

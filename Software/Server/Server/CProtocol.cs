@@ -1,13 +1,13 @@
-﻿using System;
+﻿using System.Collections;
 using System.IO;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Collections;
 
 namespace Server
 {
 
+    /// <summary>
+    /// Структура, описывающая команду микроконтроллера.
+    /// </summary>
     public struct DevCommand
     {
         public byte port;
