@@ -203,6 +203,7 @@ namespace AsyncClient
                    
             }
 
+
             public void Send(String data, bool needToEncrypt)
             {
                 try

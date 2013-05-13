@@ -30,6 +30,10 @@
         {
             this.trvDevice = new System.Windows.Forms.TreeView();
             this.gbActions = new System.Windows.Forms.GroupBox();
+            this.grpCounters = new System.Windows.Forms.GroupBox();
+            this.butReport = new System.Windows.Forms.Button();
+            this.lCounterValue = new System.Windows.Forms.Label();
+            this.lCurentCountValue = new System.Windows.Forms.Label();
             this.grpDevice = new System.Windows.Forms.GroupBox();
             this.butAction = new System.Windows.Forms.Button();
             this.lDevName = new System.Windows.Forms.Label();
@@ -49,21 +53,15 @@
             this.ConfCoonectParms = new System.Windows.Forms.ToolStripMenuItem();
             this.Connect = new System.Windows.Forms.ToolStripMenuItem();
             this.Disconnect = new System.Windows.Forms.ToolStripMenuItem();
-            this.grpCounters = new System.Windows.Forms.GroupBox();
-            this.lCurentCountValue = new System.Windows.Forms.Label();
-            this.lCounterValue = new System.Windows.Forms.Label();
-            this.butReport = new System.Windows.Forms.Button();
-            this.butGetUpdate = new System.Windows.Forms.Button();
             this.SystemConf = new System.Windows.Forms.ToolStripMenuItem();
-            this.добавитьПользователяToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.добавитьУстройствоToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.butGetUpdate = new System.Windows.Forms.Button();
             this.gbActions.SuspendLayout();
+            this.grpCounters.SuspendLayout();
             this.grpDevice.SuspendLayout();
             this.grpDimmers.SuspendLayout();
             this.grpSensor.SuspendLayout();
             this.connStat.SuspendLayout();
             this.menuStrip1.SuspendLayout();
-            this.grpCounters.SuspendLayout();
             this.SuspendLayout();
             // 
             // trvDevice
@@ -86,6 +84,46 @@
             this.gbActions.TabIndex = 7;
             this.gbActions.TabStop = false;
             this.gbActions.Text = "Действия";
+            // 
+            // grpCounters
+            // 
+            this.grpCounters.Controls.Add(this.butReport);
+            this.grpCounters.Controls.Add(this.lCounterValue);
+            this.grpCounters.Controls.Add(this.lCurentCountValue);
+            this.grpCounters.Location = new System.Drawing.Point(197, 104);
+            this.grpCounters.Name = "grpCounters";
+            this.grpCounters.Size = new System.Drawing.Size(174, 74);
+            this.grpCounters.TabIndex = 11;
+            this.grpCounters.TabStop = false;
+            this.grpCounters.Text = "Счётчики";
+            // 
+            // butReport
+            // 
+            this.butReport.Location = new System.Drawing.Point(7, 45);
+            this.butReport.Name = "butReport";
+            this.butReport.Size = new System.Drawing.Size(75, 23);
+            this.butReport.TabIndex = 2;
+            this.butReport.Text = "Отчёт";
+            this.butReport.UseVisualStyleBackColor = true;
+            this.butReport.Click += new System.EventHandler(this.butReport_Click);
+            // 
+            // lCounterValue
+            // 
+            this.lCounterValue.AutoSize = true;
+            this.lCounterValue.Location = new System.Drawing.Point(119, 20);
+            this.lCounterValue.Name = "lCounterValue";
+            this.lCounterValue.Size = new System.Drawing.Size(33, 13);
+            this.lCounterValue.TabIndex = 1;
+            this.lCounterValue.Text = "value";
+            // 
+            // lCurentCountValue
+            // 
+            this.lCurentCountValue.AutoSize = true;
+            this.lCurentCountValue.Location = new System.Drawing.Point(8, 20);
+            this.lCurentCountValue.Name = "lCurentCountValue";
+            this.lCurentCountValue.Size = new System.Drawing.Size(111, 13);
+            this.lCurentCountValue.TabIndex = 0;
+            this.lCurentCountValue.Text = "Текущее значение - ";
             // 
             // grpDevice
             // 
@@ -260,45 +298,12 @@
             this.Disconnect.Text = "Отключится";
             this.Disconnect.Click += new System.EventHandler(this.Disconnect_Click);
             // 
-            // grpCounters
+            // SystemConf
             // 
-            this.grpCounters.Controls.Add(this.butReport);
-            this.grpCounters.Controls.Add(this.lCounterValue);
-            this.grpCounters.Controls.Add(this.lCurentCountValue);
-            this.grpCounters.Location = new System.Drawing.Point(197, 104);
-            this.grpCounters.Name = "grpCounters";
-            this.grpCounters.Size = new System.Drawing.Size(174, 74);
-            this.grpCounters.TabIndex = 11;
-            this.grpCounters.TabStop = false;
-            this.grpCounters.Text = "Счётчики";
-            // 
-            // lCurentCountValue
-            // 
-            this.lCurentCountValue.AutoSize = true;
-            this.lCurentCountValue.Location = new System.Drawing.Point(8, 20);
-            this.lCurentCountValue.Name = "lCurentCountValue";
-            this.lCurentCountValue.Size = new System.Drawing.Size(111, 13);
-            this.lCurentCountValue.TabIndex = 0;
-            this.lCurentCountValue.Text = "Текущее значение - ";
-            // 
-            // lCounterValue
-            // 
-            this.lCounterValue.AutoSize = true;
-            this.lCounterValue.Location = new System.Drawing.Point(119, 20);
-            this.lCounterValue.Name = "lCounterValue";
-            this.lCounterValue.Size = new System.Drawing.Size(33, 13);
-            this.lCounterValue.TabIndex = 1;
-            this.lCounterValue.Text = "value";
-            // 
-            // butReport
-            // 
-            this.butReport.Location = new System.Drawing.Point(7, 45);
-            this.butReport.Name = "butReport";
-            this.butReport.Size = new System.Drawing.Size(75, 23);
-            this.butReport.TabIndex = 2;
-            this.butReport.Text = "Отчёт";
-            this.butReport.UseVisualStyleBackColor = true;
-            this.butReport.Click += new System.EventHandler(this.butReport_Click);
+            this.SystemConf.Name = "SystemConf";
+            this.SystemConf.Size = new System.Drawing.Size(134, 20);
+            this.SystemConf.Text = "Конфигиурирование";
+            this.SystemConf.Click += new System.EventHandler(this.SystemConf_Click);
             // 
             // butGetUpdate
             // 
@@ -309,27 +314,6 @@
             this.butGetUpdate.Text = "Обновить";
             this.butGetUpdate.UseVisualStyleBackColor = true;
             this.butGetUpdate.Click += new System.EventHandler(this.butGetUpdate_Click);
-            // 
-            // SystemConf
-            // 
-            this.SystemConf.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.добавитьПользователяToolStripMenuItem,
-            this.добавитьУстройствоToolStripMenuItem});
-            this.SystemConf.Name = "SystemConf";
-            this.SystemConf.Size = new System.Drawing.Size(134, 20);
-            this.SystemConf.Text = "Конфигиурирование";
-            // 
-            // добавитьПользователяToolStripMenuItem
-            // 
-            this.добавитьПользователяToolStripMenuItem.Name = "добавитьПользователяToolStripMenuItem";
-            this.добавитьПользователяToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
-            this.добавитьПользователяToolStripMenuItem.Text = "Добавить пользователя";
-            // 
-            // добавитьУстройствоToolStripMenuItem
-            // 
-            this.добавитьУстройствоToolStripMenuItem.Name = "добавитьУстройствоToolStripMenuItem";
-            this.добавитьУстройствоToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
-            this.добавитьУстройствоToolStripMenuItem.Text = "Добавить устройство";
             // 
             // MainForm
             // 
@@ -348,6 +332,8 @@
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.gbActions.ResumeLayout(false);
+            this.grpCounters.ResumeLayout(false);
+            this.grpCounters.PerformLayout();
             this.grpDevice.ResumeLayout(false);
             this.grpDevice.PerformLayout();
             this.grpDimmers.ResumeLayout(false);
@@ -358,8 +344,6 @@
             this.connStat.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            this.grpCounters.ResumeLayout(false);
-            this.grpCounters.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -394,8 +378,6 @@
         private System.Windows.Forms.Label lCurentCountValue;
         private System.Windows.Forms.Button butGetUpdate;
         private System.Windows.Forms.ToolStripMenuItem SystemConf;
-        private System.Windows.Forms.ToolStripMenuItem добавитьПользователяToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem добавитьУстройствоToolStripMenuItem;
     }
 }
 

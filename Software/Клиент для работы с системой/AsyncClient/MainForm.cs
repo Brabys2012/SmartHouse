@@ -362,5 +362,11 @@ namespace AsyncClient
         {
             Client.Send("SetParam/" + trvDevice.SelectedNode.Text + "/" + tbDimmersPower.Text + "?", encryptIt);
         }
+
+        private void SystemConf_Click(object sender, EventArgs e)
+        {
+            AdminPanel AdmPanel = new AdminPanel(Client, encryptIt);
+            AdmPanel.ShowDialog();
+        }
     }
 }
