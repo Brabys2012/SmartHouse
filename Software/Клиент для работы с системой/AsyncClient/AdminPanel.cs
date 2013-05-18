@@ -56,13 +56,20 @@ namespace AsyncClient
 
         private void butAdd_Click(object sender, EventArgs e)
         {
-            if (tbPassword.Text == tbPassConfirm.Text)
+            if ((tbLogin.Text != "") && (tbPassword.Text != "") &&
+                (tbPassConfirm.Text != "") && (tbRole.Text != ""))
             {
-                AdminClient.Send("AddUser/" + tbLogin.Text +"/" + 
-                    tbPassword.Text + "/" + tbRole.Text + "?", NeedToEncypt);
+                if (tbPassword.Text == tbPassConfirm.Text)
+                {
+                    AdminClient.Send("AddUser/" + tbLogin.Text + "/" +
+                        tbPassword.Text + "/" + tbRole.Text + "?", NeedToEncypt);
+                    MessageBox.Show("Сообщение о добавлении нового\r\n пользоветеля успешно отправлено.",
+                        "Добавление пользователя", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                    MessageBox.Show("Пароль и подтверждение пароля не совпадают!",
+                    "Добавление пользователя", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            else
-                MessageBox.Show("Пароль и подтверждение пароля не совпадают!");
         }
 
         private void butDelUser_Click(object sender, EventArgs e)
@@ -102,7 +109,7 @@ namespace AsyncClient
                     "/" + tbDeviceName.Text + 
                     "/" + cbDeviceType.SelectedItem.ToString() + 
                     "/" + tbMessage.Text + 
-                    "/" + temp, NeedToEncypt);
+                    "/" + temp + "?", NeedToEncypt);
 
                 cbDeviceNumber.SelectedIndex = -1;
                 cbDeviceType.SelectedIndex = -1;
@@ -113,11 +120,14 @@ namespace AsyncClient
                 if (chbLinkWith.Checked)
                     tbNameLinkedDevice.Text = "";
 
-                MessageBox.Show("Сообщение о добавлении\r\n устройства успешно отправлено.\r\n Проверьте список устройств.");
+                MessageBox.Show("Сообщение о добавлении\r\n устройства успешно отправлено." +
+                    "\r\n Проверьте список устройств.", "Добавление устройства", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
-                MessageBox.Show("Заполнены не все  данные\r\n для добавления устройства");
+                MessageBox.Show("Заполнены не все  данные\r\n для добавления устройства", 
+                    "Добавление устройства", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
            
