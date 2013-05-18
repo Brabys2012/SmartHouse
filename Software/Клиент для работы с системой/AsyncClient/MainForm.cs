@@ -38,7 +38,6 @@ namespace AsyncClient
 
             //Подписываемя на события логической части лиента.
             Client.IsNeedUpdateThreeEvent += new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent);
-            Client.StatusIsActiveEvent += new StatusIsActiveDelegate(Client_StatusIsActive);
             Client.IsNeedShowLoginFormEvent += new IsNeedShowDelegate(Client_IsNeedShowLoginFormEvent);
             Client.IsNeedShowDataEvent += new IsNeedShowDataDelegate(Client_IsNeedShowDataEvent);
             Client.IsNeedToPlotEvent += new IsNeedToPlotDelegate(Client_IsNeedToPlotEvent);
@@ -53,8 +52,8 @@ namespace AsyncClient
             }
             allParam = FileData.Split(';');
             loginAndPass = allParam[0].Split(',');
-            Client._srv.encryptIt = Convert.ToBoolean(allParam[1].TrimStart(trimChar));
             Client.StartClient(loginAndPass[0], Convert.ToInt32(loginAndPass[1]));
+            Client._srv.encryptIt = Convert.ToBoolean(allParam[1].TrimStart(trimChar));
         }
 
         //Обработка события необходимости измениния статуса
@@ -225,8 +224,8 @@ namespace AsyncClient
                 }
                 allParam = FileData.Split(';');
                 IpAndPort = allParam[0].Split(',');
-                Client._srv.encryptIt = Convert.ToBoolean(allParam[1].TrimStart(trimChar));
                 Client.StartClient(loginAndPass[0], Convert.ToInt32(loginAndPass[1]));
+                Client._srv.encryptIt = Convert.ToBoolean(allParam[1].TrimStart(trimChar));
                
             }
             else 

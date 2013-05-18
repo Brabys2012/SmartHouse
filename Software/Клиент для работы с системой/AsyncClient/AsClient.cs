@@ -42,7 +42,6 @@ namespace AsyncClient
 
             public event IsNeedShowDelegate IsNeedShowLoginFormEvent;
             public event IsNeedShowDataDelegate IsNeedShowDataEvent;
-            public event StatusIsActiveDelegate StatusIsActiveEvent;
             public event IsNeedToPlotDelegate IsNeedToPlotEvent;
             public event IsNeedUpdateThreeDelegate IsNeedUpdateThreeEvent;
             public event IsNeedChangeStatus IsNeedChangeStatusEvent;
@@ -97,7 +96,7 @@ namespace AsyncClient
             }
             
             /// <summary>
-            /// 
+            /// Обратная функция для обработки полученного сообщения
             /// </summary>
             /// <param name="ar">Результат выполнения подключения(сокет)</param>
             private void ReceiveCallback(IAsyncResult ar)
@@ -128,6 +127,7 @@ namespace AsyncClient
 
             private void Parser(int bytesRead, bool needToEncrypt)
             {  
+                string sMessage = "";
                 string[] message;
                 string[] tmpString;
                 if (needToEncrypt)
@@ -177,6 +177,38 @@ namespace AsyncClient
                             {
                                 reportString += tmpString[0] + "*"; 
                             }
+                            break;
+                        case "ResAddUser":
+                            if (Convert.ToBoolean(command[1]))
+                                sMessage = "Пользователь успешно добавлено.";
+                            else
+                                sMessage = "При добавлении пользователя возникла ошибка.";
+                            if (IsNeedShowDataEvent != null)
+                                IsNeedShowDataEvent(sMessage);
+                            break;
+                        case "ResAddDev":
+                            if (Convert.ToBoolean(command[1]))
+                                sMessage = "Устройство успешно добавлено.";
+                            else
+                                sMessage = "При добавлении устройства возникла ошибка.";
+                            if (IsNeedShowDataEvent != null)
+                                IsNeedShowDataEvent(sMessage);
+                            break;
+                        case "ResDeleteDev":
+                            if (Convert.ToBoolean(command[1]))
+                                sMessage = "Устройство успешно удалено.";
+                            else
+                                sMessage = "При удалении устройства возникла ошибка.";
+                            if (IsNeedShowDataEvent != null)
+                                IsNeedShowDataEvent(sMessage);
+                            break;
+                        case "ResDeleteUser":
+                            if (Convert.ToBoolean(command[1]))
+                                sMessage = "Пользователь успешно удалён.";
+                            else
+                                sMessage = "При удалении пользователя возникла ошибка.";
+                            if (IsNeedShowDataEvent != null)
+                                IsNeedShowDataEvent(sMessage);
                             break;
                         case "Update":
                             IsNeedUpdateThreeEvent(command[1]);
