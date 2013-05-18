@@ -40,9 +40,15 @@ namespace Server
                 case "AddDev":
                     Result = AddDevInDB(SplitComand, users);
                     break;
+                case "DeleteDevice":
+                    Result = new byte[1];
+                    Result[0] = 0;
+                    DeleteDevice(SplitComand, users);
+                    break;
                 default:
                     Result = new byte[1];
                     Result[1] = 0;
+                    WinLog.Write("Команда не распознана");
                     break;
             }
             return Result;
@@ -159,8 +165,14 @@ namespace Server
             }
             catch
             {
+                WinLog.Write("Не удалось обновить состояние устройства, после его добавления", System.Diagnostics.EventLogEntryType.Error);
             }
         }
 
+        private void DeleteDevice(string[] splitComand, string user)
+        {
+            bool ResCom = BdDevice.DeleteDevice(splitComand[1]);
+            Storage.MessegesForUser.Enqueue("ResDeleteDev/" + ResCom.ToString() + "@" + user);
+        }
     }
 }

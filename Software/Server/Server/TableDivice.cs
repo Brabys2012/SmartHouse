@@ -6,6 +6,7 @@ using FirebirdSql.Data.FirebirdClient;
 using FirebirdSql.Data;
 using System.Collections;
 using System.Data;
+using System.Threading;
 
 namespace Server
 {
@@ -14,34 +15,7 @@ namespace Server
     /// </summary>
     public class TableDivice
     {
-        /// <summary>
-        /// Строка настроек БД
-        /// </summary>
-        private FbConnectionStringBuilder fbParam = new FbConnectionStringBuilder();
-        /// <summary>
-        /// При инициализации класса происходит создание строки настройки базы данных
-        /// </summary>
-        public TableDivice()
-        {
-            // Указываем тип используемого сервера
-            fbParam.ServerType = FbServerType.Context;
 
-            // Путь до файла с базой данных
-            fbParam.Database = @"DIVICES.FB";
-            fbParam.Pooling = true;
-            // Настройка параметров "общения" клиента с сервером
-            fbParam.Charset = "WIN1251";
-            fbParam.Dialect = 3;
-            // Путь до бибилиотеки-сервера Firebird
-            // Если библиотека находится в тойже папке
-            // что и exe фаил - указывать путь не надо
-            // Если используется не embedded - эта строчка не нужна
-            fbParam.ClientLibrary = @"localhost:D:\Program Files\Firebird\Firebird_2_1\bin\fbclient.dll";
-            fbParam.DataSource = "User-ПК";
-            // Настройки аутентификации
-            fbParam.UserID = "SYSDBA";
-            fbParam.Password = "masterkey";
-        }
 
         /// <summary>
         /// Метод нужен при срабатывание датчика он определяет к какому устройству он привязан что нужно выключить и какое сообщение прислать пользователям
@@ -51,71 +25,75 @@ namespace Server
         public ConfigForMess DeterDevice(byte numPort, byte numDev)
         {
             ConfigForMess result = new ConfigForMess();
-            //Создаем класс соединения
-            using (FbConnection fbc = new FbConnection(fbParam.ToString()))
+            lock (Storage.lockerBdDev)
             {
-                lock (Storage.lockerBdDev)
-                {
-                    //Открываем соединение
-                    fbc.Open();
-                    //Создаем транзакцию
-                    FbTransaction Transaction = fbc.BeginTransaction();
-                    FbCommand Query = new FbCommand("select t1.Messege, t2.NumOfPort, t2.NumOfDev" + 
-                                                    " from Device t1 left join Device t2 on t1.IDFK=t2.ID " +
-                                                    " where t1.NumOfPort = " + numPort.ToString() +
-                                                    " t1.NumOfDev = " + numDev.ToString() + " Rows(1)",
-                                                     fbc, Transaction);
+                // Ожадаем пока не закончится начатая транзакция
+                while (SQL.IsLockedTransaction)
+                    Thread.Sleep(5);
+                SQL.IsLockedTransaction = true;
+                // Выполняем транзакцию
+                if (SQL.FB_dbConnection != null)
                     try
                     {
-                        using (FbDataReader r = Query.ExecuteReader())
+                        if (SQL.FB_dbConnection.State == ConnectionState.Closed)
+                            SQL.FB_dbConnection.Open();
+                        //Создаем транзакцию
+                        using (FbTransaction transaction = SQL.FB_dbConnection.BeginTransaction(SQL.FB_dbReadTransactionOptions))
                         {
-                            // Читаем результат запроса построчно - строка за строкой
-                            if (r.Read())
+                            string Query = string.Format("select t1.Messege, t2.NumOfPort, t2.NumOfDev" +
+                                                           " from Device t1 left join Device t2 on t1.IDFK=t2.ID " +
+                                                           " where t1.NumOfPort = " + numPort.ToString() +
+                                                           " t1.NumOfDev = " + numDev.ToString() + " Rows(1)");
+                            using (FbCommand command = new FbCommand(Query, SQL.FB_dbConnection, transaction))
+                            using (FbDataReader r = command.ExecuteReader())
                             {
-                                if (!r.IsDBNull(0))
+                                // Читаем результат запроса построчно - строка за строкой
+                                if (r.Read())
                                 {
-                                    result.messege = r.GetString(0);
+                                    if (!r.IsDBNull(0))
+                                    {
+                                        result.messege = r.GetString(0);
+                                    }
+                                    else
+                                    {
+                                        result.messege = "";
+                                    }
+                                    if (r.IsDBNull(1))
+                                    {
+                                        result.number = null;
+                                    }
+                                    else
+                                    {
+                                        result.number[0] = (byte)r.GetInt32(1);
+                                        if (!r.IsDBNull(2))
+                                        {
+                                            result.number[1] = (byte)r.GetInt32(2);
+                                        }
+                                        else
+                                        {
+                                            result.number = null;
+                                        }
+                                    }
                                 }
                                 else
                                 {
                                     result.messege = "";
-                                }
-                                if (r.IsDBNull(1))
-                                {
                                     result.number = null;
                                 }
-                                else
-                                {
-                                    result.number[0] = (byte)r.GetInt32(1);
-                                    if (!r.IsDBNull(2))
-                                    {
-                                        result.number[1] = (byte)r.GetInt32(2);
-                                    }
-                                    else
-                                    {
-                                        result.number = null;
-                                    }
-                                }
                             }
-                            else
-                            {
-                                result.messege = "";
-                                result.number = null;
-                            }
+
+                            transaction.Commit();
                         }
-                        Transaction.Commit();
-                        fbc.Close();
                     }
                     catch
                     {
-                        result.messege = "Что то произошло с базой данных сервера, проверьте не поврежден ли сервер";
+                        result.messege = "Сбой при поиске устройства в базе денных, при обработке срабатывания датчика";
+                        WinLog.Write(result.messege, System.Diagnostics.EventLogEntryType.Error);
                         result.number = null;
-                        fbc.Close();
                         return result;
-
                     }
-                }
             }
+            SQL.IsLockedTransaction = false;
             return result;
         }
 
@@ -127,39 +105,15 @@ namespace Server
         /// <param name="State">Состояние</param>
         public void UpdateDeviceState(byte NumPort, byte NumDev, Int32 State)
         {
-            //Создаем класс соединения
-            using (FbConnection fbc = new FbConnection(fbParam.ToString()))
-            {
-                lock (Storage.lockerBdDev)
-                {
-                    //Открываем соединение
-                    fbc.Open();
-                    //Создаем транзакцию
-                    FbTransaction Transaction = fbc.BeginTransaction();
-                    FbCommand Query = new FbCommand("update Device set State = " + State.ToString() +
-                                                    " where t1.NumOfPort = " + NumPort.ToString() +
-                                                    " and t1.NumOfDev = " + NumDev.ToString(),
-                                                     fbc, Transaction);
-                    try
-                    {
-                        Transaction.Commit();
-                        fbc.Close();
-                    }
-                    catch
-                    {
-                        WinLog.Write("Ошибка: базы данных при обновления статуса утсройства!", System.Diagnostics.EventLogEntryType.Error);
-                        fbc.Close();
-                    }
-                }
-            }
-            string Name = DeterDevByNumber(NumPort,NumDev);
+            SQL.SQL_ExecuteNoneQueryCommitTransaction("update Device set State = " + State.ToString() +
+                                                      " where t1.NumOfPort = " + NumPort.ToString() +
+                                                      " and t1.NumOfDev = " + NumDev.ToString());
+            string Name = DeterDevByNumber(NumPort, NumDev);
             if (Name != "")
-            lock (Storage.ArrayUpdate)
-            {
-               Storage.ArrayUpdate.Tables[0].Rows.Find(Name).SetField<int>(Storage.ArrayUpdate.Tables[0].Columns["State"], State); 
-            }
-            else
-            WinLog.Write("Ошибка обновления устройства!",System.Diagnostics.EventLogEntryType.Error);           
+                lock (Storage.ArrayUpdate)
+                {
+                    Storage.ArrayUpdate.Tables[0].Rows.Find(Name).SetField<int>(Storage.ArrayUpdate.Tables[0].Columns["State"], State);
+                }
         }
 
         /// <summary>
@@ -168,32 +122,37 @@ namespace Server
         public void UpdateUserApp()
         {
             //Создаем класс соединения
-            using (FbConnection fbc = new FbConnection(fbParam.ToString()))
+            lock (Storage.lockerBdDev)
             {
-                lock (Storage.lockerBdDev)
-                {
+                // Ожадаем пока не закончится начатая транзакция
+                while (SQL.IsLockedTransaction)
+                    Thread.Sleep(5);
+                // Устанавливаем признак начала транзакции
+                SQL.IsLockedTransaction = true;
+                // Выполняем транзакцию
+                if (SQL.FB_dbConnection != null)
                     try
                     {
-                        fbc.Open();
-                        Storage.ArrayUpdate = new DataSet();
-                        //Создаем fbDataAdapter, что бы потом перенести обновления в DataSet
-                        FbDataAdapter DAFB = new FbDataAdapter("select Name, Type, State" +
-                                                               " from Device ", fbc);
-                        //Заполнили dataSet обновления, который будет пересылаться 
-                        //пользователям
-                        lock (Storage.ArrayUpdate)
-                        {
-                            Storage.ArrayUpdate.Clear();
-                            DAFB.Fill(Storage.ArrayUpdate);
-                            Storage.ArrayUpdate.Tables[0].PrimaryKey = new DataColumn[] { Storage.ArrayUpdate.Tables[0].Columns["Name"] }; ;
-                        }
-                        fbc.Close();
+                        if (SQL.FB_dbConnection.State == ConnectionState.Closed)
+                            SQL.FB_dbConnection.Open();
+                            Storage.ArrayUpdate = new DataSet();
+                            //Создаем fbDataAdapter, что бы потом перенести обновления в DataSet
+                            FbDataAdapter DAFB = new FbDataAdapter("select Name, Type, State" +
+                                                                   " from Device ", SQL.FB_dbConnection);
+                            //Заполнили dataSet обновления, который будет пересылаться 
+                            //пользователям
+                            lock (Storage.ArrayUpdate)
+                            {
+                                Storage.ArrayUpdate.Clear();
+                                DAFB.Fill(Storage.ArrayUpdate);
+                                Storage.ArrayUpdate.Tables[0].PrimaryKey = new DataColumn[] { Storage.ArrayUpdate.Tables[0].Columns["Name"] }; ;
+                            }
                     }
                     catch
                     {
-                        fbc.Close();
+                        WinLog.Write("Ошибка при считывание всех устройств в DataSet", System.Diagnostics.EventLogEntryType.Error);
                     }
-                }
+                SQL.IsLockedTransaction = false;
             }
         }
 
@@ -205,54 +164,60 @@ namespace Server
         public DevCommand DeterDevByName(string Name)
         {
             DevCommand Result = new DevCommand();
-            using (FbConnection fbc = new FbConnection(fbParam.ToString()))
+            lock (Storage.lockerBdDev)
             {
-                lock (Storage.lockerBdDev)
-                {
-                    //Открываем соединение
-                    fbc.Open();
-                    //Создаем транзакцию
-                    FbTransaction Transaction = fbc.BeginTransaction();
-                    FbCommand Query = new FbCommand("select NumOfPort, NumOfDev" +
-                                                    " from Device " +
-                                                    " where Name = " + Name + " Rows(1)",
-                                                     fbc, Transaction);
+                // Ожадаем пока не закончится начатая транзакция
+                while (SQL.IsLockedTransaction)
+                    Thread.Sleep(5);
+                // Устанавливаем признак начала транзакции
+                SQL.IsLockedTransaction = true;
+                // Выполняем транзакцию
+                if (SQL.FB_dbConnection != null)
                     try
                     {
-                        using (FbDataReader r = Query.ExecuteReader())
+                        if (SQL.FB_dbConnection.State == ConnectionState.Closed)
+                            SQL.FB_dbConnection.Open();
+                        using (FbTransaction transaction = SQL.FB_dbConnection.BeginTransaction(SQL.FB_dbReadTransactionOptions))
                         {
-                            if (r.Read())
+                            string Query = "select NumOfPort, NumOfDev" +
+                                          " from Device " +
+                                          " where Name = '" + Name + "' Rows(1)";
+                            using (FbCommand command = new FbCommand(Query, SQL.FB_dbConnection, transaction))
+                            using (FbDataReader r = command.ExecuteReader())
                             {
-                                if (r.IsDBNull(0))
+                                if (r.Read())
                                 {
-                                    Result.len = 0;
-                                }
-                                else
-                                {
-                                    if (!r.IsDBNull(1))
-                                    {
-                                        Result.port = (byte)r.GetInt32(0);
-                                        Result.device = (byte)r.GetInt16(1);
-                                        Result.len = 3;
-                                    }
-                                    else
+                                    if (r.IsDBNull(0))
                                     {
                                         Result.len = 0;
                                     }
+                                    else
+                                    {
+                                        if (!r.IsDBNull(1))
+                                        {
+                                            Result.port = (byte)r.GetInt32(0);
+                                            Result.device = (byte)r.GetInt16(1);
+                                            Result.len = 3;
+                                        }
+                                        else
+                                        {
+                                            Result.len = 0;
+                                        }
+                                    }
                                 }
                             }
+                            transaction.Commit();
                         }
-                        Transaction.Commit();
-                        fbc.Close();
                     }
                     catch
                     {
                         Result.len = 0;
-                        fbc.Close();
+                        WinLog.Write("Не удалось определить порт устройства по его имени", System.Diagnostics.EventLogEntryType.Error);
                         return Result;
 
                     }
-                }
+                // Сбрасываем признак транзакции
+                SQL.IsLockedTransaction = false;
             }
             return Result;
 
@@ -266,41 +231,48 @@ namespace Server
         /// <returns>имя устройства</returns>
         public String DeterDevByNumber(byte NumPort, byte NumDev)
         {
-            String Result = "";
-            using (FbConnection fbc = new FbConnection(fbParam.ToString()))
+            string Result = "";
+            lock (Storage.lockerBdDev)
             {
-                lock (Storage.lockerBdDev)
-                {
-                    //Открываем соединение
-                    fbc.Open();
-                    //Создаем транзакцию
-                    FbTransaction Transaction = fbc.BeginTransaction();
-                    FbCommand Query = new FbCommand("select Name" +
-                                                    " from Device " +
-                                                    " where NumOfPort = " + NumPort.ToString() + " and NumOfDev = " + NumDev.ToString() + " Rows(1)",
-                                                     fbc, Transaction);
+                // Ожадаем пока не закончится начатая транзакция
+                while (SQL.IsLockedTransaction)
+                    Thread.Sleep(5);
+                // Устанавливаем признак начала транзакции
+                SQL.IsLockedTransaction = true;
+                // Выполняем транзакцию
+                if (SQL.FB_dbConnection != null)
                     try
                     {
-                        using (FbDataReader r = Query.ExecuteReader())
+                        if (SQL.FB_dbConnection.State == ConnectionState.Closed)
+                            SQL.FB_dbConnection.Open();
+                        using (FbTransaction transaction = SQL.FB_dbConnection.BeginTransaction(SQL.FB_dbReadTransactionOptions))
                         {
-                            if (r.Read())
+                            string Query = "select Name" +
+                                          " from Device " +
+                                          " where NumOfPort = " + NumPort.ToString() + " and NumOfDev = " + NumDev.ToString() +
+                                          " Rows(1)";
+                            using (FbCommand command = new FbCommand(Query, SQL.FB_dbConnection, transaction))
+                            using (FbDataReader r = command.ExecuteReader())
                             {
-                                if (!r.IsDBNull(0))
+                                if (r.Read())
                                 {
-                                    Result = r.GetString(0);
+                                    if (!r.IsDBNull(0))
+                                    {
+                                        Result = r.GetString(0);
+                                    }
                                 }
-                            } 
+                            }
+                            transaction.Commit();
                         }
-                        Transaction.Commit();
-                        fbc.Close();
                     }
                     catch
                     {
-                        fbc.Close();
+                        WinLog.Write("Не удалось установит имя устройства по номеру порта", System.Diagnostics.EventLogEntryType.Error);
                         return Result;
 
                     }
-                }
+                // Сбрасываем признак транзакции
+                SQL.IsLockedTransaction = false;
             }
             return Result;
         }
@@ -312,50 +284,53 @@ namespace Server
         /// <returns>ID устройства</returns>
         public String DeterIdDevByName(string NameDev)
         {
-             String result = "";
-            //Создаем класс соединения
-            using (FbConnection fbc = new FbConnection(fbParam.ToString()))
+            string result = "";
+            lock (Storage.lockerBdDev)
             {
-                lock (Storage.lockerBdDev)
-                {
-                    //Открываем соединение
-                    fbc.Open();
-                    //Создаем транзакцию
-                    FbTransaction Transaction = fbc.BeginTransaction();
-                    FbCommand Query = new FbCommand("select ID" + 
-                                                    " from Device " +
-                                                    " where Name = " + NameDev,
-                                                     fbc, Transaction);
+                // Ожадаем пока не закончится начатая транзакция
+                while (SQL.IsLockedTransaction)
+                    Thread.Sleep(5);
+                // Устанавливаем признак начала транзакции
+                SQL.IsLockedTransaction = true;
+                // Выполняем транзакцию
+                if (SQL.FB_dbConnection != null)
                     try
                     {
-                        using (FbDataReader r = Query.ExecuteReader())
+                        if (SQL.FB_dbConnection.State == ConnectionState.Closed)
+                            SQL.FB_dbConnection.Open();
+                        using (FbTransaction transaction = SQL.FB_dbConnection.BeginTransaction(SQL.FB_dbReadTransactionOptions))
                         {
-                            // Читаем результат запроса построчно - строка за строкой
-                            if (r.Read())
+                            string Query = "select ID" +
+                                           " from Device " +
+                                           " where Name = '" + NameDev + "'";
+                            using (FbCommand command = new FbCommand(Query, SQL.FB_dbConnection, transaction))
+                            using (FbDataReader r = command.ExecuteReader())
                             {
-                                if (!r.IsDBNull(0))
+                                // Читаем результат запроса построчно - строка за строкой
+                                if (r.Read())
                                 {
-                                    byte IdDev = r.GetByte(0);
-                                    result = IdDev.ToString();
+                                    if (!r.IsDBNull(0))
+                                    {
+                                        byte IdDev = r.GetByte(0);
+                                        result = IdDev.ToString();
+                                    }
+                                }
+                                else
+                                {
+                                    result = "";
                                 }
                             }
-                            else
-                            {
-                                result = "";
-                            }
+                            transaction.Commit();
                         }
-                        Transaction.Commit();
-                        fbc.Close();
                     }
                     catch
                     {
                         result = "";
-                        fbc.Close();
+                        WinLog.Write("Не удалось считать из базы ID устройства", System.Diagnostics.EventLogEntryType.Error);
                         return result;
-
                     }
-                }
             }
+            SQL.IsLockedTransaction = false;
             return result;
         }
 
@@ -372,60 +347,58 @@ namespace Server
         public bool AddNewDevice(string NumPort, string NumDev, string NameDev,
                                  string TypeDev, string Messege, string NameParent)
         {
-            //Создаем класс соединения
-            using (FbConnection fbc = new FbConnection(fbParam.ToString()))
+            bool result;
+            //Создаем класс соединения                
+            string query = " (" + NumPort + "," + NumDev + ", '" + NameDev + "', '" +
+                TypeDev + "', ";
+            if (Messege != "")
             {
-                
-                string query = " (" + NumPort + "," + NumDev + ", '" + NameDev + "', '" +
-                    TypeDev + "', "; 
-                if (Messege != "") 
-                {
-                    query += " '" + Messege + "', ";
-                }
-                else
-                    query += " null, ";
+                query += " '" + Messege + "', ";
+            }
+            else
+                query += " null, ";
 
-                if (NameParent != "")
+            if (NameParent != "")
+            {
+                string ParentID = DeterIdDevByName(NameParent);
+                query += ParentID + ")";
+            }
+            else
+                query += " null)";
+            result = SQL.SQL_ExecuteNoneQueryCommitTransaction("insert into Device (NUMOFPORT, NUMOFDEV," +
+                                            " Name, Type, MESSEGE, IDFK) " + query);
+            if ((NameDev != "") && (result))
+                lock (Storage.ArrayUpdate)
                 {
-                    string ParentID = DeterIdDevByName(NameParent);
-                    query +=  ParentID + ")";
+                    DataRow RowDev = Storage.ArrayUpdate.Tables[0].NewRow();
+                    RowDev[0] = NameDev;
+                    RowDev[1] = TypeDev;
+                    Storage.ArrayUpdate.Tables[0].Rows.Add(RowDev);
                 }
-                else
-                    query += " null)";
-                lock (Storage.lockerBdDev)
-                {
-                    //Открываем соединение
-                    fbc.Open();
-                    //Создаем транзакцию
-                    FbTransaction Transaction = fbc.BeginTransaction();
-                    FbCommand Query = new FbCommand("insert into Device (NUMOFPORT, NUMOFDEV," +
-                                                    " Name, Type, MESSEGE, IDFK) " + query, 
-                                                     fbc, Transaction);
-                    try
-                    {
+            else
+            {
+                WinLog.Write("Ошибка обновления устройства!", System.Diagnostics.EventLogEntryType.Error);
+                result = false;
+            }
+            return result;
+        }
 
-                        Transaction.Commit();
-                        if (NameDev != "")
-                            lock (Storage.ArrayUpdate)
-                            {
-                                DataRow RowDev = Storage.ArrayUpdate.Tables[0].NewRow();
-                                RowDev[0] = NameDev;
-                                RowDev[1] = TypeDev;
-                                Storage.ArrayUpdate.Tables[0].Rows.Add(RowDev);
-                            }
-                        else
-                            WinLog.Write("Ошибка обновления устройства!", System.Diagnostics.EventLogEntryType.Error);
-                        fbc.Close();
-                    }
-                    catch
-                    {
-                        WinLog.Write("Ошибка: базы данных при обновления статуса утсройства!", System.Diagnostics.EventLogEntryType.Error);
-                        fbc.Close();
-                        return false;
-                    }
+        public bool DeleteDevice(string Name)
+        {
+            bool result = SQL.SQL_ExecuteNoneQueryCommitTransaction("delet from Device " +
+                                                                    " where Device = '" + Name + "'");
+            if ((Name != "") && (result))
+            {
+                lock (Storage.ArrayUpdate)
+                {
+                    Storage.ArrayUpdate.Tables[0].Rows.Find(Name).Delete();
                 }
             }
-            return true;
+            else 
+            {
+                result = false;
+            }
+            return result;    
         }
     }
 }

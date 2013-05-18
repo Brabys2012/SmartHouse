@@ -37,7 +37,7 @@ namespace Server
                             SQL.FB_dbConnection.Open();
                         using (FbTransaction transaction = SQL.FB_dbConnection.BeginTransaction(SQL.FB_dbReadTransactionOptions))
                         {
-                            string sqlQuery = string.Format("select U.Role from Users U where U.Login = '{0}' and U.Password = '{1}'", login, password);
+                            string sqlQuery = string.Format("select U.Role from Useres U where U.Login = '{0}' and U.Password = '{1}'", login, password);
                             using (FbCommand command = new FbCommand(sqlQuery, SQL.FB_dbConnection, transaction))
                             using (FbDataReader r = command.ExecuteReader())
                             {

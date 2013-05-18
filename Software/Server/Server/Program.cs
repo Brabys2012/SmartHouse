@@ -43,7 +43,6 @@ namespace Server
             CPList.Start();
             CoreInSer.UpdateClient();
             Console.WriteLine("Server started");
-            Console.WriteLine(TableUser.CheckUser("admin", "admin"));
             Console.WriteLine("OK");
             Console.ReadLine();
         }
