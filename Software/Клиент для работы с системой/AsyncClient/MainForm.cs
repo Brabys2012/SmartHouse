@@ -13,11 +13,6 @@ namespace AsyncClient
         /// </summary>
         AsynchronousClient Client = new AsynchronousClient();
 
-        /// <summary>
-        /// Указывает на необходимость шифрования данных
-        /// </summary>
-        bool encryptIt = false;
-
         string[] allParam;
         string[] loginAndPass;
         
@@ -43,10 +38,10 @@ namespace AsyncClient
 
             //Подписываемя на события логической части лиента.
             Client.IsNeedUpdateThreeEvent += new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent);
-            Client.StatusIsActiveEvent += new StatusIsActiveDelegate(Client_StatusIsActive);
             Client.IsNeedShowLoginFormEvent += new IsNeedShowDelegate(Client_IsNeedShowLoginFormEvent);
             Client.IsNeedShowDataEvent += new IsNeedShowDataDelegate(Client_IsNeedShowDataEvent);
             Client.IsNeedToPlotEvent += new IsNeedToPlotDelegate(Client_IsNeedToPlotEvent);
+            Client.IsNeedChangeStatusEvent += new IsNeedChangeStatus(Client_IsNeedChangeStatusEvent);
 
             //Автоподключение
             string FileData;
@@ -57,8 +52,17 @@ namespace AsyncClient
             }
             allParam = FileData.Split(';');
             loginAndPass = allParam[0].Split(',');
-            encryptIt = Convert.ToBoolean(allParam[1].TrimStart(trimChar));
             Client.StartClient(loginAndPass[0], Convert.ToInt32(loginAndPass[1]));
+            Client._srv.encryptIt = Convert.ToBoolean(allParam[1].TrimStart(trimChar));
+        }
+
+        //Обработка события необходимости измениния статуса
+        void Client_IsNeedChangeStatusEvent()
+        {
+            if (Client._srv.status)
+                Client._srv.status = false;
+            else
+                Client._srv.status = true;
         }
 
         /// <summary>
@@ -150,7 +154,7 @@ namespace AsyncClient
         }
 
         /// <summary>
-        /// Обработка события необъодимости отобразить форму заполнения логина и пароля.
+        /// Обработка события необходимости отобразить форму заполнения логина и пароля.
         /// </summary>
         AuthForm _frm;
         void Client_IsNeedShowLoginFormEvent()
@@ -162,7 +166,7 @@ namespace AsyncClient
                 _frm = new AuthForm();
                 if (_frm.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    Client.Send(_frm.tbLogin.Text + "." + _frm.tbPassword.Text,encryptIt);
+                    Client.Send(_frm.tbLogin.Text + "." + _frm.tbPassword.Text,Client._srv.encryptIt);
                 }
             }
         
@@ -182,7 +186,7 @@ namespace AsyncClient
         {
             if (this.stLabel.Text == "Подключён")
             {
-                Client.Send("EXIT",encryptIt);
+                Client.Send("EXIT",Client._srv.encryptIt);
                 Client.CloseConnection();
             } 
         }
@@ -207,18 +211,21 @@ namespace AsyncClient
         /// <param name="e"></param>
         private void Connect_Click(object sender, EventArgs e)
         {
-            char[] charToTrim = new char[1] { ';' };
             //проверка текущего подключения
             if (!Client._srv.status)
-            { //если в екущий момент отключены
+            {
+                string[] IpAndPort = { "", "" };
+                //если в текущий момент отключены
                 string FileData;
-                string[] tempArray;
+                char[] trimChar = new char[2] { '\r', '\n' };
                 using (var sr = new StreamReader("Config.dat", Encoding.GetEncoding(1251)))
                 {
-                    FileData = sr.ReadLine();
+                    FileData = sr.ReadToEnd();
                 }
-                tempArray = FileData.Split(',');
-                Client.StartClient(tempArray[0], Convert.ToInt32(tempArray[1].TrimEnd(charToTrim)));
+                allParam = FileData.Split(';');
+                IpAndPort = allParam[0].Split(',');
+                Client.StartClient(loginAndPass[0], Convert.ToInt32(loginAndPass[1]));
+                Client._srv.encryptIt = Convert.ToBoolean(allParam[1].TrimStart(trimChar));
                
             }
             else 
@@ -237,7 +244,7 @@ namespace AsyncClient
         {
             if (this.stLabel.Text == "Подключён")
             {
-                Client.Send("EXIT", encryptIt);
+                Client.Send("EXIT", Client._srv.encryptIt);
                 Client.CloseConnection();
                 Client._srv.status = false;
                 
@@ -338,7 +345,7 @@ namespace AsyncClient
             {
 
                 Client.Send("GetCounterRec/" + _ReportDataForm.BegDate +"/" +
-                    _ReportDataForm.EndDate + "/" + this.trvDevice.SelectedNode.Text + "?", encryptIt);
+                    _ReportDataForm.EndDate + "/" + this.trvDevice.SelectedNode.Text + "?", Client._srv.encryptIt);
             }
         }
 
@@ -346,26 +353,24 @@ namespace AsyncClient
         {
             string param = "";
             if (butAction.Text == "Выключить")
-            {
                 param = "0";
-            }
             else param = "1";
-            Client.Send("SetParam/" + trvDevice.SelectedNode.Text + "/" + param + "?", encryptIt);
+            Client.Send("SetParam/" + trvDevice.SelectedNode.Text + "/" + param + "?", Client._srv.encryptIt);
         }
 
         private void butGetUpdate_Click(object sender, EventArgs e)
         {
-            Client.Send("GetUpdate?", encryptIt);
+            Client.Send("GetUpdate?", Client._srv.encryptIt);
         }
 
         private void butDimmersSet_Click(object sender, EventArgs e)
         {
-            Client.Send("SetParam/" + trvDevice.SelectedNode.Text + "/" + tbDimmersPower.Text + "?", encryptIt);
+            Client.Send("SetParam/" + trvDevice.SelectedNode.Text + "/" + tbDimmersPower.Text + "?", Client._srv.encryptIt);
         }
 
         private void SystemConf_Click(object sender, EventArgs e)
         {
-            AdminPanel AdmPanel = new AdminPanel(Client, encryptIt);
+            AdminPanel AdmPanel = new AdminPanel(Client, Client._srv.encryptIt);
             AdmPanel.ShowDialog();
         }
     }

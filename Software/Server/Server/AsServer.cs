@@ -31,11 +31,11 @@ namespace Server
             /// <summary>
             /// Количество сделанных попыток подключения.
             /// </summary>
-            public int AuthCount;
+            public int AuthCount = 0;
             /// <summary>
             /// Указывает авторизован ли клиент.
             /// </summary>
-            public bool IsAuth;
+            public bool IsAuth = false;
             /// <summary>
             /// Время подключения клиента.
             /// </summary>
@@ -43,7 +43,7 @@ namespace Server
             /// <summary>
             /// Указывает текущее состояние клиента.  
             /// </summary>
-            public bool IsActive;
+            public bool IsActive = false;
             /// <summary>
             /// Логин клиента.
             /// </summary>
@@ -58,26 +58,32 @@ namespace Server
         /// Поток, в котором происходит проверка активности клиентов.
         /// </summary>
         private Thread _clientChecker;
+
         /// <summary>
         /// Поток, в котором проверяется очередь сообщений для пользователей.
         /// </summary>
         private Thread _QueueChecker;
+
         /// <summary>
         /// Поток в котором отправляются данные о текущей конфигурации системы.
         /// </summary>
         private Thread _Updater;
+
         /// <summary>
         /// Сокет сервера.
         /// </summary>
         private Socket _serverSocket;
+
         /// <summary>
         /// IP адрес сетевого интерфеса который будет прослушивать сервер.
         /// </summary>
         private IPAddress _serverAddress;
+
         /// <summary>
         /// Порт сервера.
         /// </summary>
         private int _serverPort;
+
         /// <summary>
         /// Лист содержит информацию о всех активных подключениях.
         /// </summary>
@@ -110,7 +116,7 @@ namespace Server
             _QueueChecker.IsBackground = true;
             _QueueChecker.Start();
 
-            // Получаем информацию о локальном компьютере
+            // Создаём конечную точку
             IPEndPoint _endPoint = new IPEndPoint(_serverAddress, _serverPort);
             // Создаем сокет, привязываем его к адресу и начинаем прослушивание
             _serverSocket = new Socket(_endPoint.Address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
@@ -119,7 +125,9 @@ namespace Server
             // Начинаем прослушивание
             for (int i = 0; i < 10; i++)
                 _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), _serverSocket);
-            WinLog.Write(string.Format("Сервер {0}:{1} успешно запущен.", _serverAddress, _serverPort), System.Diagnostics.EventLogEntryType.Information);
+            Console.WriteLine("Сервер {0}:{1} успешно запущен.", _serverAddress, _serverPort);
+            WinLog.Write(string.Format("Сервер {0}:{1} успешно запущен.", _serverAddress, _serverPort),
+                System.Diagnostics.EventLogEntryType.Information);
         }
 
         /// <summary>
@@ -163,8 +171,10 @@ namespace Server
                         {
                             try
                             {
+                                //Проверка времени соединения неавторизованных клиентов
                                 if (!_clients[i].IsAuth && (_clients[i].ConnDate <= DateTime.Now))
                                 {
+                                    Send(_clients[i], @"mess\Time out autorization", true);
                                     CloseConnection(_clients[i]);
                                     i--;
                                 }
@@ -208,8 +218,10 @@ namespace Server
                 aceptClient.IsActive = true;
 
                 // Начало операции авторизации 
-                aceptClient.Socket.BeginReceive(aceptClient.Buffer, 0, aceptClient.Buffer.Length, SocketFlags.None, new AsyncCallback(AuthCallback), aceptClient);
-                WinLog.Write(string.Format("Попытка авторизации клиента {0}.", aceptClient.Socket.RemoteEndPoint), System.Diagnostics.EventLogEntryType.Information);
+                aceptClient.Socket.BeginReceive(aceptClient.Buffer, 0, aceptClient.Buffer.Length, 
+                    SocketFlags.None, new AsyncCallback(AuthCallback), aceptClient);
+                WinLog.Write(string.Format("Попытка авторизации клиента {0}.", 
+                    aceptClient.Socket.RemoteEndPoint), System.Diagnostics.EventLogEntryType.Information);
                 Send(aceptClient, "Auth?", true);
 
                 //Начало новой операции приёма подключения
@@ -219,8 +231,6 @@ namespace Server
             {
                 WinLog.Write(exc.Message, System.Diagnostics.EventLogEntryType.Error);
                 CloseConnection(aceptClient);
-
-                // TODO: В блоках catch если выводится некоторое сообщение следует делать это сообщение уникальным, чтобы однозначно идентифицировать его. Бедет полезно при исправлении ошибок. Легко найти участок кода где произошла ошибка.
 
                 Console.WriteLine("Socket exception: " + exc.SocketErrorCode + exc.Message);
             }
@@ -251,7 +261,6 @@ namespace Server
                         count = authClient.Socket.EndReceive(result);
                         authData = Encoding.ASCII.GetString(authClient.Buffer, 0, count).Split('.');
                         role = TableUser.CheckUser(authData[0], authData[1]);
-                        //TODO создать метод обращающийся к базе для проверки логина и пароля
                         if (role != "")
                         {
                             authClient.IsAuth = true;
@@ -277,13 +286,13 @@ namespace Server
                             authClient.AuthCount++;
                             WinLog.Write("Ошибка авторизации клиента с IP - " + authClient.Socket.RemoteEndPoint,
                                          System.Diagnostics.EventLogEntryType.FailureAudit);
-                            Send(authClient, "Wrong login or password.The number of attempts" + Convert.ToString(3 - authClient.AuthCount), true);
+                            Send(authClient, @"mess/Wrong login or password.The number of attempts" + Convert.ToString(3 - authClient.AuthCount), true);
                         }
                     }
                 }
                 else
                 {
-                    Send(authClient, "Превышено количество попыток подключения", true);
+                    Send(authClient, @"mess/Превышено количество попыток подключения", true);
                     CloseConnection(authClient);
                 }
             }
@@ -300,35 +309,37 @@ namespace Server
         /// <param name="result"></param>
         private void ReceiveCallback(IAsyncResult result)
         {
-            string messData = "";
+            string[] messData;
             string[] Data = null;
             int ReadedByte = 0;
             Client processClient = (Client)result.AsyncState;
             ReadedByte = processClient.Socket.EndReceive(result);
             try
             {
-                messData = Crypto.Decrypt(Encoding.ASCII.GetString(processClient.Buffer, 0, ReadedByte));
-                Data = messData.Split('/');
-
-                switch (Data[0])
-                { 
-                    case "Exit":
-                        CloseConnection(processClient);
-                        processClient.IsActive = false;
-                        break;
-                    case "GetUpdate":
-                        _Updater = new Thread(delegate() { UpdateData(processClient.login); });
-                        _Updater.IsBackground = true;
-                        _Updater.Start();
-                        break;
-                    case "GetCounterRec":
-                    case "AddUser":
-                    case "AddDev":
-                        Storage.QueueTCP.Enqueue(messData + "/" + processClient.login);
-                        break;
-                    default:
-                        Send(processClient.login, "Incorrect command format!", true);
-                        break;
+                messData = Crypto.Decrypt(Encoding.ASCII.GetString(processClient.Buffer, 0, ReadedByte)).Split('?');
+                for (int i = 0; i < messData.Length; i++)
+                {
+                    Data = messData[i].Split('/');
+                    switch (Data[0])
+                    {
+                        case "Exit":
+                            CloseConnection(processClient);
+                            processClient.IsActive = false;
+                            break;
+                        case "GetUpdate":
+                            _Updater = new Thread(delegate() { UpdateData(processClient.login); });
+                            _Updater.IsBackground = true;
+                            _Updater.Start();
+                            break;
+                        case "GetCounterRec":
+                        case "AddUser":
+                        case "AddDev":
+                            Storage.QueueTCP.Enqueue(messData + "/" + processClient.login);
+                            break;
+                        default:
+                            Send(processClient.login, @"mess/Incorrect command format!", true);
+                            break;
+                    }
                 }
 
                 if (processClient.IsActive)
@@ -436,7 +447,7 @@ namespace Server
                 {
                     for (i = 0; i < _clients.Count; i++)
                     {
-
+                        Send(_clients[i], data, true);
                     }
                 }
 
@@ -446,7 +457,7 @@ namespace Server
                 //????Необходимо закрыть подключение которое вызвало исключение?????.
                 //CloseConnection((Client)_clients[i]);
                 WinLog.Write(ex.Message, System.Diagnostics.EventLogEntryType.Error);
-                Console.WriteLine("Ошибка: {0}", ex.Message);
+                Console.WriteLine("Ошибка при отпрпавке сообщения: {0}", ex.Message);
             }
         }
 
@@ -463,12 +474,13 @@ namespace Server
 
                 // Завершаем отправку данных клиенту.
                 int bytesSent = client.Socket.EndSend(result);
-                Console.WriteLine("Отправлено {0} байтов, клиенту с IP - {1}.", bytesSent, client.Socket.RemoteEndPoint);
+                Console.WriteLine("Отправлено {0} байтов, клиенту с IP - {1}.",
+                    bytesSent, client.Socket.RemoteEndPoint);
 
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Ошибка: {0}", ex.Message);
+                Console.WriteLine("Ошибка при отправке сообщения: {0}", ex.Message);
             }
         }
 
@@ -505,5 +517,6 @@ namespace Server
             }
             //TODO как закрыть поток?
         }
+
     }
 }

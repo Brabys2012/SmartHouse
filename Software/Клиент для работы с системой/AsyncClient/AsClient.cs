@@ -15,6 +15,7 @@ namespace AsyncClient
     public delegate void StatusIsActiveDelegate(bool IsActive);
     public delegate void IsNeedToPlotDelegate(string reportData);
     public delegate void IsNeedUpdateThreeDelegate(string DevData);
+    public delegate void IsNeedChangeStatus();
 
     public class AsynchronousClient
         {
@@ -41,27 +42,23 @@ namespace AsyncClient
 
             public event IsNeedShowDelegate IsNeedShowLoginFormEvent;
             public event IsNeedShowDataDelegate IsNeedShowDataEvent;
-            public event StatusIsActiveDelegate StatusIsActiveEvent;
             public event IsNeedToPlotDelegate IsNeedToPlotEvent;
             public event IsNeedUpdateThreeDelegate IsNeedUpdateThreeEvent;
+            public event IsNeedChangeStatus IsNeedChangeStatusEvent;
 
             public StateObject _srv;
 
             public void StartClient(string IP, int port)
             {
-                // Connect to a remote device.
+                // Настраиваем и начинаем подключение к удалённой точке.
                 try
                 {
 
                     IPAddress ipAddress = IPAddress.Parse(IP);
                     IPEndPoint remoteEP = new IPEndPoint(ipAddress, port);
-
                     _srv = new StateObject();
-                    _srv.workSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    //Запускаем поток для проверки состояния подключения.
-                    Thread _Status = new Thread(new ThreadStart(StatusChecker));
-                    _Status.IsBackground = true;
-                    _Status.Start();
+                    _srv.workSocket = new Socket(AddressFamily.InterNetwork,
+                        SocketType.Stream, ProtocolType.Tcp);
                     // Начинаем подключение к серверу.
                     _srv.workSocket.BeginConnect(remoteEP, new AsyncCallback(ConnectCallback), _srv);
                 }
@@ -73,41 +70,23 @@ namespace AsyncClient
             }
 
             /// <summary>
-            /// Поток в котором проверяется состояние подключения
+            /// Обратная функция для подключения
             /// </summary>
-            public void StatusChecker()
-            {
-                while (true)
-                {
-                    lock (_srv)
-                    {
-                        if (_srv.status)
-                        {
-                            if (StatusIsActiveEvent != null)
-                                StatusIsActiveEvent(true);
-                        }
-                        else 
-                        {
-                            if (StatusIsActiveEvent != null)
-                                StatusIsActiveEvent(false);
-                        }
-                    }
-                    Thread.Sleep(1500);
-                }     
-            }
-
+            /// <param name="ar">Результат выполнения подключения(сокет)</param>
             private  void ConnectCallback(IAsyncResult ar)
             {
                 try
                 {
-                    // Retrieve the socket from the state object.
+                    //Получаем сокет.
                     StateObject client = (StateObject)ar.AsyncState;
 
-                    // Complete the connection.
+                    // Завершаем подключение.
                     client.workSocket.EndConnect(ar);
                     client.status = true;
-                    // Begin receiving the data from the remote device.
-                    client.workSocket.BeginReceive(client.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallback), client);
+                    IsNeedChangeStatusEvent();
+                    //Начинаем получать данные от удалённой точки.
+                    client.workSocket.BeginReceive(client.buffer, 0, 
+                        StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallback), client);
                 }
                 catch (Exception e)
                 {
@@ -115,25 +94,28 @@ namespace AsyncClient
                         IsNeedShowDataEvent(e.Message);
                 }
             }
-
+            
+            /// <summary>
+            /// Обратная функция для обработки полученного сообщения
+            /// </summary>
+            /// <param name="ar">Результат выполнения подключения(сокет)</param>
             private void ReceiveCallback(IAsyncResult ar)
             {
                 try
                 {
-                    // Retrieve the state object and the client socket 
-                    // from the asynchronous state object.
+                    //Получаем сокет.
                     StateObject state = (StateObject)ar.AsyncState;
                     Socket client = state.workSocket;
 
-                    // Read data from the remote device.
+                    // Считываем данные и отправляем их на обработку.
                     int bytesRead = client.EndReceive(ar);
-
                     if (bytesRead > 0)
                     {
                         Parser(bytesRead, _srv.encryptIt);
                     }
-                    // Get the rest of the data.
-                    client.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallback), state);
+                    //Запускаем новую функцию приёма данных.
+                    client.BeginReceive(state.buffer, 0, 
+                        StateObject.BufferSize, 0, new AsyncCallback(ReceiveCallback), state);
 
                 }
                 catch (Exception e)
@@ -144,10 +126,13 @@ namespace AsyncClient
             }
 
             private void Parser(int bytesRead, bool needToEncrypt)
-            {   string[] message;
+            {  
+                string sMessage = "";
+                string[] message;
                 string[] tmpString;
                 if (needToEncrypt)
-                    message = Crypto.Decrypt(Encoding.ASCII.GetString(_srv.buffer, 0, bytesRead)).Split('?');
+                    message = Crypto.Decrypt(
+                        Encoding.ASCII.GetString(_srv.buffer, 0, bytesRead)).Split('?');
                 else
                     message = Encoding.ASCII.GetString(_srv.buffer, 0, bytesRead).Split('?');
 
@@ -175,7 +160,6 @@ namespace AsyncClient
                             // Генерируем событие необходимости отобразить форму ввода логина/пароля
                             if (IsNeedShowLoginFormEvent != null)
                                 IsNeedShowLoginFormEvent();
-
                             break;
                         case "mess":
                             if (IsNeedShowDataEvent != null)
@@ -194,15 +178,44 @@ namespace AsyncClient
                                 reportString += tmpString[0] + "*"; 
                             }
                             break;
+                        case "ResAddUser":
+                            if (Convert.ToBoolean(command[1]))
+                                sMessage = "Пользователь успешно добавлено.";
+                            else
+                                sMessage = "При добавлении пользователя возникла ошибка.";
+                            if (IsNeedShowDataEvent != null)
+                                IsNeedShowDataEvent(sMessage);
+                            break;
+                        case "ResAddDev":
+                            if (Convert.ToBoolean(command[1]))
+                                sMessage = "Устройство успешно добавлено.";
+                            else
+                                sMessage = "При добавлении устройства возникла ошибка.";
+                            if (IsNeedShowDataEvent != null)
+                                IsNeedShowDataEvent(sMessage);
+                            break;
+                        case "ResDeleteDev":
+                            if (Convert.ToBoolean(command[1]))
+                                sMessage = "Устройство успешно удалено.";
+                            else
+                                sMessage = "При удалении устройства возникла ошибка.";
+                            if (IsNeedShowDataEvent != null)
+                                IsNeedShowDataEvent(sMessage);
+                            break;
+                        case "ResDeleteUser":
+                            if (Convert.ToBoolean(command[1]))
+                                sMessage = "Пользователь успешно удалён.";
+                            else
+                                sMessage = "При удалении пользователя возникла ошибка.";
+                            if (IsNeedShowDataEvent != null)
+                                IsNeedShowDataEvent(sMessage);
+                            break;
                         case "Update":
                             IsNeedUpdateThreeEvent(command[1]);
                             break;
-
                     }
-                }
-                   
+                }    
             }
-
 
             public void Send(String data, bool needToEncrypt)
             {
@@ -269,6 +282,7 @@ namespace AsyncClient
             public void CloseConnection()
             {
                 _srv.workSocket.Close();
+                IsNeedChangeStatusEvent();
             }
         }
     }
