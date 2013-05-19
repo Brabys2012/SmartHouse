@@ -349,7 +349,7 @@ namespace Server
         {
             bool result;
             //Создаем класс соединения                
-            string query = " (" + NumPort + "," + NumDev + ", '" + NameDev + "', '" +
+            string query = "values (" + NumPort + "," + NumDev + ", '" + NameDev + "', '" +
                 TypeDev + "', ";
             if (Messege != "")
             {

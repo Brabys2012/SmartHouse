@@ -41,7 +41,7 @@ namespace Server
                     {
                         lock (Storage.MessegesForUser)
                         {
-                            Storage.MessegesForUser.Enqueue(CFM.messege);
+                            Storage.MessegesForUser.Enqueue("mess/" + CFM.messege + "@all");
                         }
                     }
 
@@ -79,14 +79,12 @@ namespace Server
                     }
                     catch
                     {
-                        lock (Storage.MessegesForUser)
-                            Storage.MessegesForUser.Enqueue("Произошла ошибка сервера");
+                        WinLog.Write("Произошла ошибка сервера, при выключение устройства", System.Diagnostics.EventLogEntryType.Error);
                     }
                 }
                 else
                 {
-                    lock (Storage.MessegesForUser)
-                        Storage.MessegesForUser.Enqueue("Произошла ошибка сервера");
+                    WinLog.Write("Произошла ошибка сервера, при выключение устройства", System.Diagnostics.EventLogEntryType.Error);
                 }
             }
         }

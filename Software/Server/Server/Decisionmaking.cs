@@ -45,10 +45,22 @@ namespace Server
                     Result[0] = 0;
                     DeleteDevice(SplitComand, users);
                     break;
+                case "DeleteUser":
+                    Result = new byte[1];
+                    Result[0] = 0;
+                    DeleteDevice(SplitComand, users);
+                    break;
+                case "UpdatePassworld":
+                    Result = new byte[1];
+                    Result[0] = 0;
+                    UpdatePassword(SplitComand, users);
+                    break;
                 default:
                     Result = new byte[1];
                     Result[1] = 0;
-                    WinLog.Write("Команда не распознана");
+                    WinLog.Write("Команда не распознана", System.Diagnostics.EventLogEntryType.Error);
+                    lock (Storage.MessegesForUser)
+                        Storage.MessegesForUser.Enqueue("mess/Ваша команда не корректна@" + users); 
                     break;
             }
             return Result;
@@ -91,17 +103,17 @@ namespace Server
         {
             byte[] result;
             bool ResCom = false;
-            if (SplitComand.Count() == 6)
+            if (SplitComand.Count() == 7)
             {
-                ResCom = BdDevice.AddNewDevice(SplitComand[0], SplitComand[1], SplitComand[2],
-                    SplitComand[3], SplitComand[4], SplitComand[5]);
+                ResCom = BdDevice.AddNewDevice(SplitComand[1], SplitComand[2], SplitComand[3],
+                    SplitComand[4], SplitComand[5], SplitComand[6]);
                 lock (Storage.MessegesForUser)
                 {
-                    Storage.MessegesForUser.Enqueue("ResAddDev/" + ResCom.ToString() + "@" + user);
+                        Storage.MessegesForUser.Enqueue("ResAddDev/" + ResCom.ToString() + "@" + user);
                 }
                 if (ResCom)
                 {
-                    result = ProtocolForDM.Pack(Convert.ToByte(SplitComand[0]), Convert.ToByte(SplitComand[1]), null);
+                    result = ProtocolForDM.Pack(Convert.ToByte(SplitComand[1]), Convert.ToByte(SplitComand[2]), null);
                 }
                 else
                 {
@@ -121,6 +133,9 @@ namespace Server
             return result;
         }
 
+        /// <summary>
+        /// Парсит ответ от контролера с учетом команды, присланной пользователем
+        /// </summary>
         public void ParseAnswer(DevCommand Answer, string Com)
         {
             string[] SplitCom = Com.Split('/');
@@ -135,6 +150,9 @@ namespace Server
             }
         }
 
+        /// <summary>
+        /// Парсит ответ от контролера установил, контролер значение или нет
+        /// </summary>
         private void SetParamAnswer(DevCommand Answer, string[] SplitCom)
         {
             try
@@ -151,9 +169,14 @@ namespace Server
             }
             catch
             {
+                string Mess = "Устройство " + SplitCom[1] + " не изменило свое состояние!";
+                WinLog.Write(Mess, System.Diagnostics.EventLogEntryType.Error);
             }
         }
 
+        /// <summary>
+        /// Метод обрабатывает отвте от контролера, в котором содержится состояние нового добавленного устройства.
+        /// </summary>
         private void AddDevInDbAnswer(DevCommand Answer)
         {
             try
@@ -169,10 +192,46 @@ namespace Server
             }
         }
 
+        /// <summary>
+        /// Метод отвечает за обработку команды удаления устройства
+        /// </summary>
         private void DeleteDevice(string[] splitComand, string user)
         {
             bool ResCom = BdDevice.DeleteDevice(splitComand[1]);
-            Storage.MessegesForUser.Enqueue("ResDeleteDev/" + ResCom.ToString() + "@" + user);
+            lock (Storage.MessegesForUser)
+                Storage.MessegesForUser.Enqueue("ResDeleteDev/" + ResCom.ToString() + "@" + user);
+        }
+
+        private void DeleteUser(string[] splitComand, string user)
+        {
+            bool ResCom = TableUser.DeleteUser(splitComand[1]);
+            lock (Storage.MessegesForUser)
+                Storage.MessegesForUser.Enqueue("ResDeleteUser/" + ResCom.ToString() + "@" + user);
+        }
+
+        private void UpdatePassword(string[] splitComand, string users)
+        {
+            string Role = TableUser.CheckUser(splitComand[1], splitComand[3]);
+            if (Role == "")
+            {
+                lock (Storage.MessegesForUser)
+                    Storage.MessegesForUser.Enqueue("ResUpdatePas/" + "Неправильно введен текущий пароль@" + users);
+            }
+            else
+            {
+                bool ResCom = TableUser.UpdatePassword(splitComand[1], splitComand[2]);
+                if (ResCom)
+                {
+                    lock (Storage.MessegesForUser)
+                        Storage.MessegesForUser.Enqueue("ResUpdatePas/" + "Пароль успешно изменен@" + users);
+                }
+                else
+                {
+                    lock (Storage.MessegesForUser)
+                        Storage.MessegesForUser.Enqueue("ResUpdatePas/" + "При изменении пароля возникли ошибки, обратитесь к администратору@" + users);
+                }
+            }
+
         }
     }
 }
