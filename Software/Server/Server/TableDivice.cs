@@ -40,10 +40,10 @@ namespace Server
                         //Создаем транзакцию
                         using (FbTransaction transaction = SQL.FB_dbConnection.BeginTransaction(SQL.FB_dbReadTransactionOptions))
                         {
-                            string Query = string.Format("select t1.Messege, t2.NumOfPort, t2.NumOfDev" +
+                            string Query = "select t1.Messege, t2.NumOfPort, t2.NumOfDev" +
                                                            " from Device t1 left join Device t2 on t1.IDFK=t2.ID " +
-                                                           " where t1.NumOfPort = " + numPort.ToString() +
-                                                           " t1.NumOfDev = " + numDev.ToString() + " Rows(1)");
+                                                           " where t1.NumOfPort = " + numPort.ToString() + " and " +
+                                                           " t1.NumOfDev = " + numDev.ToString() + " Rows(1)";
                             using (FbCommand command = new FbCommand(Query, SQL.FB_dbConnection, transaction))
                             using (FbDataReader r = command.ExecuteReader())
                             {
@@ -90,6 +90,7 @@ namespace Server
                         result.messege = "Сбой при поиске устройства в базе денных, при обработке срабатывания датчика";
                         WinLog.Write(result.messege, System.Diagnostics.EventLogEntryType.Error);
                         result.number = null;
+                        SQL.IsLockedTransaction = false;
                         return result;
                     }
             }
@@ -151,6 +152,7 @@ namespace Server
                     catch
                     {
                         WinLog.Write("Ошибка при считывание всех устройств в DataSet", System.Diagnostics.EventLogEntryType.Error);
+                        SQL.IsLockedTransaction = false;
                     }
                 SQL.IsLockedTransaction = false;
             }
@@ -213,6 +215,7 @@ namespace Server
                     {
                         Result.len = 0;
                         WinLog.Write("Не удалось определить порт устройства по его имени", System.Diagnostics.EventLogEntryType.Error);
+                        SQL.IsLockedTransaction = false;
                         return Result;
 
                     }
@@ -268,8 +271,8 @@ namespace Server
                     catch
                     {
                         WinLog.Write("Не удалось установит имя устройства по номеру порта", System.Diagnostics.EventLogEntryType.Error);
+                        SQL.IsLockedTransaction = false;
                         return Result;
-
                     }
                 // Сбрасываем признак транзакции
                 SQL.IsLockedTransaction = false;
@@ -327,6 +330,7 @@ namespace Server
                     {
                         result = "";
                         WinLog.Write("Не удалось считать из базы ID устройства", System.Diagnostics.EventLogEntryType.Error);
+                        SQL.IsLockedTransaction = false;
                         return result;
                     }
             }
