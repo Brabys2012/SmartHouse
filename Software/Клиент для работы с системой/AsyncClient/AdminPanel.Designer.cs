@@ -30,7 +30,6 @@
         {
             this.gbAddUser = new System.Windows.Forms.GroupBox();
             this.buеCancel = new System.Windows.Forms.Button();
-            this.tbRole = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.tbPassConfirm = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -51,29 +50,36 @@
             this.butExit = new System.Windows.Forms.Button();
             this.cbPortNumber = new System.Windows.Forms.ComboBox();
             this.gpAddDevice = new System.Windows.Forms.GroupBox();
-            this.label7 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.cbDeviceNumber = new System.Windows.Forms.ComboBox();
-            this.label9 = new System.Windows.Forms.Label();
-            this.tbDeviceName = new System.Windows.Forms.TextBox();
-            this.label10 = new System.Windows.Forms.Label();
-            this.cbDeviceType = new System.Windows.Forms.ComboBox();
-            this.chbLinkWith = new System.Windows.Forms.CheckBox();
-            this.label11 = new System.Windows.Forms.Label();
-            this.tbMessage = new System.Windows.Forms.TextBox();
-            this.tbNameLinkedDevice = new System.Windows.Forms.TextBox();
-            this.label12 = new System.Windows.Forms.Label();
             this.butAddDevice = new System.Windows.Forms.Button();
+            this.label12 = new System.Windows.Forms.Label();
+            this.tbNameLinkedDevice = new System.Windows.Forms.TextBox();
+            this.tbMessage = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.chbLinkWith = new System.Windows.Forms.CheckBox();
+            this.cbDeviceType = new System.Windows.Forms.ComboBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.tbDeviceName = new System.Windows.Forms.TextBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.cbDeviceNumber = new System.Windows.Forms.ComboBox();
+            this.label8 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.panel3 = new System.Windows.Forms.Panel();
+            this.cbRole = new System.Windows.Forms.ComboBox();
             this.gbAddUser.SuspendLayout();
             this.gpDelUser.SuspendLayout();
             this.gbDelDevice.SuspendLayout();
             this.gpAddDevice.SuspendLayout();
+            this.panel1.SuspendLayout();
+            this.panel2.SuspendLayout();
+            this.panel3.SuspendLayout();
             this.SuspendLayout();
             // 
             // gbAddUser
             // 
+            this.gbAddUser.Controls.Add(this.cbRole);
             this.gbAddUser.Controls.Add(this.buеCancel);
-            this.gbAddUser.Controls.Add(this.tbRole);
             this.gbAddUser.Controls.Add(this.label4);
             this.gbAddUser.Controls.Add(this.tbPassConfirm);
             this.gbAddUser.Controls.Add(this.label3);
@@ -82,7 +88,7 @@
             this.gbAddUser.Controls.Add(this.label2);
             this.gbAddUser.Controls.Add(this.label1);
             this.gbAddUser.Controls.Add(this.tbLogin);
-            this.gbAddUser.Location = new System.Drawing.Point(12, 12);
+            this.gbAddUser.Location = new System.Drawing.Point(17, 18);
             this.gbAddUser.Name = "gbAddUser";
             this.gbAddUser.Size = new System.Drawing.Size(484, 118);
             this.gbAddUser.TabIndex = 0;
@@ -94,17 +100,10 @@
             this.buеCancel.Location = new System.Drawing.Point(322, 89);
             this.buеCancel.Name = "buеCancel";
             this.buеCancel.Size = new System.Drawing.Size(75, 23);
-            this.buеCancel.TabIndex = 9;
+            this.buеCancel.TabIndex = 5;
             this.buеCancel.Text = "Отмена";
             this.buеCancel.UseVisualStyleBackColor = true;
             this.buеCancel.Click += new System.EventHandler(this.buеCancel_Click);
-            // 
-            // tbRole
-            // 
-            this.tbRole.Location = new System.Drawing.Point(338, 28);
-            this.tbRole.Name = "tbRole";
-            this.tbRole.Size = new System.Drawing.Size(129, 20);
-            this.tbRole.TabIndex = 8;
             // 
             // label4
             // 
@@ -120,7 +119,7 @@
             this.tbPassConfirm.Location = new System.Drawing.Point(338, 55);
             this.tbPassConfirm.Name = "tbPassConfirm";
             this.tbPassConfirm.Size = new System.Drawing.Size(129, 20);
-            this.tbPassConfirm.TabIndex = 6;
+            this.tbPassConfirm.TabIndex = 4;
             this.tbPassConfirm.UseSystemPasswordChar = true;
             // 
             // label3
@@ -137,7 +136,7 @@
             this.butAdd.Location = new System.Drawing.Point(403, 89);
             this.butAdd.Name = "butAdd";
             this.butAdd.Size = new System.Drawing.Size(75, 23);
-            this.butAdd.TabIndex = 0;
+            this.butAdd.TabIndex = 6;
             this.butAdd.Text = "Добавить";
             this.butAdd.UseVisualStyleBackColor = true;
             this.butAdd.Click += new System.EventHandler(this.butAdd_Click);
@@ -147,7 +146,7 @@
             this.tbPassword.Location = new System.Drawing.Point(66, 55);
             this.tbPassword.Name = "tbPassword";
             this.tbPassword.Size = new System.Drawing.Size(129, 20);
-            this.tbPassword.TabIndex = 4;
+            this.tbPassword.TabIndex = 3;
             this.tbPassword.UseSystemPasswordChar = true;
             // 
             // label2
@@ -180,7 +179,7 @@
             this.gpDelUser.Controls.Add(this.tbLoginToDel);
             this.gpDelUser.Controls.Add(this.label5);
             this.gpDelUser.Controls.Add(this.butDelUser);
-            this.gpDelUser.Location = new System.Drawing.Point(13, 137);
+            this.gpDelUser.Location = new System.Drawing.Point(17, 13);
             this.gpDelUser.Name = "gpDelUser";
             this.gpDelUser.Size = new System.Drawing.Size(200, 100);
             this.gpDelUser.TabIndex = 1;
@@ -192,7 +191,7 @@
             this.tbLoginToDel.Location = new System.Drawing.Point(65, 32);
             this.tbLoginToDel.Name = "tbLoginToDel";
             this.tbLoginToDel.Size = new System.Drawing.Size(129, 20);
-            this.tbLoginToDel.TabIndex = 2;
+            this.tbLoginToDel.TabIndex = 1;
             // 
             // label5
             // 
@@ -208,7 +207,7 @@
             this.butDelUser.Location = new System.Drawing.Point(119, 71);
             this.butDelUser.Name = "butDelUser";
             this.butDelUser.Size = new System.Drawing.Size(75, 23);
-            this.butDelUser.TabIndex = 0;
+            this.butDelUser.TabIndex = 2;
             this.butDelUser.Text = "Удалить";
             this.butDelUser.UseVisualStyleBackColor = true;
             this.butDelUser.Click += new System.EventHandler(this.butDelUser_Click);
@@ -216,7 +215,7 @@
             // lNote
             // 
             this.lNote.AutoSize = true;
-            this.lNote.Location = new System.Drawing.Point(39, 571);
+            this.lNote.Location = new System.Drawing.Point(39, 632);
             this.lNote.Name = "lNote";
             this.lNote.Size = new System.Drawing.Size(210, 13);
             this.lNote.TabIndex = 10;
@@ -227,7 +226,7 @@
             this.gbDelDevice.Controls.Add(this.tbNameToDel);
             this.gbDelDevice.Controls.Add(this.label6);
             this.gbDelDevice.Controls.Add(this.butDelDevice);
-            this.gbDelDevice.Location = new System.Drawing.Point(233, 137);
+            this.gbDelDevice.Location = new System.Drawing.Point(238, 13);
             this.gbDelDevice.Name = "gbDelDevice";
             this.gbDelDevice.Size = new System.Drawing.Size(263, 100);
             this.gbDelDevice.TabIndex = 2;
@@ -239,7 +238,7 @@
             this.tbNameToDel.Location = new System.Drawing.Point(117, 29);
             this.tbNameToDel.Name = "tbNameToDel";
             this.tbNameToDel.Size = new System.Drawing.Size(129, 20);
-            this.tbNameToDel.TabIndex = 2;
+            this.tbNameToDel.TabIndex = 3;
             // 
             // label6
             // 
@@ -255,28 +254,30 @@
             this.butDelDevice.Location = new System.Drawing.Point(182, 71);
             this.butDelDevice.Name = "butDelDevice";
             this.butDelDevice.Size = new System.Drawing.Size(75, 23);
-            this.butDelDevice.TabIndex = 0;
+            this.butDelDevice.TabIndex = 4;
             this.butDelDevice.Text = "Удалить";
             this.butDelDevice.UseVisualStyleBackColor = true;
             this.butDelDevice.Click += new System.EventHandler(this.butDelDevice_Click);
             // 
             // butExit
             // 
-            this.butExit.Location = new System.Drawing.Point(323, 566);
+            this.butExit.Location = new System.Drawing.Point(323, 627);
             this.butExit.Name = "butExit";
             this.butExit.Size = new System.Drawing.Size(75, 23);
-            this.butExit.TabIndex = 3;
+            this.butExit.TabIndex = 0;
             this.butExit.Text = "Выход";
             this.butExit.UseVisualStyleBackColor = true;
             this.butExit.Click += new System.EventHandler(this.butExit_Click);
             // 
             // cbPortNumber
             // 
-            this.cbPortNumber.FormattingEnabled = true;
+            this.cbPortNumber.DropDownWidth = 39;
+            this.cbPortNumber.ItemHeight = 13;
             this.cbPortNumber.Location = new System.Drawing.Point(88, 22);
+            this.cbPortNumber.MaxDropDownItems = 13;
             this.cbPortNumber.Name = "cbPortNumber";
             this.cbPortNumber.Size = new System.Drawing.Size(39, 21);
-            this.cbPortNumber.TabIndex = 11;
+            this.cbPortNumber.TabIndex = 1;
             // 
             // gpAddDevice
             // 
@@ -294,82 +295,46 @@
             this.gpAddDevice.Controls.Add(this.label8);
             this.gpAddDevice.Controls.Add(this.label7);
             this.gpAddDevice.Controls.Add(this.cbPortNumber);
-            this.gpAddDevice.Location = new System.Drawing.Point(12, 257);
+            this.gpAddDevice.Location = new System.Drawing.Point(19, 23);
             this.gpAddDevice.Name = "gpAddDevice";
             this.gpAddDevice.Size = new System.Drawing.Size(484, 303);
             this.gpAddDevice.TabIndex = 12;
             this.gpAddDevice.TabStop = false;
             this.gpAddDevice.Text = "Добавить устройство";
             // 
-            // label7
+            // butAddDevice
             // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(6, 25);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(76, 13);
-            this.label7.TabIndex = 12;
-            this.label7.Text = "Номер порта:";
+            this.butAddDevice.Location = new System.Drawing.Point(403, 273);
+            this.butAddDevice.Name = "butAddDevice";
+            this.butAddDevice.Size = new System.Drawing.Size(75, 23);
+            this.butAddDevice.TabIndex = 8;
+            this.butAddDevice.Text = "Добавить";
+            this.butAddDevice.UseVisualStyleBackColor = true;
+            this.butAddDevice.Click += new System.EventHandler(this.butAddDevice_Click);
             // 
-            // label8
+            // label12
             // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(133, 25);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(104, 13);
-            this.label8.TabIndex = 13;
-            this.label8.Text = "Номер устройства:";
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(10, 109);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(86, 13);
+            this.label12.TabIndex = 23;
+            this.label12.Text = "Наименование:";
             // 
-            // cbDeviceNumber
+            // tbNameLinkedDevice
             // 
-            this.cbDeviceNumber.FormattingEnabled = true;
-            this.cbDeviceNumber.Location = new System.Drawing.Point(243, 22);
-            this.cbDeviceNumber.Name = "cbDeviceNumber";
-            this.cbDeviceNumber.Size = new System.Drawing.Size(43, 21);
-            this.cbDeviceNumber.TabIndex = 14;
+            this.tbNameLinkedDevice.Location = new System.Drawing.Point(100, 105);
+            this.tbNameLinkedDevice.Name = "tbNameLinkedDevice";
+            this.tbNameLinkedDevice.Size = new System.Drawing.Size(177, 20);
+            this.tbNameLinkedDevice.TabIndex = 6;
             // 
-            // label9
+            // tbMessage
             // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(9, 57);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(86, 13);
-            this.label9.TabIndex = 15;
-            this.label9.Text = "Наименование:";
-            // 
-            // tbDeviceName
-            // 
-            this.tbDeviceName.Location = new System.Drawing.Point(101, 54);
-            this.tbDeviceName.Name = "tbDeviceName";
-            this.tbDeviceName.Size = new System.Drawing.Size(176, 20);
-            this.tbDeviceName.TabIndex = 16;
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(308, 25);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(89, 13);
-            this.label10.TabIndex = 17;
-            this.label10.Text = "Тип устройства:";
-            // 
-            // cbDeviceType
-            // 
-            this.cbDeviceType.FormattingEnabled = true;
-            this.cbDeviceType.Location = new System.Drawing.Point(403, 22);
-            this.cbDeviceType.Name = "cbDeviceType";
-            this.cbDeviceType.Size = new System.Drawing.Size(75, 21);
-            this.cbDeviceType.TabIndex = 18;
-            // 
-            // chbLinkWith
-            // 
-            this.chbLinkWith.AutoSize = true;
-            this.chbLinkWith.Location = new System.Drawing.Point(11, 82);
-            this.chbLinkWith.Name = "chbLinkWith";
-            this.chbLinkWith.Size = new System.Drawing.Size(200, 17);
-            this.chbLinkWith.TabIndex = 19;
-            this.chbLinkWith.Text = "Привязано к другому устройству?";
-            this.chbLinkWith.UseVisualStyleBackColor = true;
-            this.chbLinkWith.CheckedChanged += new System.EventHandler(this.chbLinkWith_CheckedChanged);
+            this.tbMessage.Location = new System.Drawing.Point(9, 169);
+            this.tbMessage.Multiline = true;
+            this.tbMessage.Name = "tbMessage";
+            this.tbMessage.Size = new System.Drawing.Size(469, 98);
+            this.tbMessage.TabIndex = 7;
             // 
             // label11
             // 
@@ -381,51 +346,125 @@
             this.label11.Text = "Сообщение для отправки пользователю при активации данного устройства\r\n(необязател" +
                 "ьное поле):";
             // 
-            // tbMessage
+            // chbLinkWith
             // 
-            this.tbMessage.Location = new System.Drawing.Point(9, 169);
-            this.tbMessage.Multiline = true;
-            this.tbMessage.Name = "tbMessage";
-            this.tbMessage.Size = new System.Drawing.Size(469, 98);
-            this.tbMessage.TabIndex = 21;
+            this.chbLinkWith.AutoSize = true;
+            this.chbLinkWith.Location = new System.Drawing.Point(11, 82);
+            this.chbLinkWith.Name = "chbLinkWith";
+            this.chbLinkWith.Size = new System.Drawing.Size(200, 17);
+            this.chbLinkWith.TabIndex = 5;
+            this.chbLinkWith.Text = "Привязано к другому устройству?";
+            this.chbLinkWith.UseVisualStyleBackColor = true;
+            this.chbLinkWith.CheckedChanged += new System.EventHandler(this.chbLinkWith_CheckedChanged);
             // 
-            // tbNameLinkedDevice
+            // cbDeviceType
             // 
-            this.tbNameLinkedDevice.Location = new System.Drawing.Point(100, 105);
-            this.tbNameLinkedDevice.Name = "tbNameLinkedDevice";
-            this.tbNameLinkedDevice.Size = new System.Drawing.Size(177, 20);
-            this.tbNameLinkedDevice.TabIndex = 22;
+            this.cbDeviceType.FormattingEnabled = true;
+            this.cbDeviceType.Location = new System.Drawing.Point(403, 22);
+            this.cbDeviceType.Name = "cbDeviceType";
+            this.cbDeviceType.Size = new System.Drawing.Size(75, 21);
+            this.cbDeviceType.TabIndex = 3;
             // 
-            // label12
+            // label10
             // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(10, 109);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(86, 13);
-            this.label12.TabIndex = 23;
-            this.label12.Text = "Наименование:";
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(308, 25);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(89, 13);
+            this.label10.TabIndex = 17;
+            this.label10.Text = "Тип устройства:";
             // 
-            // butAddDevice
+            // tbDeviceName
             // 
-            this.butAddDevice.Location = new System.Drawing.Point(403, 273);
-            this.butAddDevice.Name = "butAddDevice";
-            this.butAddDevice.Size = new System.Drawing.Size(75, 23);
-            this.butAddDevice.TabIndex = 24;
-            this.butAddDevice.Text = "Добавить";
-            this.butAddDevice.UseVisualStyleBackColor = true;
-            this.butAddDevice.Click += new System.EventHandler(this.butAddDevice_Click);
+            this.tbDeviceName.Location = new System.Drawing.Point(101, 54);
+            this.tbDeviceName.Name = "tbDeviceName";
+            this.tbDeviceName.Size = new System.Drawing.Size(176, 20);
+            this.tbDeviceName.TabIndex = 4;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(9, 57);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(86, 13);
+            this.label9.TabIndex = 15;
+            this.label9.Text = "Наименование:";
+            // 
+            // cbDeviceNumber
+            // 
+            this.cbDeviceNumber.FormattingEnabled = true;
+            this.cbDeviceNumber.Location = new System.Drawing.Point(243, 22);
+            this.cbDeviceNumber.Name = "cbDeviceNumber";
+            this.cbDeviceNumber.Size = new System.Drawing.Size(43, 21);
+            this.cbDeviceNumber.TabIndex = 2;
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(133, 25);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(104, 13);
+            this.label8.TabIndex = 13;
+            this.label8.Text = "Номер устройства:";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(6, 25);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(76, 13);
+            this.label7.TabIndex = 12;
+            this.label7.Text = "Номер порта:";
+            // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.gbAddUser);
+            this.panel1.Location = new System.Drawing.Point(12, 12);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(513, 144);
+            this.panel1.TabIndex = 1;
+            this.panel1.TabStop = true;
+            // 
+            // panel2
+            // 
+            this.panel2.Controls.Add(this.gpDelUser);
+            this.panel2.Controls.Add(this.gbDelDevice);
+            this.panel2.Location = new System.Drawing.Point(12, 166);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(516, 120);
+            this.panel2.TabIndex = 2;
+            this.panel2.TabStop = true;
+            // 
+            // panel3
+            // 
+            this.panel3.Controls.Add(this.gpAddDevice);
+            this.panel3.Location = new System.Drawing.Point(12, 292);
+            this.panel3.Name = "panel3";
+            this.panel3.Size = new System.Drawing.Size(516, 329);
+            this.panel3.TabIndex = 3;
+            this.panel3.TabStop = true;
+            // 
+            // cbRole
+            // 
+            this.cbRole.FormattingEnabled = true;
+            this.cbRole.Location = new System.Drawing.Point(338, 30);
+            this.cbRole.Name = "cbRole";
+            this.cbRole.Size = new System.Drawing.Size(129, 21);
+            this.cbRole.TabIndex = 2;
             // 
             // AdminPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(502, 593);
-            this.Controls.Add(this.gpAddDevice);
+            this.ClientSize = new System.Drawing.Size(537, 669);
+            this.Controls.Add(this.panel3);
+            this.Controls.Add(this.panel2);
+            this.Controls.Add(this.panel1);
             this.Controls.Add(this.lNote);
             this.Controls.Add(this.butExit);
-            this.Controls.Add(this.gbDelDevice);
-            this.Controls.Add(this.gpDelUser);
-            this.Controls.Add(this.gbAddUser);
+            this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(553, 707);
+            this.MinimumSize = new System.Drawing.Size(553, 707);
             this.Name = "AdminPanel";
             this.Text = "Панель администратора";
             this.gbAddUser.ResumeLayout(false);
@@ -436,6 +475,9 @@
             this.gbDelDevice.PerformLayout();
             this.gpAddDevice.ResumeLayout(false);
             this.gpAddDevice.PerformLayout();
+            this.panel1.ResumeLayout(false);
+            this.panel2.ResumeLayout(false);
+            this.panel3.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -445,7 +487,6 @@
 
         private System.Windows.Forms.GroupBox gbAddUser;
         private System.Windows.Forms.Button buеCancel;
-        private System.Windows.Forms.TextBox tbRole;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox tbPassConfirm;
         private System.Windows.Forms.Label label3;
@@ -479,5 +520,9 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Button butAddDevice;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.ComboBox cbRole;
     }
 }

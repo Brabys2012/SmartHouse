@@ -34,7 +34,7 @@ namespace Server
             writer.Flush();
             cryptoStream.FlushFinalBlock();
             writer.Flush();
-            return Convert.ToBase64String(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
+            return (Convert.ToBase64String(memoryStream.GetBuffer(), 0, (int)memoryStream.Length) + "?");
         }
 
         /// <summary>

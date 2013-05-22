@@ -34,6 +34,9 @@ namespace AsyncClient
             cbDeviceType.Items.Add("Диммер");
             cbDeviceType.Items.Add("Счётчик");
 
+            cbRole.Items.Add("user");
+            cbRole.Items.Add("admin");
+
             chbLinkWith.Checked = false;
             tbNameLinkedDevice.Enabled = false;
 
@@ -51,24 +54,29 @@ namespace AsyncClient
             tbLogin.Text = "";
             tbPassConfirm.Text = "";
             tbPassword.Text = "";
-            tbRole.Text = "";
+            cbRole.SelectedIndex = -1;
         }
 
         private void butAdd_Click(object sender, EventArgs e)
         {
             if ((tbLogin.Text != "") && (tbPassword.Text != "") &&
-                (tbPassConfirm.Text != "") && (tbRole.Text != ""))
+                (tbPassConfirm.Text != "") && (cbRole.SelectedItem.ToString() != ""))
             {
                 if (tbPassword.Text == tbPassConfirm.Text)
                 {
                     AdminClient.Send("AddUser/" + tbLogin.Text + "/" +
-                        tbPassword.Text + "/" + tbRole.Text + "?", NeedToEncypt);
+                        tbPassword.Text + "/" + cbRole.SelectedItem.ToString() + "?", NeedToEncypt);
                     MessageBox.Show("Сообщение о добавлении нового\r\n пользоветеля успешно отправлено.",
                         "Добавление пользователя", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                     MessageBox.Show("Пароль и подтверждение пароля не совпадают!",
                     "Добавление пользователя", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else 
+            {
+                MessageBox.Show("Не заполнены обязательные поля!",
+                   "Добавление пользователя", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
             }
         }
 
@@ -89,7 +97,8 @@ namespace AsyncClient
                 AdminClient.Send("DeleteDevice/" + tbNameToDel.Text + "?", NeedToEncypt);
             }
             else
-                MessageBox.Show("Введите наименование удаляемого устройства!");
+                MessageBox.Show("Введите наименование удаляемого устройства!",
+                   "Удаление устройства", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
         }
 
         private void butAddDevice_Click(object sender, EventArgs e)
@@ -127,7 +136,7 @@ namespace AsyncClient
             else
             {
                 MessageBox.Show("Заполнены не все  данные\r\n для добавления устройства", 
-                    "Добавление устройства", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    "Добавление устройства", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
             }
 
            

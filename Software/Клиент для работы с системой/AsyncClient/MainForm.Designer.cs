@@ -53,6 +53,7 @@
             this.ConfCoonectParms = new System.Windows.Forms.ToolStripMenuItem();
             this.Connect = new System.Windows.Forms.ToolStripMenuItem();
             this.Disconnect = new System.Windows.Forms.ToolStripMenuItem();
+            this.ChangePassword = new System.Windows.Forms.ToolStripMenuItem();
             this.SystemConf = new System.Windows.Forms.ToolStripMenuItem();
             this.butGetUpdate = new System.Windows.Forms.Button();
             this.gbActions.SuspendLayout();
@@ -272,7 +273,8 @@
             this.Settings.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ConfCoonectParms,
             this.Connect,
-            this.Disconnect});
+            this.Disconnect,
+            this.ChangePassword});
             this.Settings.Name = "Settings";
             this.Settings.Size = new System.Drawing.Size(79, 20);
             this.Settings.Text = "Настройки";
@@ -297,6 +299,13 @@
             this.Disconnect.Size = new System.Drawing.Size(298, 22);
             this.Disconnect.Text = "Отключится";
             this.Disconnect.Click += new System.EventHandler(this.Disconnect_Click);
+            // 
+            // ChangePassword
+            // 
+            this.ChangePassword.Name = "ChangePassword";
+            this.ChangePassword.Size = new System.Drawing.Size(298, 22);
+            this.ChangePassword.Text = "Сменить пароль";
+            this.ChangePassword.Click += new System.EventHandler(this.ChangePassword_Click);
             // 
             // SystemConf
             // 
@@ -330,7 +339,6 @@
             this.Name = "MainForm";
             this.Text = "Главное окно";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
-            this.Load += new System.EventHandler(this.Form1_Load);
             this.gbActions.ResumeLayout(false);
             this.grpCounters.ResumeLayout(false);
             this.grpCounters.PerformLayout();
@@ -378,6 +386,7 @@
         private System.Windows.Forms.Label lCurentCountValue;
         private System.Windows.Forms.Button butGetUpdate;
         private System.Windows.Forms.ToolStripMenuItem SystemConf;
+        private System.Windows.Forms.ToolStripMenuItem ChangePassword;
     }
 }
 
