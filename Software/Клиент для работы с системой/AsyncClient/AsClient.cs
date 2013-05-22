@@ -11,8 +11,9 @@ namespace AsyncClient
 {
 
     public delegate void IsNeedShowDelegate();
+    public delegate void IsNeedShowOperationResult(string result);
+    public delegate void IsNeedToChangeConfStatus(string role);
     public delegate void IsNeedShowDataDelegate(string data);
-    public delegate void StatusIsActiveDelegate(bool IsActive);
     public delegate void IsNeedToPlotDelegate(string reportData);
     public delegate void IsNeedUpdateThreeDelegate(string DevData);
     public delegate void IsNeedChangeStatus();
@@ -45,6 +46,8 @@ namespace AsyncClient
             public event IsNeedToPlotDelegate IsNeedToPlotEvent;
             public event IsNeedUpdateThreeDelegate IsNeedUpdateThreeEvent;
             public event IsNeedChangeStatus IsNeedChangeStatusEvent;
+            public event IsNeedToChangeConfStatus IsNeedToChangeConfStatusEvent;
+            public event IsNeedShowOperationResult IsNeedShowOperationResultEvent;
 
             public StateObject _srv;
 
@@ -82,7 +85,6 @@ namespace AsyncClient
 
                     // Завершаем подключение.
                     client.workSocket.EndConnect(ar);
-                    client.status = true;
                     IsNeedChangeStatusEvent();
                     //Начинаем получать данные от удалённой точки.
                     client.workSocket.BeginReceive(client.buffer, 0, 
@@ -91,7 +93,7 @@ namespace AsyncClient
                 catch (Exception e)
                 {
                     if (IsNeedShowDataEvent != null)
-                        IsNeedShowDataEvent(e.Message);
+                        IsNeedShowDataEvent("Ошибка при подключении: " + e.Message);
                 }
             }
             
@@ -121,7 +123,7 @@ namespace AsyncClient
                 catch (Exception e)
                 {
                     if (IsNeedShowDataEvent != null)
-                        IsNeedShowDataEvent(e.Message);
+                        IsNeedShowDataEvent("Ошибка при получении сообщения: " + e.Message);
                 }
             }
 
@@ -130,9 +132,14 @@ namespace AsyncClient
                 string sMessage = "";
                 string[] message;
                 string[] tmpString;
-                if (needToEncrypt)
-                    message = Crypto.Decrypt(
-                        Encoding.ASCII.GetString(_srv.buffer, 0, bytesRead)).Split('?');
+                if (_srv.encryptIt)
+                {
+                    message = Encoding.ASCII.GetString(_srv.buffer, 0, bytesRead).Split('?');
+                    for (int i = 0; i < message.Length; i++)
+                    {
+                        message[i] = Crypto.Decrypt(message[i]);
+                    }
+                }
                 else
                     message = Encoding.ASCII.GetString(_srv.buffer, 0, bytesRead).Split('?');
 
@@ -154,7 +161,7 @@ namespace AsyncClient
                                 IsNeedShowDataEvent("Неверный логин или пароль");
                                 _srv.role = "";
                             }
-
+                            IsNeedToChangeConfStatusEvent(_srv.role);
                             break;
                         case "Auth":
                             // Генерируем событие необходимости отобразить форму ввода логина/пароля
@@ -162,8 +169,8 @@ namespace AsyncClient
                                 IsNeedShowLoginFormEvent();
                             break;
                         case "mess":
-                            if (IsNeedShowDataEvent != null)
-                                IsNeedShowDataEvent(command[1]);
+                            if (IsNeedShowOperationResultEvent != null)
+                                IsNeedShowOperationResultEvent(command[1]);
                             break;
                         case "SetCounterRec":
                             tmpString = command[1].Split('^');
@@ -180,35 +187,35 @@ namespace AsyncClient
                             break;
                         case "ResAddUser":
                             if (Convert.ToBoolean(command[1]))
-                                sMessage = "Пользователь успешно добавлено.";
+                                sMessage = "Пользователь успешно добавлен.";
                             else
                                 sMessage = "При добавлении пользователя возникла ошибка.";
-                            if (IsNeedShowDataEvent != null)
-                                IsNeedShowDataEvent(sMessage);
+                            if (IsNeedShowOperationResultEvent != null)
+                                IsNeedShowOperationResultEvent(sMessage);
                             break;
                         case "ResAddDev":
                             if (Convert.ToBoolean(command[1]))
                                 sMessage = "Устройство успешно добавлено.";
                             else
                                 sMessage = "При добавлении устройства возникла ошибка.";
-                            if (IsNeedShowDataEvent != null)
-                                IsNeedShowDataEvent(sMessage);
+                            if (IsNeedShowOperationResultEvent != null)
+                                IsNeedShowOperationResultEvent(sMessage);
                             break;
                         case "ResDeleteDev":
                             if (Convert.ToBoolean(command[1]))
                                 sMessage = "Устройство успешно удалено.";
                             else
                                 sMessage = "При удалении устройства возникла ошибка.";
-                            if (IsNeedShowDataEvent != null)
-                                IsNeedShowDataEvent(sMessage);
+                            if (IsNeedShowOperationResultEvent != null)
+                                IsNeedShowOperationResultEvent(sMessage);
                             break;
                         case "ResDeleteUser":
                             if (Convert.ToBoolean(command[1]))
                                 sMessage = "Пользователь успешно удалён.";
                             else
                                 sMessage = "При удалении пользователя возникла ошибка.";
-                            if (IsNeedShowDataEvent != null)
-                                IsNeedShowDataEvent(sMessage);
+                            if (IsNeedShowOperationResultEvent != null)
+                                IsNeedShowOperationResultEvent(sMessage);
                             break;
                         case "Update":
                             IsNeedUpdateThreeEvent(command[1]);
@@ -221,19 +228,22 @@ namespace AsyncClient
             {
                 try
                 {
-                    byte[] byteData = Encoding.ASCII.GetBytes(data);
+                    byte[] byteData = null;
                     if (needToEncrypt)
                     {
                         // Convert the string data to byte data using ASCII encoding.
                         byteData = Encoding.ASCII.GetBytes(Crypto.Encrypt(data));
                     }
+                    else
+                        byteData = Encoding.ASCII.GetBytes(data + "?");
                     // Begin sending the data to the remote device.
                     _srv.workSocket.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), _srv.workSocket);
                 }
                 catch (Exception ex)
                 {
 
-                    IsNeedShowDataEvent(ex.Message);
+                    if (IsNeedShowDataEvent != null)
+                        IsNeedShowDataEvent("Ошибка при отправке сообщения: " + ex.Message);
                 }
             }
 
@@ -248,10 +258,10 @@ namespace AsyncClient
                     int bytesSent = client.EndSend(ar);
 
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
                     if (IsNeedShowDataEvent != null)
-                        IsNeedShowDataEvent(e.Message);
+                        IsNeedShowDataEvent("Ошибка при окончании отправки сообщения: " + ex.Message);
                 }
             }
 

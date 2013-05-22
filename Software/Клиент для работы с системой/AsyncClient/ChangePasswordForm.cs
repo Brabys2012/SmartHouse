@@ -9,23 +9,20 @@ using System.Windows.Forms;
 
 namespace AsyncClient
 {
-    public partial class ConnectParams : Form
+    public partial class ChangePasswordForm : Form
     {
-        public ConnectParams(string Ip, string Port, bool EncryptIt)
+        public ChangePasswordForm()
         {
             InitializeComponent();
-            this.tbIP.Text = Ip;
-            this.tbPort.Text = Port;
-            this.chbUseEncrypting.Checked = EncryptIt;
         }
 
-        private void butOk_Click(object sender, EventArgs e)
+        private void btSave_Click(object sender, EventArgs e)
         {
             this.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.Close();
         }
 
-        private void butCancel_Click(object sender, EventArgs e)
+        private void btCancel_Click(object sender, EventArgs e)
         {
             this.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.Close();

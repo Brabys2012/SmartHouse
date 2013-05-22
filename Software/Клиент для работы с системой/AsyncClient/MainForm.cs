@@ -22,19 +22,19 @@ namespace AsyncClient
             InitializeComponent();
             //Инициализация базовых узлов дерева.
             trvDevice.BeginUpdate();
-            trvDevice.Nodes.Add("SimpleDev", "SimpleDev");
-            trvDevice.Nodes["SimpleDev"].Tag = "SimpleDev";
-            trvDevice.Nodes.Add("Simple sensor", "Simple sensor");
-            trvDevice.Nodes["Simple sensor"].Tag = "Simple sensor";
-            trvDevice.Nodes.Add("Dimmers", "Dimmers");
-            trvDevice.Nodes["Dimmers"].Tag = "Dimmers";
-            trvDevice.Nodes.Add("Sensors with multi-state", "Sensors with multi-state");
-            trvDevice.Nodes["Sensors with multi-state"].Tag = "Sensors with multi-state";
+            trvDevice.Nodes.Add("Простое устройство", "Простое устройство");
+            trvDevice.Nodes["Простое устройство"].Tag = "Простое устройство";
+            trvDevice.Nodes.Add("Датчик", "Датчик");
+            trvDevice.Nodes["Датчик"].Tag = "Датчик";
+            trvDevice.Nodes.Add("Димеры", "Димеры");
+            trvDevice.Nodes["Димеры"].Tag = "Димеры";
+            trvDevice.Nodes.Add("Счётчики", "Счётчики");
+            trvDevice.Nodes["Счётчики"].Tag = "Счётчики";
             trvDevice.EndUpdate();
             grpSensor.Enabled = false;
             grpDimmers.Enabled = false;
             grpDevice.Enabled = false;
-            this.SystemConf.Visible = false;
+            this.SystemConf.Visible = true;
 
             //Подписываемя на события логической части лиента.
             Client.IsNeedUpdateThreeEvent += new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent);
@@ -42,6 +42,8 @@ namespace AsyncClient
             Client.IsNeedShowDataEvent += new IsNeedShowDataDelegate(Client_IsNeedShowDataEvent);
             Client.IsNeedToPlotEvent += new IsNeedToPlotDelegate(Client_IsNeedToPlotEvent);
             Client.IsNeedChangeStatusEvent += new IsNeedChangeStatus(Client_IsNeedChangeStatusEvent);
+            Client.IsNeedToChangeConfStatusEvent += new IsNeedToChangeConfStatus(Client_IsNeedToChangeConfStatusEvent);
+            Client.IsNeedShowOperationResultEvent += new IsNeedShowOperationResult(Client_IsNeedShowOperationResultEvent);
 
             //Автоподключение
             string FileData;
@@ -56,13 +58,60 @@ namespace AsyncClient
             Client._srv.encryptIt = Convert.ToBoolean(allParam[1].TrimStart(trimChar));
         }
 
-        //Обработка события необходимости измениния статуса
+        void Client_IsNeedShowOperationResultEvent(string result)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new IsNeedShowOperationResult(Client_IsNeedShowOperationResultEvent), result);
+            }
+            else
+            {
+                MessageBox.Show(result, "Сообщение", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+        
+        /// <summary>
+        /// Обработка события изменения видимости панели конфигиурирования
+        /// </summary>
+        /// <param name="role">роль клиента(его права)</param>
+        void Client_IsNeedToChangeConfStatusEvent(string role)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new IsNeedToChangeConfStatus(Client_IsNeedToChangeConfStatusEvent), role);
+            }
+            else
+            {
+                if (role == "admin")
+                    this.SystemConf.Visible = true;
+                else
+                    this.SystemConf.Visible = false;
+            }
+        }
+
+        /// <summary>
+        /// Обработка события необходимости измениния статуса
+        /// </summary>
         void Client_IsNeedChangeStatusEvent()
         {
-            if (Client._srv.status)
-                Client._srv.status = false;
-            else
-                Client._srv.status = true;
+           if (this.InvokeRequired)
+                {
+                    this.Invoke(new IsNeedChangeStatus(Client_IsNeedChangeStatusEvent));
+                }
+           else
+           {
+               if (Client._srv.status)
+               {
+                   Client._srv.status = false;
+                   this.stLabel.Text = "Отключен";
+               }
+               else
+               {
+                   Client._srv.status = true;
+                   this.stLabel.Text = "Подключен";
+               }
+           }
         }
 
         /// <summary>
@@ -79,15 +128,15 @@ namespace AsyncClient
             {
                 string[] dev = DevData.Split('*');
                 this.trvDevice.BeginUpdate();
-                int index = trvDevice.Nodes[dev[0]].Nodes.IndexOfKey(dev[1]) ;
+                int index = trvDevice.Nodes[dev[1]].Nodes.IndexOfKey(dev[0]) ;
                 if ( index > -1)
                 {
                     trvDevice.Nodes[dev[0]].Nodes[index].Remove();
 
                 }
-                trvDevice.Nodes[dev[0]].Nodes.Add(dev[1], dev[1]);
-                index = trvDevice.Nodes[dev[0]].Nodes.IndexOfKey(dev[1]);
-                trvDevice.Nodes[dev[0]].Nodes[index].Tag = dev[2];
+                trvDevice.Nodes[dev[1]].Nodes.Add(dev[0], dev[0]);
+                index = trvDevice.Nodes[dev[1]].Nodes.IndexOfKey(dev[0]);
+                trvDevice.Nodes[dev[1]].Nodes[index].Tag = dev[2];
                 this.trvDevice.EndUpdate();
             }
         }
@@ -109,35 +158,6 @@ namespace AsyncClient
             } 
         }
 
-        /// <summary>
-        /// Обработка события обновления состояния статуса подключения и вкладки "Конфигурирование".
-        /// </summary>
-        /// <param name="status"></param>
-        void Client_StatusIsActive(bool status)
-        {
-            try
-            {
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(new StatusIsActiveDelegate(Client_StatusIsActive),status);
-                }
-                else
-                {
-                    if (status)
-                        this.stLabel.Text = "Подключён";
-                    else this.stLabel.Text = "Отключен";
-                    if (Client._srv.role == "admin")
-                        this.SystemConf.Visible = true;
-                    else this.SystemConf.Visible = false;
-                }
-            }
-            catch (Exception)
-            {
-                
-                throw;
-            }
-
-        }
 
         /// <summary>
         /// Обработка события необходимости отобразить информацию
@@ -172,11 +192,6 @@ namespace AsyncClient
         
         }
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
         /// <summary>
         /// При закрытии формы.
         /// </summary>
@@ -192,15 +207,27 @@ namespace AsyncClient
         }
 
         /// <summary>
-        /// Работа с конфигурационным файлом. Сохранение параметров подключения(ip - адрес, порт).
+        /// Работа с конфигурационным файлом. Сохранение параметров подключения.
         /// </summary>
         ConnectParams _ParamForm;
         private void ConfCoonectParms_Click(object sender, EventArgs e)
         {
-            _ParamForm = new ConnectParams();
+            string[] IpAndPort = { "", "" };
+            string FileData;
+            char[] trimChar = new char[2] { '\r', '\n' };
+            using (var sr = new StreamReader("Config.dat", Encoding.GetEncoding(1251)))
+            {
+                FileData = sr.ReadToEnd();
+            }
+            allParam = FileData.Split(';');
+            IpAndPort = allParam[0].Split(',');
+            _ParamForm = new ConnectParams(IpAndPort[0], IpAndPort[1], Convert.ToBoolean(allParam[1].TrimStart(trimChar)));
             if (_ParamForm.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                Client.SaveConnData(_ParamForm.tbIP.Text + "," + _ParamForm.tbPort.Text, @"\d\d?\d?\.\d\d?\d?\.\d\d?\d?\.\d\d?\d?\,{1}\d*"); 
+                Client.SaveConnData(_ParamForm.tbIP.Text + "," + _ParamForm.tbPort.Text,
+                    @"\d\d?\d?\.\d\d?\d?\.\d\d?\d?\.\d\d?\d?\,{1}\d*");
+                ///TODO придумать паттерн
+                Client.SaveConnData(Convert.ToString(_ParamForm.chbUseEncrypting.Checked), "");
             }
         }
 
@@ -260,7 +287,7 @@ namespace AsyncClient
         {
             if (trvDevice.SelectedNode.Level == 0)
             {
-                if (trvDevice.SelectedNode.Tag.ToString() == "SimpleDev")
+                if (trvDevice.SelectedNode.Tag.ToString() == "Простое устройство")
                 {
                     grpDevice.Enabled = true;
                     grpDimmers.Enabled = false;
@@ -270,14 +297,14 @@ namespace AsyncClient
                     this.butAction.Enabled = false;
                     
                 }
-                else if (trvDevice.SelectedNode.Tag.ToString() == "Simple sensor")
+                else if (trvDevice.SelectedNode.Tag.ToString() == "Датчик")
                 {
                     grpSensor.Enabled = true;
                     grpDimmers.Enabled = false;
                     grpDevice.Enabled = false;
                     grpCounters.Enabled = false;
                 }
-                else if (trvDevice.SelectedNode.Tag.ToString() == "Dimmers")
+                else if (trvDevice.SelectedNode.Tag.ToString() == "Димеры")
                 {
                     grpDevice.Enabled = false;
                     grpDimmers.Enabled = true;
@@ -286,7 +313,7 @@ namespace AsyncClient
                     this.tbDimmersPower.Enabled = false;
                     this.butDimmersSet.Enabled = false;
                 }
-                else if (trvDevice.SelectedNode.Tag.ToString() == "Sensors with multi-state")
+                else if (trvDevice.SelectedNode.Tag.ToString() == "Счётчики")
                 {
                     grpDevice.Enabled = false;
                     grpDimmers.Enabled = false;
@@ -297,7 +324,7 @@ namespace AsyncClient
             }
             else
             {
-                if (trvDevice.SelectedNode.Parent.Tag.ToString() == "SimpleDev")
+                if (trvDevice.SelectedNode.Parent.Tag.ToString() == "Простое устройство")
                 {
                     grpSensor.Enabled = false;
                     grpDimmers.Enabled = false;
@@ -308,21 +335,21 @@ namespace AsyncClient
                     else butAction.Text = "Выключить";
                     this.butAction.Enabled = true;
                 }
-                else if (trvDevice.SelectedNode.Parent.Tag.ToString() == "Simple sensor")
+                else if (trvDevice.SelectedNode.Parent.Tag.ToString() == "Датчик")
                 {
                     grpSensor.Enabled = true;
                     grpDimmers.Enabled = false;
                     grpDevice.Enabled = false;
                     this.lSensorValue.Text = trvDevice.SelectedNode.Tag.ToString();
                 }
-                else if (trvDevice.SelectedNode.Parent.Tag.ToString() == "Dimmers")
+                else if (trvDevice.SelectedNode.Parent.Tag.ToString() == "Димеры")
                 {
                     grpDevice.Enabled = false;
                     grpDimmers.Enabled = true;
                     grpSensor.Enabled = false;
                     this.tbDimmersPower.Text = trvDevice.SelectedNode.Tag.ToString();
                 }
-                else if (trvDevice.SelectedNode.Parent.Tag.ToString() == "Sensors with multi-state")
+                else if (trvDevice.SelectedNode.Parent.Tag.ToString() == "Счётчики")
                 {
                     grpDevice.Enabled = false;
                     grpDimmers.Enabled = false;
@@ -345,7 +372,7 @@ namespace AsyncClient
             {
 
                 Client.Send("GetCounterRec/" + _ReportDataForm.BegDate +"/" +
-                    _ReportDataForm.EndDate + "/" + this.trvDevice.SelectedNode.Text + "?", Client._srv.encryptIt);
+                    _ReportDataForm.EndDate + "/" + this.trvDevice.SelectedNode.Text, Client._srv.encryptIt);
             }
         }
 
@@ -355,23 +382,35 @@ namespace AsyncClient
             if (butAction.Text == "Выключить")
                 param = "0";
             else param = "1";
-            Client.Send("SetParam/" + trvDevice.SelectedNode.Text + "/" + param + "?", Client._srv.encryptIt);
+            Client.Send("SetParam/" + trvDevice.SelectedNode.Text + "/" + param, Client._srv.encryptIt);
         }
 
         private void butGetUpdate_Click(object sender, EventArgs e)
         {
-            Client.Send("GetUpdate?", Client._srv.encryptIt);
+            Client.Send("GetUpdate", Client._srv.encryptIt);
         }
 
         private void butDimmersSet_Click(object sender, EventArgs e)
         {
-            Client.Send("SetParam/" + trvDevice.SelectedNode.Text + "/" + tbDimmersPower.Text + "?", Client._srv.encryptIt);
+            Client.Send("SetParam/" + trvDevice.SelectedNode.Text + "/" + tbDimmersPower.Text, Client._srv.encryptIt);
         }
 
         private void SystemConf_Click(object sender, EventArgs e)
         {
             AdminPanel AdmPanel = new AdminPanel(Client, Client._srv.encryptIt);
             AdmPanel.ShowDialog();
+        }
+
+        ChangePasswordForm _ChangePassword;
+        private void ChangePassword_Click(object sender, EventArgs e)
+        {
+            _ChangePassword = new ChangePasswordForm();
+            if (_ChangePassword.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                Client.Send("UpdatePassword/LOGIN/" + "/" + _ChangePassword.tbOldPassword + 
+                    "/" + _ChangePassword.tbNewPassword + "/" + _ChangePassword.tbConfirmPass, 
+                    Client._srv.encryptIt);
+            }
         }
     }
 }

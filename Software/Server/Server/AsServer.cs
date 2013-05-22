@@ -14,6 +14,10 @@ namespace Server
     /// </summary>
     public class AsServer
     {
+        /// <summary>
+        /// Флаг определяющий необходимость шифрования.
+        /// </summary>
+        private bool _NeedEncrypt;
 
         /// <summary>
         /// Класс, предоставляющий информацию о клиенте.
@@ -128,6 +132,7 @@ namespace Server
             Console.WriteLine("Сервер {0}:{1} успешно запущен.", _serverAddress, _serverPort);
             WinLog.Write(string.Format("Сервер {0}:{1} успешно запущен.", _serverAddress, _serverPort),
                 System.Diagnostics.EventLogEntryType.Information);
+            _NeedEncrypt = true;
         }
 
         /// <summary>
@@ -145,7 +150,7 @@ namespace Server
                     {
                         data = (string)Storage.MessegesForUser.Dequeue();
                         DataToSend = data.Split('@');
-                        Send(DataToSend[1], DataToSend[0], true);
+                        Send(DataToSend[1], DataToSend[0], _NeedEncrypt);
                         data = "";
                         DataToSend = null;
                     }
@@ -174,7 +179,7 @@ namespace Server
                                 //Проверка времени соединения неавторизованных клиентов
                                 if (!_clients[i].IsAuth && (_clients[i].ConnDate <= DateTime.Now))
                                 {
-                                    Send(_clients[i], @"mess\Time out autorization", true);
+                                    Send(_clients[i], @"mess\Time out autorization", _NeedEncrypt);
                                     CloseConnection(_clients[i]);
                                     i--;
                                 }
@@ -222,7 +227,7 @@ namespace Server
                     SocketFlags.None, new AsyncCallback(AuthCallback), aceptClient);
                 WinLog.Write(string.Format("Попытка авторизации клиента {0}.", 
                     aceptClient.Socket.RemoteEndPoint), System.Diagnostics.EventLogEntryType.Information);
-                Send(aceptClient, "Auth?", true);
+                Send(aceptClient, "Auth", _NeedEncrypt);
 
                 //Начало новой операции приёма подключения
                 _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), result.AsyncState);
@@ -268,7 +273,7 @@ namespace Server
                             authClient.login = authData[0];
                             WinLog.Write("Клиент " + authClient.login + " авторизован",
                                          System.Diagnostics.EventLogEntryType.SuccessAudit);
-                            Send(authClient, "AuthAnsver/1*" + role + "?", true);
+                            Send(authClient, "AuthAnsver/1*" + role, _NeedEncrypt);
                             authClient.Socket.BeginReceive(authClient.Buffer,
                                 0, authClient.Buffer.Length, SocketFlags.None,
                                 new AsyncCallback(ReceiveCallback),
@@ -276,7 +281,7 @@ namespace Server
                         }
                         else
                         {
-                            Send(authClient, "AuthAnsver/0/" + role + "?", true);
+                            Send(authClient, "AuthAnsver/0/" + role, _NeedEncrypt);
                             authClient.IsAuth = false;
                             // Начало операции авторизации 
                             authClient.Socket.BeginReceive(authClient.Buffer,
@@ -286,13 +291,13 @@ namespace Server
                             authClient.AuthCount++;
                             WinLog.Write("Ошибка авторизации клиента с IP - " + authClient.Socket.RemoteEndPoint,
                                          System.Diagnostics.EventLogEntryType.FailureAudit);
-                            Send(authClient, @"mess/Wrong login or password.The number of attempts" + Convert.ToString(3 - authClient.AuthCount), true);
+                            Send(authClient, @"mess/Wrong login or password.The number of attempts" + Convert.ToString(3 - authClient.AuthCount), _NeedEncrypt);
                         }
                     }
                 }
                 else
                 {
-                    Send(authClient, @"mess/Превышено количество попыток подключения", true);
+                    Send(authClient, @"mess/Превышено количество попыток подключения", _NeedEncrypt);
                     CloseConnection(authClient);
                 }
             }
@@ -316,29 +321,45 @@ namespace Server
             ReadedByte = processClient.Socket.EndReceive(result);
             try
             {
-                messData = Crypto.Decrypt(Encoding.ASCII.GetString(processClient.Buffer, 0, ReadedByte)).Split('?');
+                if (_NeedEncrypt)
+                {
+                    messData = Encoding.ASCII.GetString(processClient.Buffer, 0, ReadedByte).Split('?');
+                    for (int i = 0; i < messData.Length; i++)
+                    {
+                        messData[i] = Crypto.Decrypt(messData[i]);
+                    }
+                }
+                else
+                    messData = Encoding.ASCII.GetString(processClient.Buffer, 0, ReadedByte).Split('?');
+
                 for (int i = 0; i < messData.Length; i++)
                 {
-                    Data = messData[i].Split('/');
-                    switch (Data[0])
+                    if (messData[i] != "")
                     {
-                        case "Exit":
-                            CloseConnection(processClient);
-                            processClient.IsActive = false;
-                            break;
-                        case "GetUpdate":
-                            _Updater = new Thread(delegate() { UpdateData(processClient.login); });
-                            _Updater.IsBackground = true;
-                            _Updater.Start();
-                            break;
-                        case "GetCounterRec":
-                        case "AddUser":
-                        case "AddDev":
-                            Storage.QueueTCP.Enqueue(messData + "/" + processClient.login);
-                            break;
-                        default:
-                            Send(processClient.login, @"mess/Incorrect command format!", true);
-                            break;
+                        Data = messData[i].Split('/');
+                        switch (Data[0])
+                        {
+                            case "Exit":
+                                CloseConnection(processClient);
+                                processClient.IsActive = false;
+                                break;
+                            case "GetUpdate":
+                                _Updater = new Thread(delegate() { UpdateData(processClient.login); });
+                                _Updater.IsBackground = true;
+                                _Updater.Start();
+                                break;
+                            case "UpdatePassword":
+                                Storage.QueueTCP.Enqueue(messData[i].Replace("LOGIN", processClient.login));
+                                break;
+                            case "GetCounterRec":
+                            case "AddUser":
+                            case "AddDev":
+                                Storage.QueueTCP.Enqueue(messData[i] + "@" + processClient.login);
+                                break;
+                            default:
+                                Send(processClient.login, @"mess/Incorrect command format!", _NeedEncrypt);
+                                break;
+                        }
                     }
                 }
 
@@ -375,14 +396,14 @@ namespace Server
         {
             try
             {
-                byte[] byteData = Encoding.ASCII.GetBytes(data);
+                byte[] byteData = null;
                 if (NeedEncrypt)
                 {
                     byteData = Encoding.ASCII.GetBytes(Crypto.Encrypt(data));
                 }
                 else
                 {
-                    byteData = Encoding.ASCII.GetBytes(data);
+                    byteData = Encoding.ASCII.GetBytes(data + "?");
                 }
 
 
@@ -407,14 +428,14 @@ namespace Server
         {
             try
             {
-                byte[] byteData = Encoding.ASCII.GetBytes(data);
+                byte[] byteData = null;
                 if (NeedEncrypt)
                 {
                     byteData = Encoding.ASCII.GetBytes(Crypto.Encrypt(data));
                 }
                 else
                 {
-                    byteData = Encoding.ASCII.GetBytes(data);
+                    byteData = Encoding.ASCII.GetBytes(data + "?");
                 }
 
                 foreach (var cl in _clients)
@@ -447,7 +468,7 @@ namespace Server
                 {
                     for (i = 0; i < _clients.Count; i++)
                     {
-                        Send(_clients[i], data, true);
+                        Send(_clients[i], data, _NeedEncrypt);
                     }
                 }
 
@@ -511,8 +532,7 @@ namespace Server
                     CommandString += "*" + row[col].ToString();
                     else CommandString += row[col].ToString();
                 }
-                CommandString += "?";
-                Send(login, CommandString, true);
+                Send(login, CommandString, _NeedEncrypt);
                 CommandString = "Update/";
             }
             //TODO как закрыть поток?

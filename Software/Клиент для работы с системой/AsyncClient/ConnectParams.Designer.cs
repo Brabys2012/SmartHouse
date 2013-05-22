@@ -34,6 +34,7 @@
             this.lPassword = new System.Windows.Forms.Label();
             this.butOk = new System.Windows.Forms.Button();
             this.butCancel = new System.Windows.Forms.Button();
+            this.chbUseEncrypting = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // tbIP
@@ -45,7 +46,7 @@
             // 
             // tbPort
             // 
-            this.tbPort.Location = new System.Drawing.Point(75, 62);
+            this.tbPort.Location = new System.Drawing.Point(75, 59);
             this.tbPort.Name = "tbPort";
             this.tbPort.Size = new System.Drawing.Size(181, 20);
             this.tbPort.TabIndex = 1;
@@ -62,7 +63,7 @@
             // lPassword
             // 
             this.lPassword.AutoSize = true;
-            this.lPassword.Location = new System.Drawing.Point(13, 65);
+            this.lPassword.Location = new System.Drawing.Point(13, 62);
             this.lPassword.Name = "lPassword";
             this.lPassword.Size = new System.Drawing.Size(35, 13);
             this.lPassword.TabIndex = 3;
@@ -70,7 +71,7 @@
             // 
             // butOk
             // 
-            this.butOk.Location = new System.Drawing.Point(16, 106);
+            this.butOk.Location = new System.Drawing.Point(12, 116);
             this.butOk.Name = "butOk";
             this.butOk.Size = new System.Drawing.Size(75, 23);
             this.butOk.TabIndex = 4;
@@ -80,7 +81,7 @@
             // 
             // butCancel
             // 
-            this.butCancel.Location = new System.Drawing.Point(181, 106);
+            this.butCancel.Location = new System.Drawing.Point(181, 116);
             this.butCancel.Name = "butCancel";
             this.butCancel.Size = new System.Drawing.Size(75, 23);
             this.butCancel.TabIndex = 5;
@@ -88,11 +89,22 @@
             this.butCancel.UseVisualStyleBackColor = true;
             this.butCancel.Click += new System.EventHandler(this.butCancel_Click);
             // 
+            // chbUseEncrypting
+            // 
+            this.chbUseEncrypting.AutoSize = true;
+            this.chbUseEncrypting.Location = new System.Drawing.Point(18, 92);
+            this.chbUseEncrypting.Name = "chbUseEncrypting";
+            this.chbUseEncrypting.Size = new System.Drawing.Size(166, 17);
+            this.chbUseEncrypting.TabIndex = 6;
+            this.chbUseEncrypting.Text = "Использовать шифрование";
+            this.chbUseEncrypting.UseVisualStyleBackColor = true;
+            // 
             // ConnectParams
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(268, 139);
+            this.ClientSize = new System.Drawing.Size(268, 147);
+            this.Controls.Add(this.chbUseEncrypting);
             this.Controls.Add(this.butCancel);
             this.Controls.Add(this.butOk);
             this.Controls.Add(this.lPassword);
@@ -114,5 +126,6 @@
         private System.Windows.Forms.Button butCancel;
         public System.Windows.Forms.TextBox tbIP;
         public System.Windows.Forms.TextBox tbPort;
+        public System.Windows.Forms.CheckBox chbUseEncrypting;
     }
 }
