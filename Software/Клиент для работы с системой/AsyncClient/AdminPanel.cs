@@ -65,7 +65,7 @@ namespace AsyncClient
                 if (tbPassword.Text == tbPassConfirm.Text)
                 {
                     AdminClient.Send("AddUser/" + tbLogin.Text + "/" +
-                        tbPassword.Text + "/" + cbRole.SelectedItem.ToString() + "?", NeedToEncypt);
+                        tbPassword.Text + "/" + cbRole.SelectedItem.ToString(), NeedToEncypt);
                     MessageBox.Show("Сообщение о добавлении нового\r\n пользоветеля успешно отправлено.",
                         "Добавление пользователя", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
@@ -84,7 +84,7 @@ namespace AsyncClient
         {
             if (tbLoginToDel.Text != "")
             {
-                AdminClient.Send("DeleteUser/" + tbLoginToDel.Text + "?", NeedToEncypt);
+                AdminClient.Send("DeleteUser/" + tbLoginToDel.Text, NeedToEncypt);
             }
             else
                 MessageBox.Show("Введите логин удаляемого пользователя!");
@@ -94,7 +94,7 @@ namespace AsyncClient
         {
             if (tbNameToDel.Text != "")
             {
-                AdminClient.Send("DeleteDevice/" + tbNameToDel.Text + "?", NeedToEncypt);
+                AdminClient.Send("DeleteDevice/" + tbNameToDel.Text, NeedToEncypt);
             }
             else
                 MessageBox.Show("Введите наименование удаляемого устройства!",
@@ -118,7 +118,7 @@ namespace AsyncClient
                     "/" + tbDeviceName.Text + 
                     "/" + cbDeviceType.SelectedItem.ToString() + 
                     "/" + tbMessage.Text + 
-                    "/" + temp + "?", NeedToEncypt);
+                    "/" + temp, NeedToEncypt);
 
                 cbDeviceNumber.SelectedIndex = -1;
                 cbDeviceType.SelectedIndex = -1;
