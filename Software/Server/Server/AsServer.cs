@@ -150,9 +150,19 @@ namespace Server
                     {
                         data = (string)Storage.MessegesForUser.Dequeue();
                         DataToSend = data.Split('@');
-                        Send(DataToSend[1], DataToSend[0], _NeedEncrypt);
-                        data = "";
-                        DataToSend = null;
+                        if (DataToSend[1] == "all")
+                        {
+                            Send(DataToSend[0]);
+                            data = "";
+                            DataToSend = null;
+                        }
+                        else
+                        {
+                            Send(DataToSend[1], DataToSend[0], _NeedEncrypt);
+                            data = "";
+                            DataToSend = null;
+                        }
+                        
                     }
                 }
                 Thread.Sleep(1000);
