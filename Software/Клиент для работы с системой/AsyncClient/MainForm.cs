@@ -34,7 +34,7 @@ namespace AsyncClient
             grpSensor.Enabled = false;
             grpDimmers.Enabled = false;
             grpDevice.Enabled = false;
-            this.SystemConf.Visible = true;
+            this.SystemConf.Visible = false;
 
             //Подписываемя на события логической части лиента.
             Client.IsNeedUpdateThreeEvent += new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent);

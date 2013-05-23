@@ -137,7 +137,8 @@ namespace AsyncClient
                     message = Encoding.ASCII.GetString(_srv.buffer, 0, bytesRead).Split('?');
                     for (int i = 0; i < message.Length; i++)
                     {
-                        message[i] = Crypto.Decrypt(message[i]);
+                        if (message[i] != "")                          
+                            message[i] = Crypto.Decrypt(message[i]);
                     }
                 }
                 else
@@ -155,6 +156,7 @@ namespace AsyncClient
                             {
                                 lock (_srv.role)
                                     _srv.role = tmpArray[1];
+                                IsNeedToChangeConfStatusEvent(tmpArray[1]);
                             }
                             else 
                             {

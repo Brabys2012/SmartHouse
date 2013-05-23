@@ -272,9 +272,11 @@ namespace Server
                     if (authClient.IsActive)
                     {
                         string[] authData = null;
+                        string[] mess = null;
                         int count = 0;
                         count = authClient.Socket.EndReceive(result);
-                        authData = Encoding.ASCII.GetString(authClient.Buffer, 0, count).Split('.');
+                        mess = Encoding.ASCII.GetString(authClient.Buffer, 0, count).Split('?');
+                        authData = Crypto.Decrypt(mess[1]).Split('.');
                         role = TableUser.CheckUser(authData[0], authData[1]);
                         if (role != "")
                         {
