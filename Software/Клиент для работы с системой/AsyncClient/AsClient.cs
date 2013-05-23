@@ -187,6 +187,9 @@ namespace AsyncClient
                                 reportString += tmpString[0] + "*"; 
                             }
                             break;
+                        case "ResUpdatePas":
+                            IsNeedShowOperationResultEvent(command[1]);
+                            break;
                         case "ResAddUser":
                             if (Convert.ToBoolean(command[1]))
                                 sMessage = "Пользователь успешно добавлен.";

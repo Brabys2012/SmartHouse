@@ -21,16 +21,7 @@ namespace AsyncClient
         {
             InitializeComponent();
             //Инициализация базовых узлов дерева.
-            trvDevice.BeginUpdate();
-            trvDevice.Nodes.Add("Простое устройство", "Простое устройство");
-            trvDevice.Nodes["Простое устройство"].Tag = "Простое устройство";
-            trvDevice.Nodes.Add("Датчик", "Датчик");
-            trvDevice.Nodes["Датчик"].Tag = "Датчик";
-            trvDevice.Nodes.Add("Димеры", "Димеры");
-            trvDevice.Nodes["Димеры"].Tag = "Димеры";
-            trvDevice.Nodes.Add("Счётчики", "Счётчики");
-            trvDevice.Nodes["Счётчики"].Tag = "Счётчики";
-            trvDevice.EndUpdate();
+            CreateBaseThreeStruct();
             grpSensor.Enabled = false;
             grpDimmers.Enabled = false;
             grpDevice.Enabled = false;
@@ -56,6 +47,20 @@ namespace AsyncClient
             loginAndPass = allParam[0].Split(',');
             Client.StartClient(loginAndPass[0], Convert.ToInt32(loginAndPass[1]));
             Client._srv.encryptIt = Convert.ToBoolean(allParam[1].TrimStart(trimChar));
+        }
+
+        void CreateBaseThreeStruct()
+        {
+            trvDevice.BeginUpdate();
+            trvDevice.Nodes.Add("Простое устройство", "Простое устройство");
+            trvDevice.Nodes["Простое устройство"].Tag = "Простое устройство";
+            trvDevice.Nodes.Add("Датчик", "Датчик");
+            trvDevice.Nodes["Датчик"].Tag = "Датчик";
+            trvDevice.Nodes.Add("Димеры", "Димеры");
+            trvDevice.Nodes["Димеры"].Tag = "Димеры";
+            trvDevice.Nodes.Add("Счётчики", "Счётчики");
+            trvDevice.Nodes["Счётчики"].Tag = "Счётчики";
+            trvDevice.EndUpdate();
         }
 
         void Client_IsNeedShowOperationResultEvent(string result)
@@ -131,7 +136,7 @@ namespace AsyncClient
                 int index = trvDevice.Nodes[dev[1]].Nodes.IndexOfKey(dev[0]) ;
                 if ( index > -1)
                 {
-                    trvDevice.Nodes[dev[0]].Nodes[index].Remove();
+                    trvDevice.Nodes[dev[1]].Nodes[index].Remove();
 
                 }
                 trvDevice.Nodes[dev[1]].Nodes.Add(dev[0], dev[0]);
@@ -269,10 +274,11 @@ namespace AsyncClient
         /// <param name="e"></param>
         private void Disconnect_Click(object sender, EventArgs e)
         {
-            if (this.stLabel.Text == "Подключён")
+            if (this.stLabel.Text == "Подключен")
             {
                 Client.Send("EXIT", Client._srv.encryptIt);
                 Client.CloseConnection();
+                this.stLabel.Text = "Отключен";
                 Client._srv.status = false;
                 
             } 
@@ -387,6 +393,10 @@ namespace AsyncClient
 
         private void butGetUpdate_Click(object sender, EventArgs e)
         {
+            this.trvDevice.BeginUpdate();
+            this.trvDevice.Nodes.Clear();
+            this.trvDevice.EndUpdate();
+            CreateBaseThreeStruct();
             Client.Send("GetUpdate", Client._srv.encryptIt);
         }
 
@@ -407,9 +417,13 @@ namespace AsyncClient
             _ChangePassword = new ChangePasswordForm();
             if (_ChangePassword.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                Client.Send("UpdatePassword/LOGIN/" + "/" + _ChangePassword.tbOldPassword + 
-                    "/" + _ChangePassword.tbNewPassword + "/" + _ChangePassword.tbConfirmPass, 
+                if (_ChangePassword.tbNewPassword.Text == _ChangePassword.tbConfirmPass.Text)
+                Client.Send("UpdatePassword/LOGIN/"  + _ChangePassword.tbNewPassword.Text + 
+                    "/" + _ChangePassword.tbOldPassword.Text, 
                     Client._srv.encryptIt);
+                else
+                    MessageBox.Show("Пароль и подтверждение пароля не совпадают!",
+                    "Добавление пользователя", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

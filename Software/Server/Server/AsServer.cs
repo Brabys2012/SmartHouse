@@ -276,7 +276,7 @@ namespace Server
                         int count = 0;
                         count = authClient.Socket.EndReceive(result);
                         mess = Encoding.ASCII.GetString(authClient.Buffer, 0, count).Split('?');
-                        authData = Crypto.Decrypt(mess[1]).Split('.');
+                        authData = Crypto.Decrypt(mess[0]).Split('.');
                         role = TableUser.CheckUser(authData[0], authData[1]);
                         if (role != "")
                         {
