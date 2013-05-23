@@ -77,7 +77,7 @@ namespace Server
         /// <returns></returns>
         public static bool DeleteUser(string login)
         {
-            return SQL.SQL_ExecuteNoneQueryCommitTransaction("Delet from Useres where login = '" + login + "'");
+            return SQL.SQL_ExecuteNoneQueryCommitTransaction("Delete from Useres where login = '" + login + "'");
         }
 
         /// <summary>

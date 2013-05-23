@@ -48,16 +48,16 @@ namespace Server
                 case "DeleteUser":
                     Result = new byte[1];
                     Result[0] = 0;
-                    DeleteDevice(SplitComand, users);
+                    DeleteUser(SplitComand, users);
                     break;
-                case "UpdatePassworld":
+                case "UpdatePassword":
                     Result = new byte[1];
                     Result[0] = 0;
                     UpdatePassword(SplitComand, users);
                     break;
                 default:
                     Result = new byte[1];
-                    Result[1] = 0;
+                    Result[0] = 0;
                     WinLog.Write("Команда не распознана", System.Diagnostics.EventLogEntryType.Error);
                     lock (Storage.MessegesForUser)
                         Storage.MessegesForUser.Enqueue("mess/Ваша команда не корректна@" + users); 

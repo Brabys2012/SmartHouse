@@ -276,7 +276,7 @@ namespace Server
                         int count = 0;
                         count = authClient.Socket.EndReceive(result);
                         mess = Encoding.ASCII.GetString(authClient.Buffer, 0, count).Split('?');
-                        authData = Crypto.Decrypt(mess[1]).Split('.');
+                        authData = Crypto.Decrypt(mess[0]).Split('.');
                         role = TableUser.CheckUser(authData[0], authData[1]);
                         if (role != "")
                         {
@@ -338,7 +338,8 @@ namespace Server
                     messData = Encoding.ASCII.GetString(processClient.Buffer, 0, ReadedByte).Split('?');
                     for (int i = 0; i < messData.Length; i++)
                     {
-                        messData[i] = Crypto.Decrypt(messData[i]);
+                        if(messData[i] != "")
+                            messData[i] = Crypto.Decrypt(messData[i]);
                     }
                 }
                 else
@@ -361,12 +362,14 @@ namespace Server
                                 _Updater.Start();
                                 break;
                             case "UpdatePassword":
-                                Storage.QueueTCP.Enqueue(messData[i].Replace("LOGIN", processClient.login));
+                                Storage.QueueTCP.Enqueue(messData[i].Replace("LOGIN", processClient.login) + "@" + processClient.login);
                                 break;
                             case "GetCounterRec":
                             case "AddUser":
                             case "AddDev":
-                                Storage.QueueTCP.Enqueue(messData[i] + "@" + processClient.login);
+                            case "DeleteUser":
+                            case "DeleteDevice":
+                            Storage.QueueTCP.Enqueue(messData[i] + "@" + processClient.login);
                                 break;
                             default:
                                 Send(processClient.login, @"mess/Incorrect command format!", _NeedEncrypt);

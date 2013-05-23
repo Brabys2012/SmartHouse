@@ -87,7 +87,7 @@ namespace Server
                     }
                     catch
                     {
-                        result.messege = "Сбой при поиске устройства в базе денных, при обработке срабатывания датчика";
+                        result.messege = "Сбой при поиске устройства в базе данных, при обработке срабатывания датчика";
                         WinLog.Write(result.messege, System.Diagnostics.EventLogEntryType.Error);
                         result.number = null;
                         SQL.IsLockedTransaction = false;
@@ -378,6 +378,7 @@ namespace Server
                     RowDev[0] = NameDev;
                     RowDev[1] = TypeDev;
                     Storage.ArrayUpdate.Tables[0].Rows.Add(RowDev);
+                    Storage.ArrayUpdate.Tables[0].AcceptChanges();
                 }
             else
             {
@@ -389,13 +390,23 @@ namespace Server
 
         public bool DeleteDevice(string Name)
         {
-            bool result = SQL.SQL_ExecuteNoneQueryCommitTransaction("delet from Device " +
-                                                                    " where Device = '" + Name + "'");
+            bool result = SQL.SQL_ExecuteNoneQueryCommitTransaction("delete from Device " +
+                                                                    " where Name = '" + Name + "'");
             if ((Name != "") && (result))
             {
                 lock (Storage.ArrayUpdate)
                 {
-                    Storage.ArrayUpdate.Tables[0].Rows.Find(Name).Delete();
+                    DataRow DR = Storage.ArrayUpdate.Tables[0].Rows.Find(Name);
+                    if (DR != null)
+                    {
+                        DR.Delete();
+                        Storage.ArrayUpdate.Tables[0].AcceptChanges();
+                    }
+                    else
+                    {
+                        result = false;
+                        WinLog.Write("Не найдено удаленное устройство в DataSet");
+                    }
                 }
             }
             else 
