@@ -45,7 +45,7 @@
   <Class Name="Server.TableDivice">
     <Position X="6" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>gQAACAAAgAAAAAIAAAAAAAAAAABAAAIAAAAAAAgAAAA=</HashCode>
+      <HashCode>gQAACAAAgAAAAAIAAAAAAAAAAABAAAIAAAAAIAgAAAA=</HashCode>
       <FileName>TableDivice.cs</FileName>
     </TypeIdentifier>
   </Class>

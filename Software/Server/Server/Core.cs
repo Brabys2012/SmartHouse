@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Data;
 
 namespace Server
 {
@@ -137,30 +138,8 @@ namespace Server
             DevCommand Answer = new DevCommand();
             if (ProcComand[0] != 0)
             {
-                // Флаг который означает что КомПорт блокирован
-                bool podflag = false;
-                //Процедура отправки команды через ком порт исполнитель с соблюдением 
-                //синхронизации потоков
-                while (!podflag)
-                {
-                    lock (Storage.lockerComPort)
-                    {
-                        if (Storage.flagComPort)
-                        {
-                            podflag = true;
-                            Storage.flagComPort = false;
-                            Answer = ExeComPort.SendInform(ProcComand);
-                            Storage.flagComPort = true;
-                        }
-                    }
-                    //Чтобы оптимизировать работу службы ожидаем освобождения ком порта исполнителя 
-                    //поток засыпает на 300 мс
-                    if (!podflag)
-                    {
-                        Thread.Sleep(300);
-                    }
-                    ExDM.ParserAnswer(Answer);
-                }
+                Answer = SendInformInCom(ProcComand);
+                ExDM.ParserAnswer(Answer);
             }
 
             // Удалем поток из пула потоков
@@ -179,30 +158,8 @@ namespace Server
             DevCommand Answer = new DevCommand();
             if (ComandForComPort[0] != 0)
             {
-                // Флаг который означает что КомПорт блокирован
-                bool podflag = false;
-                //Процедура отправки команды через ком порт исполнитель с соблюдением 
-                //синхронизации потоков
-                while (!podflag)
-                {
-                    lock (Storage.lockerComPort)
-                    {
-                        if (Storage.flagComPort)
-                        {
-                            podflag = true;
-                            Storage.flagComPort = false;
-                            Answer = ExeComPort.SendInform(ComandForComPort);
-                            Storage.flagComPort = true;
-                        }
-                    }
-                    //Чтобы оптимизировать работу службы ожидаем освобождения ком порта исполнителя 
-                    //поток засыпает на 300 мс
-                    if (!podflag)
-                    {
-                        Thread.Sleep(300);
-                    }
-                    DM.ParseAnswer(Answer, SplitByUser[1]);
-                }
+                Answer = SendInformInCom(ComandForComPort);
+                DM.ParseAnswer(Answer, SplitByUser[1]);
             }
 
             // Удалем поток из пула потоков
@@ -224,6 +181,57 @@ namespace Server
         public void UpdateDatchikState()
         {
 
+        }
+
+        //При включении получает состояния всех устройств, подключенных к контроллеру
+        public void UpdateStateAllDevice()
+        {
+            byte[] com = new byte[0];
+            DataSet DsUpda = ExDM.BdDevice.GetListDevice("");
+            foreach (DataRow row in DsUpda.Tables[0].Rows)
+            {
+                byte[] ComUpd = ExDM.ProtocolForExDM.Pack(Convert.ToByte(row[0]), Convert.ToByte(row[2]), com);
+                if (ComUpd[0] != 0)
+                {
+                    DevCommand Answer = SendInformInCom(ComUpd);
+                    ExDM.ParserAnswer(Answer);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Посылает команды на ком порт исполнитель с учетом всех блокировок
+        /// </summary>
+        /// <param name="Inform"></param>
+        /// <returns></returns>
+        private DevCommand SendInformInCom(byte[] Inform)
+        {
+            DevCommand Answer = new DevCommand();
+
+            // Флаг который означает что КомПорт блокирован
+            bool podflag = false;
+            //Процедура отправки команды через ком порт исполнитель с соблюдением 
+            //синхронизации потоков
+            while (!podflag)
+            {
+                lock (Storage.lockerComPort)
+                {
+                    if (Storage.flagComPort)
+                    {
+                        podflag = true;
+                        Storage.flagComPort = false;
+                        Answer = ExeComPort.SendInform(Inform);
+                        Storage.flagComPort = true;
+                    }
+                }
+                //Чтобы оптимизировать работу службы ожидаем освобождения ком порта исполнителя 
+                //поток засыпает на 300 мс
+                if (!podflag)
+                {
+                    Thread.Sleep(6000);
+                }
+            }
+            return Answer;
         }
     }
 }

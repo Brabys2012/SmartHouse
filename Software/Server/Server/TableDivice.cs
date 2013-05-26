@@ -114,6 +114,7 @@ namespace Server
                 lock (Storage.ArrayUpdate)
                 {
                     Storage.ArrayUpdate.Tables[0].Rows.Find(Name).SetField<int>(Storage.ArrayUpdate.Tables[0].Columns["State"], State);
+                    Storage.ArrayUpdate.Tables[0].AcceptChanges();
                 }
         }
 
@@ -388,6 +389,9 @@ namespace Server
             return result;
         }
 
+        /// <summary>
+        /// Удаляет устройства из базы данных
+        /// </summary>
         public bool DeleteDevice(string Name)
         {
             bool result = SQL.SQL_ExecuteNoneQueryCommitTransaction("delete from Device " +
@@ -414,6 +418,44 @@ namespace Server
                 result = false;
             }
             return result;    
+        }
+
+        /// <summary>
+        /// Получает список номеров портов и номеров устройств
+        /// </summary>
+        /// <param name="Constrain">Ограничение отбора</param>
+        /// <returns></returns>
+        public DataSet GetListDevice(string Constrain)
+        {
+            DataSet DS = new DataSet();
+             lock (Storage.lockerBdDev)
+            {
+                // Ожадаем пока не закончится начатая транзакция
+                while (SQL.IsLockedTransaction)
+                    Thread.Sleep(5);
+                // Устанавливаем признак начала транзакции
+                SQL.IsLockedTransaction = true;
+                // Выполняем транзакцию
+                if (SQL.FB_dbConnection != null)
+                    try
+                    {
+                        if (SQL.FB_dbConnection.State == ConnectionState.Closed)
+                            SQL.FB_dbConnection.Open();
+                        FbDataAdapter DAFB = new FbDataAdapter("select NUMOFPORT, NUMOFDEV" +
+                                                                   " from Device " +
+                                                                   Constrain, SQL.FB_dbConnection);
+                        //Заполнили dataSet
+                        DAFB.Fill(DS);
+                    }
+                    catch
+                    {
+                        WinLog.Write("Ошибка при считывание устройств в DataSet", System.Diagnostics.EventLogEntryType.Error);
+                        SQL.IsLockedTransaction = false;
+                        return DS;
+                    }
+                SQL.IsLockedTransaction = false;
+            }
+             return DS;
         }
     }
 }
