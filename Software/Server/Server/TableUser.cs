@@ -67,7 +67,7 @@ namespace Server
         /// <returns>Признак успешного завершения операции.</returns>
         public static bool AddUser(string login, string pass, string role)
         {
-            return SQL.SQL_ExecuteNoneQueryCommitTransaction(string.Format("insert into Useres (login, password, role) values ('{0}', '{1}', '{2}')", login, pass, role));
+            return SQL.SQL_ExecuteNoneQueryCommitTransaction(string.Format("insert into Users (login, password, role) values ('{0}', '{1}', '{2}')", login, pass, role));
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace Server
         /// <returns></returns>
         public static bool DeleteUser(string login)
         {
-            return SQL.SQL_ExecuteNoneQueryCommitTransaction("Delete from Useres where login = '" + login + "'");
+            return SQL.SQL_ExecuteNoneQueryCommitTransaction("Delete from Users where login = '" + login + "'");
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace Server
         /// <returns></returns>
         public static bool UpdatePassword(string login, string newPassword)
         {
-           return SQL.SQL_ExecuteNoneQueryCommitTransaction("Update Useres set Password = '" + newPassword + "'" +
+           return SQL.SQL_ExecuteNoneQueryCommitTransaction("Update Users set Password = '" + newPassword + "'" +
                                                             "where login = '" + login + "'");
         }
     }
