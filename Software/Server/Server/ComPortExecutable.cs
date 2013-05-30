@@ -23,7 +23,7 @@ namespace Server
         /// </summary>
         public void OpenCom()
         {
-            MyComExecutable.PortName = "COM4";
+            MyComExecutable.PortName = "COM18";
             MyComExecutable.BaudRate = 9600;
             MyComExecutable.DataBits = 8;
             MyComExecutable.Parity = Parity.None;

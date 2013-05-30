@@ -49,7 +49,7 @@ namespace Server
         public static void Init()
         {
             // Инициализируем подключение к базе данных
-            _DB_FullFileName = AppDomain.CurrentDomain.BaseDirectory + "DIVICES.FB";
+            _DB_FullFileName = AppDomain.CurrentDomain.BaseDirectory + "DEVICES.FB";
             _DB_ClientLibraryPath = AppDomain.CurrentDomain.BaseDirectory + "fbdb\\fbembed.dll";
             try
             {
