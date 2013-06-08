@@ -29,7 +29,7 @@ namespace AsyncClient
                 cbDeviceNumber.Items.Add(i);
             }
 
-            cbDeviceType.Items.Add("Простой датчик");
+            cbDeviceType.Items.Add("Датчик");
             cbDeviceType.Items.Add("Простое устройство");
             cbDeviceType.Items.Add("Диммер");
             cbDeviceType.Items.Add("Счётчик");
