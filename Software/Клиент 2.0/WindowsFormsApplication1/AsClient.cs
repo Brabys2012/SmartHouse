@@ -214,89 +214,92 @@ namespace AsyncClient
             for (int i = 0; i < message.Length; i++)
             {
                 string[] command = message[i].Split('/');
-                switch (command[0])
+                if (command[0] != "")
                 {
-                    case "I'MALIVE":
-                        alive = true;
-                        autoEvent.Set();
-                        break;
-                    case "AuthAnsver":
-                        string[] tmpArray;
-                        tmpArray = command[1].Split('*');
-                        if (tmpArray[0] == "1")
-                        {
-                            lock (_srv.role)
-                                _srv.role = tmpArray[1];
-                            IsNeedToChangeConfStatusEvent(tmpArray[1]);
-                            beginSend.Set();
-                        }
-                        else
-                        {
-                            IsNeedShowOperationResultEvent("Неверный логин или пароль");
-                            _srv.role = "";
-                        }
-                        IsNeedToChangeConfStatusEvent(_srv.role);
-                        break;
-                    case "Auth":
-                        // Генерируем событие необходимости отобразить форму ввода логина/пароля
-                        if (IsNeedShowLoginFormEvent != null)
-                            IsNeedShowLoginFormEvent();
-                        break;
-                    case "mess":
-                        if (IsNeedShowOperationResultEvent != null)
+                    switch (command[0])
+                    {
+                        case "I'MALIVE":
+                            alive = true;
+                            autoEvent.Set();
+                            break;
+                        case "AuthAnsver":
+                            string[] tmpArray;
+                            tmpArray = command[1].Split('*');
+                            if (tmpArray[0] == "1")
+                            {
+                                lock (_srv.role)
+                                    _srv.role = tmpArray[1];
+                                IsNeedToChangeConfStatusEvent(tmpArray[1]);
+                                beginSend.Set();
+                            }
+                            else
+                            {
+                                IsNeedShowOperationResultEvent("Неверный логин или пароль");
+                                _srv.role = "";
+                            }
+                            IsNeedToChangeConfStatusEvent(_srv.role);
+                            break;
+                        case "Auth":
+                            // Генерируем событие необходимости отобразить форму ввода логина/пароля
+                            if (IsNeedShowLoginFormEvent != null)
+                                IsNeedShowLoginFormEvent();
+                            break;
+                        case "mess":
+                            if (IsNeedShowOperationResultEvent != null)
+                                IsNeedShowOperationResultEvent(command[1]);
+                            break;
+                        case "SetCounterRec":
+                            tmpString = command[1].Split('^');
+                            if (tmpString[1] == "END")
+                            {
+                                reportString += tmpString[0];
+                                IsNeedToPlotEvent(reportString);
+                                reportString = "";
+                            }
+                            else
+                            {
+                                reportString += tmpString[0] + "*";
+                            }
+                            break;
+                        case "ResUpdatePas":
                             IsNeedShowOperationResultEvent(command[1]);
-                        break;
-                    case "SetCounterRec":
-                        tmpString = command[1].Split('^');
-                        if (tmpString[1] == "END")
-                        {
-                            reportString += tmpString[0];
-                            IsNeedToPlotEvent(reportString);
-                            reportString = "";
-                        }
-                        else
-                        {
-                            reportString += tmpString[0] + "*";
-                        }
-                        break;
-                    case "ResUpdatePas":
-                        IsNeedShowOperationResultEvent(command[1]);
-                        break;
-                    case "ResAddUser":
-                        if (Convert.ToBoolean(command[1]))
-                            sMessage = "Пользователь успешно добавлен.";
-                        else
-                            sMessage = "При добавлении пользователя возникла ошибка.";
-                        if (IsNeedShowOperationResultEvent != null)
-                            IsNeedShowOperationResultEvent(sMessage);
-                        break;
-                    case "ResAddDev":
-                        if (Convert.ToBoolean(command[1]))
-                            sMessage = "Устройство успешно добавлено.";
-                        else
-                            sMessage = "При добавлении устройства возникла ошибка.";
-                        if (IsNeedShowOperationResultEvent != null)
-                            IsNeedShowOperationResultEvent(sMessage);
-                        break;
-                    case "ResDeleteDev":
-                        if (Convert.ToBoolean(command[1]))
-                            sMessage = "Устройство успешно удалено.";
-                        else
-                            sMessage = "При удалении устройства возникла ошибка.";
-                        if (IsNeedShowOperationResultEvent != null)
-                            IsNeedShowOperationResultEvent(sMessage);
-                        break;
-                    case "ResDeleteUser":
-                        if (Convert.ToBoolean(command[1]))
-                            sMessage = "Пользователь успешно удалён.";
-                        else
-                            sMessage = "При удалении пользователя возникла ошибка.";
-                        if (IsNeedShowOperationResultEvent != null)
-                            IsNeedShowOperationResultEvent(sMessage);
-                        break;
-                    case "Update":
-                        IsNeedUpdateThreeEvent(command[1]);
-                        break;
+                            break;
+                        case "ResAddUser":
+                            if (Convert.ToBoolean(command[1]))
+                                sMessage = "Пользователь успешно добавлен.";
+                            else
+                                sMessage = "При добавлении пользователя возникла ошибка.";
+                            if (IsNeedShowOperationResultEvent != null)
+                                IsNeedShowOperationResultEvent(sMessage);
+                            break;
+                        case "ResAddDev":
+                            if (Convert.ToBoolean(command[1]))
+                                sMessage = "Устройство успешно добавлено.";
+                            else
+                                sMessage = "При добавлении устройства возникла ошибка.";
+                            if (IsNeedShowOperationResultEvent != null)
+                                IsNeedShowOperationResultEvent(sMessage);
+                            break;
+                        case "ResDeleteDev":
+                            if (Convert.ToBoolean(command[1]))
+                                sMessage = "Устройство успешно удалено.";
+                            else
+                                sMessage = "При удалении устройства возникла ошибка.";
+                            if (IsNeedShowOperationResultEvent != null)
+                                IsNeedShowOperationResultEvent(sMessage);
+                            break;
+                        case "ResDeleteUser":
+                            if (Convert.ToBoolean(command[1]))
+                                sMessage = "Пользователь успешно удалён.";
+                            else
+                                sMessage = "При удалении пользователя возникла ошибка.";
+                            if (IsNeedShowOperationResultEvent != null)
+                                IsNeedShowOperationResultEvent(sMessage);
+                            break;
+                        case "Update":
+                            IsNeedUpdateThreeEvent(command[1]);
+                            break;
+                    } 
                 }
             }
         }
