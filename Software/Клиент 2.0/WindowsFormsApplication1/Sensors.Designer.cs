@@ -120,6 +120,7 @@
             this.MinimumSize = new System.Drawing.Size(594, 300);
             this.Name = "Sensors";
             this.Text = "Датчики";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Sensors_FormClosed);
             this.ResumeLayout(false);
             this.PerformLayout();
 

@@ -34,7 +34,7 @@ namespace AsyncClient
             lOutTemp.Text = "--°C";
 
             parameters = XMLLoader.getSetting();
-            Client.StartClient(parameters.IP, parameters.Port);
+            Client.StartClient(parameters.IP, parameters.Port, parameters.IsNeedUseKeepAlive);
             Client._srv.encryptIt = parameters.IsNeedUseEncrypt;
 
             //Подписываемя на события логической части лиента.
@@ -177,18 +177,16 @@ namespace AsyncClient
         private void butConDisc_Click(object sender, EventArgs e)
         {
             //проверка текущего подключения
-            if (Client._srv.status)
+            if (butConDisc.Text == "Подключиться")
             {
                 
-                Client.StartClient(parameters.IP, parameters.Port);
+                Client.StartClient(parameters.IP, parameters.Port, parameters.IsNeedUseKeepAlive);
                 Client._srv.encryptIt = parameters.IsNeedUseEncrypt;
-                butConDisc.Text = "Отключится";
 
             }
             else
             {
                 Client.CloseConnection();
-                butConDisc.Text = "Подключится";
             }
         }
 

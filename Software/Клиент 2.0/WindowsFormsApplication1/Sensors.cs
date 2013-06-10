@@ -18,7 +18,7 @@ namespace AsyncClient
             InitializeComponent();
             _serv = Server;
             _serv.IsNeedUpdateThreeEvent += new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent);
-            _serv.Send(@"Update/Датчики", Server._srv.encryptIt);
+            _serv.Send(@"GetUpdate/Датчики", Server._srv.encryptIt);
         }
 
         /// <summary>
@@ -27,24 +27,32 @@ namespace AsyncClient
         /// <param name="DevData"></param>
         void Client_IsNeedUpdateThreeEvent(string DevData)
         {
-            if (this.InvokeRequired)
+            try
             {
-                this.Invoke(new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent), DevData);
-            }
-            else
-            {
-                string[] dev = DevData.Split('*');
-                this.treeSensors.BeginUpdate();
-                int index = treeSensors.Nodes.IndexOfKey(dev[1]);
-                if (index > -1)
+                if (this.InvokeRequired)
                 {
-                    treeSensors.Nodes[index].Remove();
-
+                    this.Invoke(new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent), DevData);
                 }
-                treeSensors.Nodes.Add(dev[1], dev[1]);
-                index = treeSensors.Nodes.IndexOfKey(dev[1]);
-                treeSensors.Nodes[index].Tag = dev[2];
-                this.treeSensors.EndUpdate();
+                else
+                {
+                    if (DevData != "")
+                    {
+                        treeSensors.Update();
+                        int index = -1;
+                        string[] dev = DevData.Split('*');
+                        this.treeSensors.BeginUpdate();
+                        this.treeSensors.Nodes.Clear();
+                        this.treeSensors.Nodes.Add(dev[1], dev[1]);
+                        index = this.treeSensors.Nodes.IndexOfKey(dev[1]);
+                        this.treeSensors.Nodes[index].Tag = dev[2];
+                        this.treeSensors.EndUpdate();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message,
+                  "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
             }
         }
 
@@ -53,13 +61,18 @@ namespace AsyncClient
             this.treeSensors.BeginUpdate();
             treeSensors.Nodes.Clear();
             this.treeSensors.EndUpdate();
-            _serv.Send(@"Update/Даттчики", _serv._srv.encryptIt);
+            _serv.Send(@"GetUpdate/Датчики", _serv._srv.encryptIt);
         }
 
         private void treeSensors_AfterSelect(object sender, TreeViewEventArgs e)
         {
             lName.Text = treeSensors.SelectedNode.Text;
             lValue.Text = treeSensors.SelectedNode.Tag.ToString();
+        }
+
+        private void Sensors_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            treeSensors.Dispose();
         }
     }
 }

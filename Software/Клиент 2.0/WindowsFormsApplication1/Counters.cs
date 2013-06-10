@@ -18,7 +18,7 @@ namespace AsyncClient
             InitializeComponent();
             _serv = Server;
             _serv.IsNeedUpdateThreeEvent += new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent);
-            _serv.Send("Update/Счётчики", _serv._srv.encryptIt);
+            _serv.Send("GetUpdate/Счётчики", _serv._srv.encryptIt);
         }
 
         /// <summary>
@@ -33,18 +33,21 @@ namespace AsyncClient
             }
             else
             {
-                string[] dev = DevData.Split('*');
-                this.treeCounters.BeginUpdate();
-                int index = treeCounters.Nodes.IndexOfKey(dev[1]);
-                if (index > -1)
+                if (DevData != "")
                 {
-                    treeCounters.Nodes[index].Remove();
+                    string[] dev = DevData.Split('*');
+                    this.treeCounters.BeginUpdate();
+                    int index = treeCounters.Nodes.IndexOfKey(dev[1]);
+                    if (index > -1)
+                    {
+                        treeCounters.Nodes[index].Remove();
 
+                    }
+                    treeCounters.Nodes.Add(dev[1], dev[1]);
+                    index = treeCounters.Nodes.IndexOfKey(dev[1]);
+                    treeCounters.Nodes[index].Tag = dev[2];
+                    this.treeCounters.EndUpdate();
                 }
-                treeCounters.Nodes.Add(dev[1], dev[1]);
-                index = treeCounters.Nodes.IndexOfKey(dev[1]);
-                treeCounters.Nodes[index].Tag = dev[2];
-                this.treeCounters.EndUpdate();
             }
         }
 
@@ -53,7 +56,7 @@ namespace AsyncClient
             this.treeCounters.BeginUpdate();
             treeCounters.Nodes.Clear();
             this.treeCounters.EndUpdate();
-            _serv.Send("Update/Счётчики", _serv._srv.encryptIt);
+            _serv.Send("GetUpdate/Счётчики", _serv._srv.encryptIt);
         }
 
         private void treeCounters_AfterSelect(object sender, TreeViewEventArgs e)
