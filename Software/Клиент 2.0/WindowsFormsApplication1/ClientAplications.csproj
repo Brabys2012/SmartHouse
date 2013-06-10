@@ -1,0 +1,293 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{2692C84E-7D41-41C4-AAA0-D15B7C492F5B}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>AsyncClient</RootNamespace>
+    <AssemblyName>ClientApplication</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AdminPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AdminPanel.Designer.cs">
+      <DependentUpon>AdminPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AsClient.cs" />
+    <Compile Include="ChangeKey.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ChangeKey.Designer.cs">
+      <DependentUpon>ChangeKey.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Chat.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Chat.Designer.cs">
+      <DependentUpon>Chat.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Counters.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Counters.Designer.cs">
+      <DependentUpon>Counters.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Crypto.cs" />
+    <Compile Include="Devices.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Devices.Designer.cs">
+      <DependentUpon>Devices.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dimmers.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dimmers.Designer.cs">
+      <DependentUpon>Dimmers.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LogOn.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LogOn.Designer.cs">
+      <DependentUpon>LogOn.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PasswordCh.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PasswordCh.Designer.cs">
+      <DependentUpon>PasswordCh.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ReportForm.Designer.cs">
+      <DependentUpon>ReportForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Sensors.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sensors.Designer.cs">
+      <DependentUpon>Sensors.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Settings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Settings.Designer.cs">
+      <DependentUpon>Settings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="XMLLoader.cs" />
+    <EmbeddedResource Include="AdminPanel.resx">
+      <DependentUpon>AdminPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ChangeKey.resx">
+      <DependentUpon>ChangeKey.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Chat.resx">
+      <DependentUpon>Chat.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Counters.resx">
+      <DependentUpon>Counters.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Devices.resx">
+      <DependentUpon>Devices.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dimmers.resx">
+      <DependentUpon>Dimmers.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LogOn.resx">
+      <DependentUpon>LogOn.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PasswordCh.resx">
+      <DependentUpon>PasswordCh.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <EmbeddedResource Include="ReportForm.resx">
+      <DependentUpon>ReportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sensors.resx">
+      <DependentUpon>Sensors.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Settings.resx">
+      <DependentUpon>Settings.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="app.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Фон_Итог.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Димеры111.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ФОН_2.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\reWalls.com-4040.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\laptop-wallpapers-hd-i7.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PIT90D-1big.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PIT90D-1big1.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Димеры.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Buzz-Message-outline-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Sections-of-Website-Support-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Very-Basic-Settings-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\TO-220-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\LCD-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Industry-Electronics-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Sections-of-Website-Solutions-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Objects-Scale-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Memory-Cards-Torrent-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Medicine-Heart-monitor-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Buzz-Message-outline-icon1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Фон_Итог1.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Фон_1.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\reWalls.com-40401.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Фон_11.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\kartinki.me-6129.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\house-hi.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Office-Customer-Male-Light-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Industry-Electronics-icon1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Users-Worker-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Accommodation-Cottage-icon.png" />
+    <None Include="Resources\Very-Basic-Key-icon.png" />
+    <None Include="Resources\Very-Basic-Cancel-icon.png" />
+    <None Include="Resources\Management-Statistics-icon.png" />
+    <None Include="Resources\Users-Remove-user-icon.png" />
+    <Content Include="Resources\ВЫКЛ.png" />
+    <None Include="Resources\ВКЛ.png" />
+    <None Include="Resources\QutIM-Conference-icon.png" />
+    <None Include="Resources\Very-Basic-Ok-icon.png" />
+    <None Include="Resources\Medicine-Heart-monitor-icon1.png" />
+    <None Include="Resources\Very-Basic-Sinchronize-icon.png" />
+    <None Include="Resources\Weather-Thermometer-icon1.png" />
+    <None Include="Resources\Weather-Thermometer-icon.png" />
+    <None Include="Resources\Weather-Rain-icon.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
