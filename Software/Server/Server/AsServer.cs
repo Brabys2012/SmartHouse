@@ -238,10 +238,11 @@ namespace Server
         private void AcceptCallback(IAsyncResult result)
         {
             Client aceptClient = new Client();
-            if (aceptClient != null)
+            try
             {
-                try
+                if (aceptClient != null)
                 {
+
                     // Завершение операции Accept
                     Socket s = (Socket)result.AsyncState;
                     aceptClient.Socket = s.EndAccept(result);
@@ -264,19 +265,19 @@ namespace Server
                     //Начало новой операции приёма подключения
                     _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), result.AsyncState);
                 }
-                catch (SocketException exc)
-                {
-                    WinLog.Write(exc.Message, System.Diagnostics.EventLogEntryType.Error);
-                    CloseConnection(aceptClient);
+            }
+            catch (SocketException exc)
+            {
+                WinLog.Write(exc.Message, System.Diagnostics.EventLogEntryType.Error);
+                CloseConnection(aceptClient);
 
-                    Console.WriteLine("Socket exception: " + exc.SocketErrorCode + exc.Message);
-                }
-                catch (Exception exc)
-                {
-                    WinLog.Write(exc.Message, System.Diagnostics.EventLogEntryType.Error);
-                    CloseConnection(aceptClient);
-                    Console.WriteLine("Exception: " + exc.Message);
-                }
+                Console.WriteLine("Socket exception: " + exc.SocketErrorCode + exc.Message);
+            }
+            catch (Exception exc)
+            {
+                WinLog.Write(exc.Message, System.Diagnostics.EventLogEntryType.Error);
+                CloseConnection(aceptClient);
+                Console.WriteLine("Exception: " + exc.Message);
             }
         }
 
@@ -286,12 +287,12 @@ namespace Server
         /// <param name="result"></param>
         private void AuthCallback(IAsyncResult result)
         {
-            Client authClient = (Client)result.AsyncState;
-            string role = "";
-            if (authClient != null)
+            try
             {
-                try
+                Client authClient = (Client)result.AsyncState;
+                if (authClient != null)
                 {
+                    string role = "";
                     if (authClient.AuthCount <= 2)
                     {
                         if (authClient.IsActive)
@@ -338,11 +339,11 @@ namespace Server
                         CloseConnection(authClient);
                     }
                 }
-                catch (Exception ex)
-                {
-                    WinLog.Write(ex.Message, System.Diagnostics.EventLogEntryType.Error);
-                    Console.WriteLine("Ошибка {0}", ex.Message);
-                }
+            }
+            catch (Exception ex)
+            {
+                WinLog.Write(ex.Message, System.Diagnostics.EventLogEntryType.Error);
+                Console.WriteLine("Ошибка {0}", ex.Message);
             }
         }
 
@@ -365,9 +366,10 @@ namespace Server
 
             if (processClient != null)
             {
-                ReadedByte = processClient.Socket.EndReceive(result);
                 try
-                {   //если необходимо расшифровать,
+                {
+                    ReadedByte = processClient.Socket.EndReceive(result);
+                    //если необходимо расшифровать,
                     if (_NeedEncrypt)
                     {
                         messData = Encoding.ASCII.GetString(processClient.Buffer, 0, ReadedByte).Split('?');
@@ -601,10 +603,10 @@ namespace Server
         /// <param name="result"></param>
         private static void SendCallback(IAsyncResult result)
         {
-            // Определяем клиента.
-            Client client = (Client)result.AsyncState;
             try
             {
+                // Определяем клиента.
+                Client client = (Client)result.AsyncState;
 
                 // Завершаем отправку данных клиенту.
                 int bytesSent = client.Socket.EndSend(result);
