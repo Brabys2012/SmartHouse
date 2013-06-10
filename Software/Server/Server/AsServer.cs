@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Collections;
 
 namespace Server
 {
@@ -18,6 +19,25 @@ namespace Server
         /// Флаг определяющий необходимость шифрования.
         /// </summary>
         private bool _NeedEncrypt;
+
+        Queue MessageQ = new Queue();
+
+        class ChatSettings
+        {
+            // количество сообщение в истории чата.
+            public int count = 0;
+        }
+
+        public class Message
+        {
+          public  string _text = "";
+          public  DateTime _date = DateTime.Now;
+          public  string _sender = "";
+        }
+
+        ChatSettings ChSett = new ChatSettings();
+        Message mess = new Message();
+        string[] HistMess = new string[10];
 
         /// <summary>
         /// Класс, предоставляющий информацию о клиенте.
@@ -218,42 +238,45 @@ namespace Server
         private void AcceptCallback(IAsyncResult result)
         {
             Client aceptClient = new Client();
-            try
+            if (aceptClient != null)
             {
-                // Завершение операции Accept
-                Socket s = (Socket)result.AsyncState;
-                aceptClient.Socket = s.EndAccept(result);
-                aceptClient.Buffer = new byte[255];
+                try
+                {
+                    // Завершение операции Accept
+                    Socket s = (Socket)result.AsyncState;
+                    aceptClient.Socket = s.EndAccept(result);
+                    aceptClient.Buffer = new byte[255];
 
-                //Добавление нового клиента в общий список. 
-                lock (_clients) _clients.Add(aceptClient);
+                    //Добавление нового клиента в общий список. 
+                    lock (_clients) _clients.Add(aceptClient);
 
-                // Установка даты подключения
-                aceptClient.ConnDate = DateTime.Now.AddSeconds(60);
-                aceptClient.IsActive = true;
+                    // Установка даты подключения
+                    aceptClient.ConnDate = DateTime.Now.AddSeconds(60);
+                    aceptClient.IsActive = true;
 
-                // Начало операции авторизации 
-                aceptClient.Socket.BeginReceive(aceptClient.Buffer, 0, aceptClient.Buffer.Length, 
-                    SocketFlags.None, new AsyncCallback(AuthCallback), aceptClient);
-                WinLog.Write(string.Format("Попытка авторизации клиента {0}.", 
-                    aceptClient.Socket.RemoteEndPoint), System.Diagnostics.EventLogEntryType.Information);
-                Send(aceptClient, "Auth", _NeedEncrypt);
+                    // Начало операции авторизации 
+                    aceptClient.Socket.BeginReceive(aceptClient.Buffer, 0, aceptClient.Buffer.Length,
+                        SocketFlags.None, new AsyncCallback(AuthCallback), aceptClient);
+                    WinLog.Write(string.Format("Попытка авторизации клиента {0}.",
+                        aceptClient.Socket.RemoteEndPoint), System.Diagnostics.EventLogEntryType.Information);
+                    Send(aceptClient, "Auth", _NeedEncrypt);
 
-                //Начало новой операции приёма подключения
-                _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), result.AsyncState);
-            }
-            catch (SocketException exc)
-            {
-                WinLog.Write(exc.Message, System.Diagnostics.EventLogEntryType.Error);
-                CloseConnection(aceptClient);
+                    //Начало новой операции приёма подключения
+                    _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), result.AsyncState);
+                }
+                catch (SocketException exc)
+                {
+                    WinLog.Write(exc.Message, System.Diagnostics.EventLogEntryType.Error);
+                    CloseConnection(aceptClient);
 
-                Console.WriteLine("Socket exception: " + exc.SocketErrorCode + exc.Message);
-            }
-            catch (Exception exc)
-            {
-                WinLog.Write(exc.Message, System.Diagnostics.EventLogEntryType.Error);
-                CloseConnection(aceptClient);
-                Console.WriteLine("Exception: " + exc.Message);
+                    Console.WriteLine("Socket exception: " + exc.SocketErrorCode + exc.Message);
+                }
+                catch (Exception exc)
+                {
+                    WinLog.Write(exc.Message, System.Diagnostics.EventLogEntryType.Error);
+                    CloseConnection(aceptClient);
+                    Console.WriteLine("Exception: " + exc.Message);
+                }
             }
         }
 
@@ -265,60 +288,64 @@ namespace Server
         {
             Client authClient = (Client)result.AsyncState;
             string role = "";
-            try
+            if (authClient != null)
             {
-                if (authClient.AuthCount <= 2)
+                try
                 {
-                    if (authClient.IsActive)
+                    if (authClient.AuthCount <= 2)
                     {
-                        string[] authData = null;
-                        string[] mess = null;
-                        int count = 0;
-                        count = authClient.Socket.EndReceive(result);
-                        mess = Encoding.ASCII.GetString(authClient.Buffer, 0, count).Split('?');
-                        authData = Crypto.Decrypt(mess[0]).Split('.');
-                        role = TableUser.CheckUser(authData[0], authData[1]);
-                        if (role != "")
+                        if (authClient.IsActive)
                         {
-                            authClient.IsAuth = true;
-                            authClient.IsActive = true;
-                            authClient.login = authData[0];
-                            WinLog.Write("Клиент " + authClient.login + " авторизован",
-                                         System.Diagnostics.EventLogEntryType.SuccessAudit);
-                            Send(authClient, "AuthAnsver/1*" + role, _NeedEncrypt);
-                            authClient.Socket.BeginReceive(authClient.Buffer,
-                                0, authClient.Buffer.Length, SocketFlags.None,
-                                new AsyncCallback(ReceiveCallback),
-                                authClient);
-                        }
-                        else
-                        {
-                            Send(authClient, "AuthAnsver/0/" + role, _NeedEncrypt);
-                            authClient.IsAuth = false;
-                            // Начало операции авторизации 
-                            authClient.Socket.BeginReceive(authClient.Buffer,
-                                0, authClient.Buffer.Length, SocketFlags.None,
-                                new AsyncCallback(AuthCallback),
-                                authClient);
-                            authClient.AuthCount++;
-                            WinLog.Write("Ошибка авторизации клиента с IP - " + authClient.Socket.RemoteEndPoint,
-                                         System.Diagnostics.EventLogEntryType.FailureAudit);
-                            Send(authClient, @"mess/Wrong login or password.The number of attempts" + Convert.ToString(3 - authClient.AuthCount), _NeedEncrypt);
+                            string[] authData = null;
+                            string[] mess = null;
+                            int count = 0;
+                            count = authClient.Socket.EndReceive(result);
+                            mess = Encoding.ASCII.GetString(authClient.Buffer, 0, count).Split('?');
+                            authData = Crypto.Decrypt(mess[0]).Split('.');
+                            role = TableUser.CheckUser(authData[0], authData[1]);
+                            if (role != "")
+                            {
+                                authClient.IsAuth = true;
+                                authClient.IsActive = true;
+                                authClient.login = authData[0];
+                                WinLog.Write("Клиент " + authClient.login + " авторизован",
+                                             System.Diagnostics.EventLogEntryType.SuccessAudit);
+                                Send(authClient, "AuthAnsver/1*" + role, _NeedEncrypt);
+                                authClient.Socket.BeginReceive(authClient.Buffer,
+                                    0, authClient.Buffer.Length, SocketFlags.None,
+                                    new AsyncCallback(ReceiveCallback),
+                                    authClient);
+                            }
+                            else
+                            {
+                                Send(authClient, "AuthAnsver/0/" + role, _NeedEncrypt);
+                                authClient.IsAuth = false;
+                                // Начало операции авторизации 
+                                authClient.Socket.BeginReceive(authClient.Buffer,
+                                    0, authClient.Buffer.Length, SocketFlags.None,
+                                    new AsyncCallback(AuthCallback),
+                                    authClient);
+                                authClient.AuthCount++;
+                                WinLog.Write("Ошибка авторизации клиента с IP - " + authClient.Socket.RemoteEndPoint,
+                                             System.Diagnostics.EventLogEntryType.FailureAudit);
+                                Send(authClient, @"mess/Wrong login or password.The number of attempts" + Convert.ToString(3 - authClient.AuthCount), _NeedEncrypt);
+                            }
                         }
                     }
+                    else
+                    {
+                        Send(authClient, @"mess/Превышено количество попыток подключения", _NeedEncrypt);
+                        CloseConnection(authClient);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    Send(authClient, @"mess/Превышено количество попыток подключения", _NeedEncrypt);
-                    CloseConnection(authClient);
+                    WinLog.Write(ex.Message, System.Diagnostics.EventLogEntryType.Error);
+                    Console.WriteLine("Ошибка {0}", ex.Message);
                 }
-            }
-            catch (Exception ex)
-            {
-                WinLog.Write(ex.Message, System.Diagnostics.EventLogEntryType.Error);
-                Console.WriteLine("Ошибка {0}", ex.Message);
             }
         }
+
 
         /// <summary>
         /// Функция обратного вызова для принятия данных от клиента.
@@ -326,78 +353,149 @@ namespace Server
         /// <param name="result"></param>
         private void ReceiveCallback(IAsyncResult result)
         {
+            //хранит принятую комманду.
             string[] messData;
+            //хранит заголовок комманды.
             string[] Data = null;
+            //хранит количество байтов для считывания из буфера.
             int ReadedByte = 0;
-            Client processClient = (Client)result.AsyncState;
-            ReadedByte = processClient.Socket.EndReceive(result);
-            try
-            {
-                if (_NeedEncrypt)
-                {
-                    messData = Encoding.ASCII.GetString(processClient.Buffer, 0, ReadedByte).Split('?');
-                    for (int i = 0; i < messData.Length; i++)
-                    {
-                        if(messData[i] != "")
-                            messData[i] = Crypto.Decrypt(messData[i]);
-                    }
-                }
-                else
-                    messData = Encoding.ASCII.GetString(processClient.Buffer, 0, ReadedByte).Split('?');
 
-                for (int i = 0; i < messData.Length; i++)
-                {
-                    if (messData[i] != "")
+            //клиент с которым работаем.
+            Client processClient = (Client)result.AsyncState;
+
+            if (processClient != null)
+            {
+                ReadedByte = processClient.Socket.EndReceive(result);
+                try
+                {   //если необходимо расшифровать,
+                    if (_NeedEncrypt)
                     {
-                        Data = messData[i].Split('/');
-                        switch (Data[0])
+                        messData = Encoding.ASCII.GetString(processClient.Buffer, 0, ReadedByte).Split('?');
+                        for (int i = 0; i < messData.Length; i++)
                         {
-                            case "Exit":
-                                CloseConnection(processClient);
-                                processClient.IsActive = false;
-                                break;
-                            case "GetUpdate":
-                                _Updater = new Thread(delegate() { UpdateData(processClient.login); });
-                                _Updater.IsBackground = true;
-                                _Updater.Start();
-                                break;
-                            case "UpdatePassword":
-                                Storage.QueueTCP.Enqueue(messData[i].Replace("LOGIN", processClient.login) + "@" + processClient.login);
-                                break;
-                            case "GetCounterRec":
-                            case "AddUser":
-                            case "AddDev":
-                            case "DeleteUser":
-                            case "DeleteDevice":
-                            Storage.QueueTCP.Enqueue(messData[i] + "@" + processClient.login);
-                                break;
-                            default:
-                                Send(processClient.login, @"mess/Incorrect command format!", _NeedEncrypt);
-                                break;
+                            if (messData[i] != "")
+                                messData[i] = Crypto.Decrypt(messData[i]);
                         }
                     }
-                }
+                    else //иначе получаем команды без разшифровки.
+                        messData = Encoding.ASCII.GetString(processClient.Buffer, 0, ReadedByte).Split('?');
+                    //проходим по всем командам и выполняем необходимые действия.
+                    for (int i = 0; i < messData.Length; i++)
+                    {
+                        if (messData[i] != "")
+                        {
+                            Data = messData[i].Split('/');
+                            switch (Data[0])
+                            {
+                                //если необходимо отправить историю чата
+                                case "GetChatHist":
+                                    lock (MessageQ)
+                                    {
+                                        MessageQ.CopyTo(HistMess, 0);
+                                        for (int k = 0; k < HistMess.Length; k++)
+                                        {
+                                            Send(processClient.login, HistMess[k], _NeedEncrypt);
+                                        }
+                                    }
+                                    break;
+                                //если необходимо отправить сообщение в чат.
+                                case "ChatMessage":
+                                    lock (MessageQ)
+                                    {
+                                        DateTime date = DateTime.Now;
+                                        Send("(" + date + "):" + processClient + "-" + messData[1]);
+                                        mess._text = processClient + "-" + messData[1];
+                                        mess._date = date;
+                                        mess._sender = processClient.login;
+                                        lock (ChSett)
+                                        {
+                                            ChSett.count++;
+                                            if (ChSett.count <= 10)
+                                                MessageQ.Enqueue(mess);
+                                            else
+                                            {
+                                                MessageQ.Dequeue();
+                                                MessageQ.Enqueue(mess);
+                                            }
+                                        }
+                                    }
+                                    break;
+                                //если необходимо отправить подтверждение подключения
+                                case "AUALIVE":
+                                    Send(processClient.login, "I'MALIVE", _NeedEncrypt);
+                                    break;
+                                //если необходимо отправить список всех on-line клиентов
+                                case "GetOnLineClients":
+                                    int counter = 0;
+                                    string users = "";
+                                    lock (_clients)
+                                    {
+                                        for (int j = 0; j < _clients.Count; j++)
+                                        {
+                                            if (counter == 6)
+                                            {
+                                                Send(processClient.login, users, _NeedEncrypt);
+                                                users = "";
+                                                counter = 0;
+                                            }
+                                            else
+                                            {
+                                                users += _clients[j].login;
+                                                counter++;
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case "Exit":
+                                    CloseConnection(processClient);
+                                    processClient.IsActive = false;
+                                    break;
+                                //если необходимо отправить список устройств
+                                case "GetUpdate":
+                                    _Updater = new Thread(delegate() { UpdateData(processClient.login, messData[1]); });
+                                    _Updater.IsBackground = true;
+                                    _Updater.Start();
+                                    break;
+                                //если необходимо обновить пароль
+                                case "UpdatePassword":
+                                    Storage.QueueTCP.Enqueue(messData[i].Replace("LOGIN", processClient.login) + "@" + processClient.login);
+                                    break;
+                                //если необходимо выполнить операции в базе данных системы
+                                case "GetCounterRec":
+                                case "AddUser":
+                                case "AddDev":
+                                case "DeleteUser":
+                                case "DeleteDevice":
+                                    Storage.QueueTCP.Enqueue(messData[i] + "@" + processClient.login);
+                                    break;
+                                default:
+                                    Send(processClient.login, @"mess/Incorrect command format!", _NeedEncrypt);
+                                    break;
+                            }
+                        }
+                    }
 
-                if (processClient.IsActive)
-                {
-                    processClient.Socket.BeginReceive(processClient.Buffer,
-                     0, processClient.Buffer.Length, SocketFlags.None,
-                     new AsyncCallback(ReceiveCallback),
-                     processClient);
+                    if (processClient.IsActive)
+                    {
+                        processClient.Socket.BeginReceive(processClient.Buffer,
+                         0, processClient.Buffer.Length, SocketFlags.None,
+                         new AsyncCallback(ReceiveCallback),
+                         processClient);
+                    }
                 }
-            }
-            catch (SocketException exc)
-            {
-                WinLog.Write(exc.Message, System.Diagnostics.EventLogEntryType.Error);
-                CloseConnection(processClient);
-                Console.WriteLine("Socket exception: " +
-                    exc.SocketErrorCode);
-            }
-            catch (Exception exc)
-            {
-                WinLog.Write(exc.Message, System.Diagnostics.EventLogEntryType.Error);
-                CloseConnection(processClient);
-                Console.WriteLine("Exception: " + exc);
+                catch (SocketException exc)
+                {
+                    WinLog.Write(exc.Message, System.Diagnostics.EventLogEntryType.Error);
+                    CloseConnection(processClient);
+                    Console.WriteLine("Socket exception: " +
+                        exc.SocketErrorCode);
+                }
+                catch (Exception exc)
+                {
+                    WinLog.Write(exc.Message, System.Diagnostics.EventLogEntryType.Error);
+                    CloseConnection(processClient);
+                    Console.WriteLine("Exception: " + exc);
+                }
             }
         }
 
@@ -536,22 +634,26 @@ namespace Server
         /// Поток отправляет данные клиенту для построения списка устройств. 
         /// </summary>
         /// <param name="login">логин клиента которому необходимо отправить данные</param>
-        private void UpdateData(string login)
+        private void UpdateData(string login, string type)
         {
             string CommandString = "Update/";
+            
             foreach (DataRow row in Storage.ArrayUpdate.Tables[0].Rows)
             {
                 foreach (DataColumn col in Storage.ArrayUpdate.Tables[0].Columns)
                 {
-                    if (!(col.Ordinal == 0))
-                    CommandString += "*" + row[col].ToString();
-                    else CommandString += row[col].ToString();
+                    if (row[0].ToString() == type)
+                    {
+                        if (col.Ordinal == 0)
+                            CommandString += row[col].ToString();
+                        else
+                            CommandString += "*" + row[col].ToString();
+                    }
+                    else break;
                 }
                 Send(login, CommandString, _NeedEncrypt);
                 CommandString = "Update/";
             }
-            //TODO как закрыть поток?
         }
-
     }
 }
