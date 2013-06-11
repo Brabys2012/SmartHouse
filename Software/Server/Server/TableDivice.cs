@@ -106,9 +106,9 @@ namespace Server
         /// <param name="State">Состояние</param>
         public void UpdateDeviceState(byte NumPort, byte NumDev, Int32 State)
         {
-            SQL.SQL_ExecuteNoneQueryCommitTransaction("update Device set State = " + State.ToString() +
-                                                      " where t1.NumOfPort = " + NumPort.ToString() +
-                                                      " and t1.NumOfDev = " + NumDev.ToString());
+            string KeyID = DeterIdDevByName(DeterDevByNumber(NumPort, NumDev));
+            SQL.SQL_ExecuteNoneQueryCommitTransaction("insert into countersdata(state, DATE_REC, IDDEVICES)" +
+                                                      "values (" + State.ToString() + ", '" +Convert.ToString(DateTime.Now) + "'," + KeyID + ")");  
             string Name = DeterDevByNumber(NumPort, NumDev);
             if (Name != "")
                 lock (Storage.ArrayUpdate)
@@ -139,7 +139,7 @@ namespace Server
                             SQL.FB_dbConnection.Open();
                             Storage.ArrayUpdate = new DataSet();
                             //Создаем fbDataAdapter, что бы потом перенести обновления в DataSet
-                            FbDataAdapter DAFB = new FbDataAdapter("select Name, Type, State" +
+                            FbDataAdapter DAFB = new FbDataAdapter("select Type, Name,  State" +
                                                                    " from Device ", SQL.FB_dbConnection);
                             //Заполнили dataSet обновления, который будет пересылаться 
                             //пользователям

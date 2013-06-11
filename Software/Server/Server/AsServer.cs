@@ -454,7 +454,7 @@ namespace Server
                                     break;
                                 //если необходимо отправить список устройств
                                 case "GetUpdate":
-                                    _Updater = new Thread(delegate() { UpdateData(processClient.login, messData[1]); });
+                                    _Updater = new Thread(delegate() { UpdateData(processClient.login, Data[1]); });
                                     _Updater.IsBackground = true;
                                     _Updater.Start();
                                     break;

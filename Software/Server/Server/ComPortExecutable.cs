@@ -23,7 +23,7 @@ namespace Server
         /// </summary>
         public void OpenCom()
         {
-            MyComExecutable.PortName = "COM18";
+            MyComExecutable.PortName = "COM4";
             MyComExecutable.BaudRate = 9600;
             MyComExecutable.DataBits = 8;
             MyComExecutable.Parity = Parity.None;
@@ -53,10 +53,10 @@ namespace Server
 			// TODO: А куда деваем команды 1, 2 и другие, если они есть?
             //Если мы получаем более одной команды, то это уже противоречит 
             //Логике работы нашего умного дома (одна команда - один ответ)
-            if (Command != null)
+            if ((Command != null) && (Command.Count != 0))
             {
                 answer = (DevCommand)Command[0];
-                IsFindCommand = false;
+                IsFindCommand = true;
             }
             
 

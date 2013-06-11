@@ -28,7 +28,7 @@ namespace Server
         public void OpenCom()
         {
             // TODO: Основные настройки лучше вынести в конфигурационный файл или реестр
-            MyComListener.PortName = "COM19";
+            MyComListener.PortName = "COM13";
             MyComListener.BaudRate = 9600;
             MyComListener.DataBits = 8;
             MyComListener.Parity = Parity.None;

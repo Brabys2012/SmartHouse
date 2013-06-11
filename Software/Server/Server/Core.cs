@@ -52,8 +52,13 @@ namespace Server
         {
             _coreThread = new Thread(new ThreadStart(MainCore));
             _coreThread.IsBackground = true;
-            _coreThread.Priority = ThreadPriority.Highest;
+            _coreThread.Priority = ThreadPriority.Normal;
             _coreThread.Start();
+            //Запускает поток опроса состояний всех устройств
+            Thread Answer = new Thread(new ThreadStart(UpdateStateAllDevice));
+            Answer.IsBackground = true;
+            Answer.Start();
+
         }
 
 
@@ -190,13 +195,14 @@ namespace Server
             DataSet DsUpda = ExDM.BdDevice.GetListDevice("");
             foreach (DataRow row in DsUpda.Tables[0].Rows)
             {
-                byte[] ComUpd = ExDM.ProtocolForExDM.Pack(Convert.ToByte(row[0]), Convert.ToByte(row[2]), com);
+                byte[] ComUpd = ExDM.ProtocolForExDM.Pack(Convert.ToByte(row[0]), Convert.ToByte(row[1]), com);
                 if (ComUpd[0] != 0)
                 {
                     DevCommand Answer = SendInformInCom(ComUpd);
-                    ExDM.ParserAnswer(Answer);
+                    ExDM.ParseAnsewFromExec(Answer);
                 }
             }
+            _threads.Remove(Thread.CurrentThread);
         }
 
         /// <summary>
@@ -225,7 +231,7 @@ namespace Server
                     }
                 }
                 //Чтобы оптимизировать работу службы ожидаем освобождения ком порта исполнителя 
-                //поток засыпает на 300 мс
+                //поток засыпает 
                 if (!podflag)
                 {
                     Thread.Sleep(6000);

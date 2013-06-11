@@ -58,6 +58,11 @@ namespace Server
                         result[0] = 0;
                     }
                 }
+                else
+                {
+                    result = new byte[1];
+                    result[0] = 0;
+                }
             }
             return result;
         }
@@ -92,9 +97,37 @@ namespace Server
         /// <summary>
         /// Создает список команд, которые будут запрашивать состояние каждого датчика
         /// </summary>
-        public void MakeComandForDatcik()
+        public void ParseAnsewFromExec(DevCommand Answer)
         {
-            throw new System.NotImplementedException();
+            //Проверяем соответсвует ли ответ заданному формату
+            if (Answer.len >= 6)
+            {
+                try
+                {
+                    int st;
+                    if (Answer.command.Count() > 1)
+                    {
+                        if (BitConverter.IsLittleEndian)
+                            Array.Reverse(Answer.command);
+                        st = BitConverter.ToInt32(Answer.command, 0);
+                    }
+                    else
+                    {
+                       st = Convert.ToInt32(Answer.command[0]); 
+                    }
+                    BdDevice.UpdateDeviceState(Answer.port, Answer.device, st);
+                }
+                catch
+                {
+                    WinLog.Write("Произошла ошибка сервера, при выключение устройства", System.Diagnostics.EventLogEntryType.Error);
+                }
+            }
+
+            else
+            {
+                WinLog.Write("Произошла ошибка сервера, при выключение устройства", System.Diagnostics.EventLogEntryType.Error);
+            }
         }
+     
     }
 }
