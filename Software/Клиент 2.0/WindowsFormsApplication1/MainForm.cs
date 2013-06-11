@@ -11,10 +11,13 @@ namespace AsyncClient
 {
     public partial class MainForm : Form
     {
+
         /// <summary>
         /// Экземпляр для работы с сервером.
         /// </summary>
         AsynchronousClient Client = new AsynchronousClient();
+
+        OpenWindow _OpW = new OpenWindow();
 
         Params parameters = new Params();
 
@@ -210,7 +213,8 @@ namespace AsyncClient
 
         private void butChat_Click(object sender, EventArgs e)
         {
-            Chat Ch = new Chat(Client, Client._srv.SendType);
+            Chat Ch = new Chat(Client, Client._srv.SendType, _OpW);
+            _OpW._chat = true;
             Ch.Show();
         }
 
@@ -219,11 +223,12 @@ namespace AsyncClient
             Dimmers Dimm = new Dimmers(Client);
             Dimm.Show();
         }
-
+   
         private void butSensors_Click(object sender, EventArgs e)
         {
             Sensors Sens = new Sensors(Client);
             Sens.Show();
+            
         }
 
         private void butAdmin_Click(object sender, EventArgs e)
@@ -232,5 +237,14 @@ namespace AsyncClient
             AdmPanel.ShowDialog();
         }
 
+    }
+
+    public class OpenWindow
+    {
+        public bool _sensors = false;
+        public bool _dimmers = false;
+        public bool _counters = false;
+        public bool _device = false;
+        public bool _chat = false;
     }
 }

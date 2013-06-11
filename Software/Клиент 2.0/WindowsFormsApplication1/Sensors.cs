@@ -72,7 +72,7 @@ namespace AsyncClient
 
         private void Sensors_FormClosed(object sender, FormClosedEventArgs e)
         {
-            treeSensors.Dispose();
+            this.Dispose();
         }
     }
 }

@@ -120,6 +120,7 @@
             this.MinimumSize = new System.Drawing.Size(542, 386);
             this.Name = "Chat";
             this.Text = "Чат";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Chat_FormClosed);
             this.ResumeLayout(false);
             this.PerformLayout();
 

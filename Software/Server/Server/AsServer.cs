@@ -396,7 +396,7 @@ namespace Server
                                         MessageQ.CopyTo(HistMess, 0);
                                         for (int k = 0; k < HistMess.Length; k++)
                                         {
-                                            Send(processClient.login, HistMess[k], _NeedEncrypt);
+                                            Send(processClient.login, "Chat" + HistMess[k], _NeedEncrypt);
                                         }
                                     }
                                     break;
@@ -405,7 +405,7 @@ namespace Server
                                     lock (MessageQ)
                                     {
                                         DateTime date = DateTime.Now;
-                                        Send("(" + date + "):" + processClient + "-" + messData[1]);
+                                        Send("Chat" + "(" + date + "):" + processClient + "-" + messData[1]);
                                         mess._text = processClient + "-" + messData[1];
                                         mess._date = date;
                                         mess._sender = processClient.login;

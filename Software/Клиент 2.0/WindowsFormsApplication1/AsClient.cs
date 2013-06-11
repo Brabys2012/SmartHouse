@@ -16,6 +16,7 @@ namespace AsyncClient
     public delegate void IsNeedShowDataDelegate(string data);
     public delegate void IsNeedToPlotDelegate(string reportData);
     public delegate void IsNeedUpdateThreeDelegate(string DevData);
+    public delegate void IsNeedShowChatMessage(string message);
     public delegate void IsNeedChangeStatus();
 
     public class Params
@@ -91,6 +92,7 @@ namespace AsyncClient
         public event IsNeedChangeStatus IsNeedChangeStatusEvent;
         public event IsNeedToChangeConfStatus IsNeedToChangeConfStatusEvent;
         public event IsNeedShowOperationResult IsNeedShowOperationResultEvent;
+        public event IsNeedShowChatMessage IsNeedShowChatMessageEvent;
 
         public StateObject _srv;
 
@@ -229,6 +231,10 @@ namespace AsyncClient
                         case "I'MALIVE":
                             alive = true;
                             autoEvent.Set();
+                            break;
+                        case "Chat":
+                            if (IsNeedShowChatMessageEvent != null)
+                                IsNeedShowChatMessageEvent(command[1]);
                             break;
                         case "AuthAnsver":
                             string[] tmpArray;

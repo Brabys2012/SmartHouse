@@ -13,13 +13,19 @@ namespace AsyncClient
     {
         AsynchronousClient _serv = new AsynchronousClient(); 
         bool _sendType;
-        public Chat(AsynchronousClient Server, bool SendType)
+        public Chat(AsynchronousClient Server, bool SendType, OpenWindow _OpW)
         {
             InitializeComponent();
             _serv = Server;
             _sendType = SendType;
             _serv.IsNeedUpdateThreeEvent += new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent);
+            _serv.IsNeedShowChatMessageEvent += new IsNeedShowChatMessage(_serv_IsNeedShowChatMessageEvent);
             _serv.Send("GetOnLineClients", _serv._srv.encryptIt);
+        }
+
+        void _serv_IsNeedShowChatMessageEvent(string message)
+        {
+            tbChat.Text = message + "\r\n";
         }
 
         /// <summary>
@@ -85,6 +91,11 @@ namespace AsyncClient
                     tbMessage.Text = "";
                 }
             }
+        }
+
+        private void Chat_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            this.Dispose();
         }
     }
 }
