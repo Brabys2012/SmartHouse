@@ -28,10 +28,10 @@ namespace AsyncClient
                 cbDeviceNumber.Items.Add(i);
             }
 
-            cbDeviceType.Items.Add("Датчик");
+            cbDeviceType.Items.Add("Датчики");
             cbDeviceType.Items.Add("Простое устройство");
-            cbDeviceType.Items.Add("Диммер");
-            cbDeviceType.Items.Add("Счётчик");
+            cbDeviceType.Items.Add("Диммеры");
+            cbDeviceType.Items.Add("Счётчики");
 
             cbRole.Items.Add("user");
             cbRole.Items.Add("admin");

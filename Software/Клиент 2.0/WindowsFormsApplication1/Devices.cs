@@ -18,7 +18,7 @@ namespace AsyncClient
             InitializeComponent();
             _serv = Server;
             _serv.IsNeedUpdateThreeEvent += new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent);
-            _serv.Send("Update/Диммеры", _serv._srv.encryptIt);
+            _serv.Send("GetUpdate/Простое устройство", _serv._srv.encryptIt);
         }
 
         /// <summary>
@@ -33,18 +33,21 @@ namespace AsyncClient
             }
             else
             {
-                string[] dev = DevData.Split('*');
-                this.treeDevices.BeginUpdate();
-                int index = treeDevices.Nodes.IndexOfKey(dev[1]);
-                if (index > -1)
+                if (DevData != "")
                 {
-                    treeDevices.Nodes[index].Remove();
+                    string[] dev = DevData.Split('*');
+                    this.treeDevices.BeginUpdate();
+                    int index = treeDevices.Nodes.IndexOfKey(dev[1]);
+                    if (index > -1)
+                    {
+                        treeDevices.Nodes[index].Remove();
 
+                    }
+                    treeDevices.Nodes.Add(dev[1], dev[1]);
+                    index = treeDevices.Nodes.IndexOfKey(dev[1]);
+                    treeDevices.Nodes[index].Tag = dev[2];
+                    this.treeDevices.EndUpdate();
                 }
-                treeDevices.Nodes.Add(dev[1], dev[1]);
-                index = treeDevices.Nodes.IndexOfKey(dev[1]);
-                treeDevices.Nodes[index].Tag = dev[2];
-                this.treeDevices.EndUpdate();
             }
         }
 
@@ -57,7 +60,7 @@ namespace AsyncClient
                 this.treeDevices.BeginUpdate();
                 treeDevices.Nodes.Clear();
                 this.treeDevices.EndUpdate();
-                _serv.Send("Update/Устройства", _serv._srv.encryptIt);
+                _serv.Send("GetUpdate/Устройства", _serv._srv.encryptIt);
             }
             else
             {

@@ -18,7 +18,7 @@ namespace AsyncClient
             InitializeComponent();
             _serv = Server;
             _serv.IsNeedUpdateThreeEvent += new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent);
-            _serv.Send("Update/Диммеры", _serv._srv.encryptIt);
+            _serv.Send("GetUpdate/Диммеры", _serv._srv.encryptIt);
 
         }
 
@@ -34,18 +34,21 @@ namespace AsyncClient
             }
             else
             {
-                string[] dev = DevData.Split('*');
-                this.treeDimmers.BeginUpdate();
-                int index = treeDimmers.Nodes.IndexOfKey(dev[1]);
-                if (index > -1)
+                if (DevData != "")
                 {
-                    treeDimmers.Nodes[index].Remove();
+                    string[] dev = DevData.Split('*');
+                    this.treeDimmers.BeginUpdate();
+                    int index = treeDimmers.Nodes.IndexOfKey(dev[1]);
+                    if (index > -1)
+                    {
+                        treeDimmers.Nodes[index].Remove();
 
+                    }
+                    treeDimmers.Nodes.Add(dev[1], dev[1]);
+                    index = treeDimmers.Nodes.IndexOfKey(dev[1]);
+                    treeDimmers.Nodes[index].Tag = dev[2];
+                    this.treeDimmers.EndUpdate();
                 }
-                treeDimmers.Nodes.Add(dev[1], dev[1]);
-                index = treeDimmers.Nodes.IndexOfKey(dev[1]);
-                treeDimmers.Nodes[index].Tag = dev[2];
-                this.treeDimmers.EndUpdate();
             }
         }
 
@@ -64,7 +67,7 @@ namespace AsyncClient
             this.treeDimmers.BeginUpdate();
             treeDimmers.Nodes.Clear();
             this.treeDimmers.EndUpdate();
-            _serv.Send("Update/Диммеры", _serv._srv.encryptIt);
+            _serv.Send("GetUpdate/Диммеры", _serv._srv.encryptIt);
         }
 
         private void butSet_Click(object sender, EventArgs e)

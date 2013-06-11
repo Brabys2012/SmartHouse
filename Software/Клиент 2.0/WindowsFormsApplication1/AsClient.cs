@@ -46,6 +46,8 @@ namespace AsyncClient
 
     public class AsynchronousClient
     {
+        public bool Keep_Alive = false;
+
         // Для проверки флага alive.
         static AutoResetEvent autoEvent;
 
@@ -92,7 +94,7 @@ namespace AsyncClient
 
         public StateObject _srv;
 
-        public void StartClient(string IP, int port)
+        public void StartClient(string IP, int port, bool KeepAlive_)
         {
             // Настраиваем и начинаем подключение к удалённой точке.
             try
@@ -107,11 +109,14 @@ namespace AsyncClient
                     SocketType.Stream, ProtocolType.Tcp);
                 // Начинаем подключение к серверу.
                 _srv.workSocket.BeginConnect(remoteEP, new AsyncCallback(ConnectCallback), _srv);
-
-                // Запускаем поток проверки состояния подключения.
-                KeepAlive = new Thread(new ThreadStart(GetStatus));
-                KeepAlive.IsBackground = true;
-                KeepAlive.Start();
+                Keep_Alive = KeepAlive_;
+                if (Keep_Alive)
+                {
+                    // Запускаем поток проверки состояния подключения.
+                    KeepAlive = new Thread(new ThreadStart(GetStatus));
+                    KeepAlive.IsBackground = true;
+                    KeepAlive.Start();
+                }
             }
             catch (Exception e)
             {
@@ -133,7 +138,6 @@ namespace AsyncClient
                     IsNeedChangeStatusEvent();
                     break;
                 }
-                alive = false;
                 autoEvent.Reset();
                 Thread.Sleep(5000);
             }
@@ -161,6 +165,8 @@ namespace AsyncClient
             {
                 if (IsNeedShowOperationResultEvent != null)
                     IsNeedShowOperationResultEvent("Ошибка при подключении: " + e.Message);
+                if (IsNeedChangeStatusEvent != null)
+                    IsNeedChangeStatusEvent();
             }
         }
 
@@ -191,6 +197,8 @@ namespace AsyncClient
             {
                 if (IsNeedShowOperationResultEvent != null)
                     IsNeedShowOperationResultEvent("Ошибка при получении сообщения: " + e.Message);
+                if (IsNeedChangeStatusEvent != null)
+                    IsNeedChangeStatusEvent();
             }
         }
 
@@ -373,6 +381,8 @@ namespace AsyncClient
         public void CloseConnection()
         {
             _srv.workSocket.Close();
+            if (Keep_Alive)
+                KeepAlive.Abort();
             IsNeedChangeStatusEvent();
         }
     }
