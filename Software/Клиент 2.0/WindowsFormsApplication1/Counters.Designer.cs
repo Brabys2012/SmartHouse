@@ -130,6 +130,7 @@
             this.MinimumSize = new System.Drawing.Size(635, 300);
             this.Name = "Counters";
             this.Text = "Счётчики";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Counters_FormClosed);
             this.ResumeLayout(false);
             this.PerformLayout();
 

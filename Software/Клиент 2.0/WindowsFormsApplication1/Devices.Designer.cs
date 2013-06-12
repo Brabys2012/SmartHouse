@@ -107,6 +107,7 @@
             this.MinimumSize = new System.Drawing.Size(639, 240);
             this.Name = "Devices";
             this.Text = "Devices";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Devices_FormClosed);
             this.ResumeLayout(false);
             this.PerformLayout();
 

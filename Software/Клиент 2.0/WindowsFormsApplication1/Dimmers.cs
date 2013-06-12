@@ -28,6 +28,7 @@ namespace AsyncClient
         /// <param name="DevData"></param>
         void Client_IsNeedUpdateThreeEvent(string DevData)
         {
+            int index = 0;
             if (this.InvokeRequired)
             {
                 this.Invoke(new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent), DevData);
@@ -38,12 +39,7 @@ namespace AsyncClient
                 {
                     string[] dev = DevData.Split('*');
                     this.treeDimmers.BeginUpdate();
-                    int index = treeDimmers.Nodes.IndexOfKey(dev[1]);
-                    if (index > -1)
-                    {
-                        treeDimmers.Nodes[index].Remove();
-
-                    }
+                    this.treeDimmers.Nodes.Clear();
                     treeDimmers.Nodes.Add(dev[1], dev[1]);
                     index = treeDimmers.Nodes.IndexOfKey(dev[1]);
                     treeDimmers.Nodes[index].Tag = dev[2];
@@ -82,6 +78,11 @@ namespace AsyncClient
                 MessageBox.Show("Выберите диммер из списка",
                     "Не выбран диммер", MessageBoxButtons.OK, MessageBoxIcon.Asterisk); 
             }
+        }
+
+        private void Dimmers_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            _serv.IsNeedUpdateThreeEvent -= new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent);
         }
     }
 }

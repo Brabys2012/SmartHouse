@@ -138,6 +138,7 @@
             this.MinimumSize = new System.Drawing.Size(597, 280);
             this.Name = "Dimmers";
             this.Text = "Dimmers";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Dimmers_FormClosed);
             ((System.ComponentModel.ISupportInitialize)(this.trackValue)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

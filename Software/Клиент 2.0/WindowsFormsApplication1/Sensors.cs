@@ -72,7 +72,7 @@ namespace AsyncClient
 
         private void Sensors_FormClosed(object sender, FormClosedEventArgs e)
         {
-            this.Dispose();
+            _serv.IsNeedUpdateThreeEvent -= new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent);
         }
     }
 }

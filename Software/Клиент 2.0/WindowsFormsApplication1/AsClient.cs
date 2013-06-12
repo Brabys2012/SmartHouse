@@ -127,6 +127,7 @@ namespace AsyncClient
             }
         }
 
+        //Поток опрашивающий срвер. Необходим для контроля остояния подключения.
         private void GetStatus()
         {
             beginSend.WaitOne();
@@ -158,6 +159,7 @@ namespace AsyncClient
 
                 // Завершаем подключение.
                 client.workSocket.EndConnect(ar);
+                _srv.status = true;
                 IsNeedChangeStatusEvent();
                 //Начинаем получать данные от удалённой точки.
                 client.workSocket.BeginReceive(client.buffer, 0,
@@ -197,6 +199,7 @@ namespace AsyncClient
             }
             catch (Exception e)
             {
+                _srv.status = false;
                 if (IsNeedShowOperationResultEvent != null)
                     IsNeedShowOperationResultEvent("Ошибка при получении сообщения: " + e.Message);
                 if (IsNeedChangeStatusEvent != null)
@@ -359,36 +362,12 @@ namespace AsyncClient
             }
         }
 
-        public void SaveConnData(string param, string pattern)
-        {
-            try
-            {
-                string FileData = null;
-                string[] tempArray;
-                using (var sr = new StreamReader("Config.dat", Encoding.GetEncoding(1251)))
-                {
-                    FileData = sr.ReadToEnd();
-                }
-                tempArray = FileData.Split(';');
-
-                FileData = Regex.Replace(FileData, pattern, param);
-                using (var sr = new StreamWriter("Config.dat"))
-                {
-                    sr.Write(FileData);
-                }
-            }
-            catch (Exception ex)
-            {
-                if (IsNeedShowOperationResultEvent != null)
-                    IsNeedShowOperationResultEvent(ex.Message);
-            }
-        }
-
         public void CloseConnection()
         {
             _srv.workSocket.Close();
             if (Keep_Alive)
                 KeepAlive.Abort();
+            _srv.status = false;
             IsNeedChangeStatusEvent();
         }
     }

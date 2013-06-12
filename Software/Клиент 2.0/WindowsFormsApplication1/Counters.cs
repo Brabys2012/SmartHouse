@@ -27,6 +27,7 @@ namespace AsyncClient
         /// <param name="DevData"></param>
         void Client_IsNeedUpdateThreeEvent(string DevData)
         {
+            int index = 0;
             if (this.InvokeRequired)
             {
                 this.Invoke(new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent), DevData);
@@ -37,12 +38,7 @@ namespace AsyncClient
                 {
                     string[] dev = DevData.Split('*');
                     this.treeCounters.BeginUpdate();
-                    int index = treeCounters.Nodes.IndexOfKey(dev[1]);
-                    if (index > -1)
-                    {
-                        treeCounters.Nodes[index].Remove();
-
-                    }
+                    this.treeCounters.Nodes.Clear();
                     treeCounters.Nodes.Add(dev[1], dev[1]);
                     index = treeCounters.Nodes.IndexOfKey(dev[1]);
                     treeCounters.Nodes[index].Tag = dev[2];
@@ -82,6 +78,11 @@ namespace AsyncClient
             //    Client.Send("GetCounterRec/" + _ReportDataForm.BegDate + "/" +
             //        _ReportDataForm.EndDate + "/" + this.trvDevice.SelectedNode.Text, Client._srv.encryptIt);
             //}
+        }
+
+        private void Counters_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            _serv.IsNeedUpdateThreeEvent += new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent);
         }
     }
 }
