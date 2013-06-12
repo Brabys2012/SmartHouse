@@ -405,7 +405,7 @@ namespace Server
                                     lock (MessageQ)
                                     {
                                         DateTime date = DateTime.Now;
-                                        Send("Chat" + "(" + date + "):" + processClient + "-" + messData[1]);
+                                        Send("Chat/" + "(" + date + "):" + processClient + "-" + messData[1]);
                                         mess._text = processClient + "-" + messData[1];
                                         mess._date = date;
                                         mess._sender = processClient.login;

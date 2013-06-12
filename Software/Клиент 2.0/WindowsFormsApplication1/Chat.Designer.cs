@@ -61,7 +61,7 @@
             // treeUsers
             // 
             this.treeUsers.BackColor = System.Drawing.Color.White;
-            this.treeUsers.ForeColor = System.Drawing.SystemColors.Window;
+            this.treeUsers.ForeColor = System.Drawing.Color.Black;
             this.treeUsers.Location = new System.Drawing.Point(313, 35);
             this.treeUsers.Name = "treeUsers";
             this.treeUsers.ShowLines = false;

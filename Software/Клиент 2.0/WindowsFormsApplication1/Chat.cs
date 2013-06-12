@@ -25,7 +25,14 @@ namespace AsyncClient
 
         void _serv_IsNeedShowChatMessageEvent(string message)
         {
-            tbChat.Text = message + "\r\n";
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new IsNeedShowChatMessage(_serv_IsNeedShowChatMessageEvent), message);
+            }
+            else
+            {
+                tbChat.Text += message + "\r\n";
+            }
         }
 
         /// <summary>
@@ -44,15 +51,7 @@ namespace AsyncClient
                 this.treeUsers.BeginUpdate();
                 this.treeUsers.Nodes.Clear();
                 for (int i = 0; i < dev.Length; i++)
-                {
-                    int index = treeUsers.Nodes.IndexOfKey(dev[i]);
-                    if (index > -1)
-                    {
-                        treeUsers.Nodes[index].Remove();
-
-                    }
                     treeUsers.Nodes.Add(dev[i], dev[i]); 
-                }
                 this.treeUsers.EndUpdate();
             }
         }
@@ -67,7 +66,7 @@ namespace AsyncClient
 
         private void butSend_Click(object sender, EventArgs e)
         {
-            _serv.Send("Chat/" + tbMessage.Text, _serv._srv.encryptIt);
+            _serv.Send("ChatMessage/" + tbMessage.Text, _serv._srv.encryptIt);
             tbChat.Text += "Я - " + tbMessage.Text + "\r\n";
             tbMessage.Text = "";
         }

@@ -231,6 +231,10 @@ namespace AsyncClient
                 {
                     switch (command[0])
                     {
+                        case "OnLineClients":
+                            if (IsNeedUpdateThreeEvent != null)
+                                IsNeedUpdateThreeEvent(command[1]);
+                            break;
                         case "I'MALIVE":
                             alive = true;
                             autoEvent.Set();
