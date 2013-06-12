@@ -74,7 +74,7 @@ namespace ControlsNOBD
         public void Query(DevCommand Par)
         {
             byte[] PackComand;          
-            string Ansewr = Program.data_module.FindCurentVal(Par.device.ToString(), Par.port.ToString());
+            string Ansewr = Program.data_module.FindCurentVal( Par.port.ToString(),Par.device.ToString());
 
             if (Ansewr == "Error")
             {//Выполняется если запрос завершился ошибкой

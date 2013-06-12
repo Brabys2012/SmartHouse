@@ -18,6 +18,7 @@ namespace Server
         bool IsFindCommand = false;
         ArrayList Command;
         DevCommand answer;
+        int numbOfWrite;
         /// <summary>
         /// Метод инициализации COM - порта
         /// </summary>
@@ -47,18 +48,24 @@ namespace Server
         {
 
             // TODO: Мы получаем одну команду или набор?
-
-            Command = ProtocolForEx.Unpack(((SerialPort)sender).BaseStream);
-            
-			// TODO: А куда деваем команды 1, 2 и другие, если они есть?
-            //Если мы получаем более одной команды, то это уже противоречит 
-            //Логике работы нашего умного дома (одна команда - один ответ)
-            if ((Command != null) && (Command.Count != 0))
+            try
             {
-                answer = (DevCommand)Command[0];
-                IsFindCommand = true;
+                Command = ProtocolForEx.Unpack(((SerialPort)sender).BaseStream);
+
+                // TODO: А куда деваем команды 1, 2 и другие, если они есть?
+                //Если мы получаем более одной команды, то это уже противоречит 
+                //Логике работы нашего умного дома (одна команда - один ответ)
+
+                if ((Command != null) && (Command.Count != 0))
+                {
+                    answer = (DevCommand)Command[0];
+                    IsFindCommand = true;
+                }
             }
-            
+            catch
+            {
+
+            }
 
             /*SerialPort sp = (SerialPort)sender;
 
@@ -98,6 +105,9 @@ namespace Server
         public DevCommand SendInform(byte[] ByteArray)
         {
             OpenCom();
+            answer = new DevCommand();
+            IsFindCommand = false;
+            numbOfWrite = 0;
             MyComExecutable.Write(ByteArray, 0, ByteArray.Length);
             DevCommand comand = WaitAnswer();
             Close();

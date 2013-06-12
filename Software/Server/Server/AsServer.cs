@@ -468,6 +468,7 @@ namespace Server
                                 case "AddDev":
                                 case "DeleteUser":
                                 case "DeleteDevice":
+                                case "SetParam":
                                     Storage.QueueTCP.Enqueue(messData[i] + "@" + processClient.login);
                                     break;
                                 default:
@@ -638,23 +639,26 @@ namespace Server
         /// <param name="login">логин клиента которому необходимо отправить данные</param>
         private void UpdateData(string login, string type)
         {
-            string CommandString = "Update/";
-            
-            foreach (DataRow row in Storage.ArrayUpdate.Tables[0].Rows)
+            lock (Storage.ArrayUpdate)
             {
-                foreach (DataColumn col in Storage.ArrayUpdate.Tables[0].Columns)
+                string CommandString = "Update/";
+
+                foreach (DataRow row in Storage.ArrayUpdate.Tables[0].Rows)
                 {
-                    if (row[0].ToString() == type)
+                    foreach (DataColumn col in Storage.ArrayUpdate.Tables[0].Columns)
                     {
-                        if (col.Ordinal == 0)
-                            CommandString += row[col].ToString();
-                        else
-                            CommandString += "*" + row[col].ToString();
+                        if (row[0].ToString() == type)
+                        {
+                            if (col.Ordinal == 0)
+                                CommandString += row[col].ToString();
+                            else
+                                CommandString += "*" + row[col].ToString();
+                        }
+                        else break;
                     }
-                    else break;
+                    Send(login, CommandString, _NeedEncrypt);
+                    CommandString = "Update/";
                 }
-                Send(login, CommandString, _NeedEncrypt);
-                CommandString = "Update/";
             }
         }
     }

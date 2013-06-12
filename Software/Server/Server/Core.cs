@@ -58,7 +58,7 @@ namespace Server
             Thread Answer = new Thread(new ThreadStart(UpdateStateAllDevice));
             Answer.IsBackground = true;
             Answer.Start();
-
+            _threads.Add(Answer);
         }
 
 
@@ -164,7 +164,7 @@ namespace Server
             if (ComandForComPort[0] != 0)
             {
                 Answer = SendInformInCom(ComandForComPort);
-                DM.ParseAnswer(Answer, SplitByUser[1]);
+                DM.ParseAnswer(Answer, SplitByUser[0]);
             }
 
             // Удалем поток из пула потоков
@@ -196,11 +196,8 @@ namespace Server
             foreach (DataRow row in DsUpda.Tables[0].Rows)
             {
                 byte[] ComUpd = ExDM.ProtocolForExDM.Pack(Convert.ToByte(row[0]), Convert.ToByte(row[1]), com);
-                if (ComUpd[0] != 0)
-                {
-                    DevCommand Answer = SendInformInCom(ComUpd);
-                    ExDM.ParseAnsewFromExec(Answer);
-                }
+                DevCommand Answer = SendInformInCom(ComUpd);
+                ExDM.ParseAnsewFromExec(Answer);
             }
             _threads.Remove(Thread.CurrentThread);
         }

@@ -376,8 +376,8 @@ namespace Server
                 lock (Storage.ArrayUpdate)
                 {
                     DataRow RowDev = Storage.ArrayUpdate.Tables[0].NewRow();
-                    RowDev[0] = NameDev;
-                    RowDev[1] = TypeDev;
+                    RowDev[1] = NameDev;
+                    RowDev[0] = TypeDev;
                     Storage.ArrayUpdate.Tables[0].Rows.Add(RowDev);
                     Storage.ArrayUpdate.Tables[0].AcceptChanges();
                 }
