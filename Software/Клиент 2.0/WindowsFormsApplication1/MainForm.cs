@@ -9,8 +9,10 @@ using System.Windows.Forms;
 
 namespace AsyncClient
 {
+                
     public partial class MainForm : Form
     {
+        
 
         /// <summary>
         /// Экземпляр для работы с сервером.
@@ -24,14 +26,14 @@ namespace AsyncClient
         public MainForm()
         {
             InitializeComponent();
-
-            lStatusValue.Text = "Отключён";
+            lStatusValue.Text = "Отключен";
             butAdmin.Enabled = false;
             butChat.Enabled = false;
             butCounters.Enabled = false;
             butDevices.Enabled = false;
             butDimmers.Enabled = false;
             butSensors.Enabled = false;
+            butAdmin.Visible = false;
 
             lInTemp.Text = "--°C";
             lOutTemp.Text = "--°C";
@@ -39,7 +41,6 @@ namespace AsyncClient
             parameters = XMLLoader.getSetting();
             Client.StartClient(parameters.IP, parameters.Port, parameters.IsNeedUseKeepAlive);
             Client._srv.encryptIt = parameters.IsNeedUseEncrypt;
-
             //Подписываемя на события логической части лиента.
             Client.IsNeedShowLoginFormEvent += new IsNeedShowDelegate(Client_IsNeedShowLoginFormEvent);
             Client.IsNeedToPlotEvent += new IsNeedToPlotDelegate(Client_IsNeedToPlotEvent);
@@ -97,19 +98,6 @@ namespace AsyncClient
             {
                 if (Client._srv.status)
                 {
-                    Client._srv.status = false;
-                    lStatusValue.Text = "Отключен";
-                    butConDisc.Text = "Подключиться";
-                    butAdmin.Enabled = false;
-                    butChat.Enabled = false;
-                    butCounters.Enabled = false;
-                    butDevices.Enabled = false;
-                    butDimmers.Enabled = false;
-                    butSensors.Enabled = false;
-                }
-                else
-                {
-                    Client._srv.status = true;
                     lStatusValue.Text = "Подключен";
                     butConDisc.Text = "Отключится";
                     butAdmin.Enabled = true;
@@ -118,6 +106,18 @@ namespace AsyncClient
                     butDevices.Enabled = true;
                     butDimmers.Enabled = true;
                     butSensors.Enabled = true;
+                }
+                else
+                {
+                    lStatusValue.Text = "Отключен";
+                    butConDisc.Text = "Подключиться";
+                    butAdmin.Enabled = false;
+                    butChat.Enabled = false;
+                    butCounters.Enabled = false;
+                    butDevices.Enabled = false;
+                    butDimmers.Enabled = false;
+                    butSensors.Enabled = false;
+                    butAdmin.Visible = false;
                 }
             }
         }
@@ -213,13 +213,15 @@ namespace AsyncClient
 
         private void butChat_Click(object sender, EventArgs e)
         {
-            Chat Ch = new Chat(Client, Client._srv.SendType, _OpW);
+           
+           Chat Ch = new Chat(Client, Client._srv.SendType, _OpW);
             _OpW._chat = true;
             Ch.Show();
         }
 
         private void butDimmers_Click(object sender, EventArgs e)
         {
+
             Dimmers Dimm = new Dimmers(Client);
             Dimm.Show();
         }
@@ -227,8 +229,7 @@ namespace AsyncClient
         private void butSensors_Click(object sender, EventArgs e)
         {
             Sensors Sens = new Sensors(Client);
-            Sens.Show();
-            
+            Sens.Show();   
         }
 
         private void butAdmin_Click(object sender, EventArgs e)

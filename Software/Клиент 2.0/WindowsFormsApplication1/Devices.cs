@@ -27,27 +27,30 @@ namespace AsyncClient
         /// <param name="DevData"></param>
         void Client_IsNeedUpdateThreeEvent(string DevData)
         {
-            if (this.InvokeRequired)
+            int index = 0;
+            try
             {
-                this.Invoke(new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent), DevData);
-            }
-            else
-            {
-                if (DevData != "")
+                if (this.InvokeRequired)
                 {
-                    string[] dev = DevData.Split('*');
-                    this.treeDevices.BeginUpdate();
-                    int index = treeDevices.Nodes.IndexOfKey(dev[1]);
-                    if (index > -1)
-                    {
-                        treeDevices.Nodes[index].Remove();
-
-                    }
-                    treeDevices.Nodes.Add(dev[1], dev[1]);
-                    index = treeDevices.Nodes.IndexOfKey(dev[1]);
-                    treeDevices.Nodes[index].Tag = dev[2];
-                    this.treeDevices.EndUpdate();
+                    this.Invoke(new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent), DevData);
                 }
+                else
+                {
+                    if (DevData != "")
+                    {
+                        string[] dev = DevData.Split('*');
+                        this.treeDevices.BeginUpdate();
+                        this.treeDevices.Nodes.Clear();
+                        treeDevices.Nodes.Add(dev[1], dev[1]);
+                        index = treeDevices.Nodes.IndexOfKey(dev[1]);
+                        treeDevices.Nodes[index].Tag = dev[2];
+                        this.treeDevices.EndUpdate();
+                    }
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Ошибка при построении древа устройств", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -60,7 +63,7 @@ namespace AsyncClient
                 this.treeDevices.BeginUpdate();
                 treeDevices.Nodes.Clear();
                 this.treeDevices.EndUpdate();
-                _serv.Send("GetUpdate/Устройства", _serv._srv.encryptIt);
+               // _serv.Send("GetUpdate/Простое устройство", _serv._srv.encryptIt);
             }
             else
             {
@@ -74,7 +77,7 @@ namespace AsyncClient
             this.treeDevices.BeginUpdate();
             treeDevices.Nodes.Clear();
             this.treeDevices.EndUpdate();
-            _serv.Send("Update/Устройства", _serv._srv.encryptIt);
+            _serv.Send("GetUpdate/Простое устройство", _serv._srv.encryptIt);
 
         }
 
@@ -85,6 +88,11 @@ namespace AsyncClient
                 butAction.BackgroundImage = AsyncClient.Properties.Resources.ВЫКЛ;
             else
                 butAction.BackgroundImage = AsyncClient.Properties.Resources.ВКЛ;
+        }
+
+        private void Devices_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            _serv.IsNeedUpdateThreeEvent -= new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent);
         }
     }
 }

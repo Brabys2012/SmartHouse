@@ -42,6 +42,7 @@ namespace AsyncClient
             {
                 string[] dev = DevData.Split('*');
                 this.treeUsers.BeginUpdate();
+                this.treeUsers.Nodes.Clear();
                 for (int i = 0; i < dev.Length; i++)
                 {
                     int index = treeUsers.Nodes.IndexOfKey(dev[i]);
@@ -95,7 +96,8 @@ namespace AsyncClient
 
         private void Chat_FormClosed(object sender, FormClosedEventArgs e)
         {
-            this.Dispose();
+            _serv.IsNeedUpdateThreeEvent -= new IsNeedUpdateThreeDelegate(Client_IsNeedUpdateThreeEvent);
+            _serv.IsNeedShowChatMessageEvent -= new IsNeedShowChatMessage(_serv_IsNeedShowChatMessageEvent);
         }
     }
 }

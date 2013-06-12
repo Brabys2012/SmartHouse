@@ -31,6 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AdminPanel));
             this.panel3 = new System.Windows.Forms.Panel();
             this.gpAddDevice = new System.Windows.Forms.GroupBox();
+            this.butAddDevice = new System.Windows.Forms.Button();
             this.label12 = new System.Windows.Forms.Label();
             this.tbNameLinkedDevice = new System.Windows.Forms.TextBox();
             this.tbMessage = new System.Windows.Forms.TextBox();
@@ -45,42 +46,41 @@
             this.label7 = new System.Windows.Forms.Label();
             this.cbPortNumber = new System.Windows.Forms.ComboBox();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.gbDelDevice = new System.Windows.Forms.GroupBox();
-            this.tbNameToDel = new System.Windows.Forms.TextBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.gbAddUser = new System.Windows.Forms.GroupBox();
-            this.cbRole = new System.Windows.Forms.ComboBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.tbPassConfirm = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.tbPassword = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.tbLogin = new System.Windows.Forms.TextBox();
-            this.butAddDevice = new System.Windows.Forms.Button();
             this.gpDelUser = new System.Windows.Forms.GroupBox();
             this.tbLoginToDel = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
             this.butDelUser = new System.Windows.Forms.Button();
+            this.gbDelDevice = new System.Windows.Forms.GroupBox();
+            this.tbNameToDel = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
             this.butDelDevice = new System.Windows.Forms.Button();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.gbAddUser = new System.Windows.Forms.GroupBox();
+            this.cbRole = new System.Windows.Forms.ComboBox();
             this.buеCancel = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.tbPassConfirm = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.butAdd = new System.Windows.Forms.Button();
+            this.tbPassword = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.tbLogin = new System.Windows.Forms.TextBox();
             this.panel3.SuspendLayout();
             this.gpAddDevice.SuspendLayout();
             this.panel2.SuspendLayout();
+            this.gpDelUser.SuspendLayout();
             this.gbDelDevice.SuspendLayout();
             this.panel1.SuspendLayout();
             this.gbAddUser.SuspendLayout();
-            this.gpDelUser.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel3
             // 
             this.panel3.Controls.Add(this.gpAddDevice);
-            this.panel3.Location = new System.Drawing.Point(12, 368);
+            this.panel3.Location = new System.Drawing.Point(12, 359);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(516, 385);
+            this.panel3.Size = new System.Drawing.Size(516, 348);
             this.panel3.TabIndex = 14;
             this.panel3.TabStop = true;
             // 
@@ -102,10 +102,22 @@
             this.gpAddDevice.Controls.Add(this.cbPortNumber);
             this.gpAddDevice.Location = new System.Drawing.Point(19, 23);
             this.gpAddDevice.Name = "gpAddDevice";
-            this.gpAddDevice.Size = new System.Drawing.Size(484, 349);
+            this.gpAddDevice.Size = new System.Drawing.Size(484, 315);
             this.gpAddDevice.TabIndex = 12;
             this.gpAddDevice.TabStop = false;
             this.gpAddDevice.Text = "Добавить устройство";
+            // 
+            // butAddDevice
+            // 
+            this.butAddDevice.BackColor = System.Drawing.Color.Transparent;
+            this.butAddDevice.BackgroundImage = global::AsyncClient.Properties.Resources.Very_Basic_Ok_icon;
+            this.butAddDevice.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.butAddDevice.Location = new System.Drawing.Point(403, 246);
+            this.butAddDevice.Name = "butAddDevice";
+            this.butAddDevice.Size = new System.Drawing.Size(75, 63);
+            this.butAddDevice.TabIndex = 8;
+            this.butAddDevice.UseVisualStyleBackColor = false;
+            this.butAddDevice.Click += new System.EventHandler(this.butAddDevice_Click);
             // 
             // label12
             // 
@@ -128,7 +140,7 @@
             this.tbMessage.Location = new System.Drawing.Point(9, 169);
             this.tbMessage.Multiline = true;
             this.tbMessage.Name = "tbMessage";
-            this.tbMessage.Size = new System.Drawing.Size(469, 98);
+            this.tbMessage.Size = new System.Drawing.Size(469, 71);
             this.tbMessage.TabIndex = 7;
             // 
             // label11
@@ -225,146 +237,11 @@
             // 
             this.panel2.Controls.Add(this.gpDelUser);
             this.panel2.Controls.Add(this.gbDelDevice);
-            this.panel2.Location = new System.Drawing.Point(12, 209);
+            this.panel2.Location = new System.Drawing.Point(12, 200);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(516, 153);
             this.panel2.TabIndex = 13;
             this.panel2.TabStop = true;
-            // 
-            // gbDelDevice
-            // 
-            this.gbDelDevice.Controls.Add(this.tbNameToDel);
-            this.gbDelDevice.Controls.Add(this.label6);
-            this.gbDelDevice.Controls.Add(this.butDelDevice);
-            this.gbDelDevice.Location = new System.Drawing.Point(238, 13);
-            this.gbDelDevice.Name = "gbDelDevice";
-            this.gbDelDevice.Size = new System.Drawing.Size(263, 133);
-            this.gbDelDevice.TabIndex = 2;
-            this.gbDelDevice.TabStop = false;
-            this.gbDelDevice.Text = "Удалить устройство";
-            // 
-            // tbNameToDel
-            // 
-            this.tbNameToDel.Location = new System.Drawing.Point(117, 29);
-            this.tbNameToDel.Name = "tbNameToDel";
-            this.tbNameToDel.Size = new System.Drawing.Size(129, 20);
-            this.tbNameToDel.TabIndex = 3;
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(24, 32);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(86, 13);
-            this.label6.TabIndex = 1;
-            this.label6.Text = "Наименование:";
-            // 
-            // panel1
-            // 
-            this.panel1.Controls.Add(this.gbAddUser);
-            this.panel1.Location = new System.Drawing.Point(12, 12);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(513, 191);
-            this.panel1.TabIndex = 12;
-            this.panel1.TabStop = true;
-            // 
-            // gbAddUser
-            // 
-            this.gbAddUser.Controls.Add(this.cbRole);
-            this.gbAddUser.Controls.Add(this.buеCancel);
-            this.gbAddUser.Controls.Add(this.label4);
-            this.gbAddUser.Controls.Add(this.tbPassConfirm);
-            this.gbAddUser.Controls.Add(this.label3);
-            this.gbAddUser.Controls.Add(this.butAdd);
-            this.gbAddUser.Controls.Add(this.tbPassword);
-            this.gbAddUser.Controls.Add(this.label2);
-            this.gbAddUser.Controls.Add(this.label1);
-            this.gbAddUser.Controls.Add(this.tbLogin);
-            this.gbAddUser.Location = new System.Drawing.Point(17, 18);
-            this.gbAddUser.Name = "gbAddUser";
-            this.gbAddUser.Size = new System.Drawing.Size(484, 158);
-            this.gbAddUser.TabIndex = 0;
-            this.gbAddUser.TabStop = false;
-            this.gbAddUser.Text = "Добавить пользователя";
-            // 
-            // cbRole
-            // 
-            this.cbRole.FormattingEnabled = true;
-            this.cbRole.Location = new System.Drawing.Point(338, 30);
-            this.cbRole.Name = "cbRole";
-            this.cbRole.Size = new System.Drawing.Size(129, 21);
-            this.cbRole.TabIndex = 2;
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(202, 34);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(35, 13);
-            this.label4.TabIndex = 7;
-            this.label4.Text = "Роль:";
-            // 
-            // tbPassConfirm
-            // 
-            this.tbPassConfirm.Location = new System.Drawing.Point(338, 55);
-            this.tbPassConfirm.Name = "tbPassConfirm";
-            this.tbPassConfirm.Size = new System.Drawing.Size(129, 20);
-            this.tbPassConfirm.TabIndex = 4;
-            this.tbPassConfirm.UseSystemPasswordChar = true;
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(201, 55);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(130, 13);
-            this.label3.TabIndex = 5;
-            this.label3.Text = "Подтверждение пароля:";
-            // 
-            // tbPassword
-            // 
-            this.tbPassword.Location = new System.Drawing.Point(66, 55);
-            this.tbPassword.Name = "tbPassword";
-            this.tbPassword.Size = new System.Drawing.Size(129, 20);
-            this.tbPassword.TabIndex = 3;
-            this.tbPassword.UseSystemPasswordChar = true;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(14, 58);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(48, 13);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "Пароль:";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(14, 31);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(41, 13);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "Логин:";
-            // 
-            // tbLogin
-            // 
-            this.tbLogin.Location = new System.Drawing.Point(66, 28);
-            this.tbLogin.Name = "tbLogin";
-            this.tbLogin.Size = new System.Drawing.Size(129, 20);
-            this.tbLogin.TabIndex = 1;
-            // 
-            // butAddDevice
-            // 
-            this.butAddDevice.BackColor = System.Drawing.Color.Transparent;
-            this.butAddDevice.BackgroundImage = global::AsyncClient.Properties.Resources.Very_Basic_Ok_icon;
-            this.butAddDevice.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.butAddDevice.Location = new System.Drawing.Point(401, 273);
-            this.butAddDevice.Name = "butAddDevice";
-            this.butAddDevice.Size = new System.Drawing.Size(75, 63);
-            this.butAddDevice.TabIndex = 8;
-            this.butAddDevice.UseVisualStyleBackColor = false;
-            this.butAddDevice.Click += new System.EventHandler(this.butAddDevice_Click);
             // 
             // gpDelUser
             // 
@@ -407,6 +284,34 @@
             this.butDelUser.UseVisualStyleBackColor = false;
             this.butDelUser.Click += new System.EventHandler(this.butDelUser_Click);
             // 
+            // gbDelDevice
+            // 
+            this.gbDelDevice.Controls.Add(this.tbNameToDel);
+            this.gbDelDevice.Controls.Add(this.label6);
+            this.gbDelDevice.Controls.Add(this.butDelDevice);
+            this.gbDelDevice.Location = new System.Drawing.Point(238, 13);
+            this.gbDelDevice.Name = "gbDelDevice";
+            this.gbDelDevice.Size = new System.Drawing.Size(263, 133);
+            this.gbDelDevice.TabIndex = 2;
+            this.gbDelDevice.TabStop = false;
+            this.gbDelDevice.Text = "Удалить устройство";
+            // 
+            // tbNameToDel
+            // 
+            this.tbNameToDel.Location = new System.Drawing.Point(117, 29);
+            this.tbNameToDel.Name = "tbNameToDel";
+            this.tbNameToDel.Size = new System.Drawing.Size(129, 20);
+            this.tbNameToDel.TabIndex = 3;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(24, 32);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(86, 13);
+            this.label6.TabIndex = 1;
+            this.label6.Text = "Наименование:";
+            // 
             // butDelDevice
             // 
             this.butDelDevice.BackColor = System.Drawing.Color.Transparent;
@@ -418,6 +323,42 @@
             this.butDelDevice.TabIndex = 4;
             this.butDelDevice.UseVisualStyleBackColor = false;
             this.butDelDevice.Click += new System.EventHandler(this.butDelDevice_Click);
+            // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.gbAddUser);
+            this.panel1.Location = new System.Drawing.Point(12, 12);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(513, 182);
+            this.panel1.TabIndex = 12;
+            this.panel1.TabStop = true;
+            // 
+            // gbAddUser
+            // 
+            this.gbAddUser.Controls.Add(this.cbRole);
+            this.gbAddUser.Controls.Add(this.buеCancel);
+            this.gbAddUser.Controls.Add(this.label4);
+            this.gbAddUser.Controls.Add(this.tbPassConfirm);
+            this.gbAddUser.Controls.Add(this.label3);
+            this.gbAddUser.Controls.Add(this.butAdd);
+            this.gbAddUser.Controls.Add(this.tbPassword);
+            this.gbAddUser.Controls.Add(this.label2);
+            this.gbAddUser.Controls.Add(this.label1);
+            this.gbAddUser.Controls.Add(this.tbLogin);
+            this.gbAddUser.Location = new System.Drawing.Point(17, 18);
+            this.gbAddUser.Name = "gbAddUser";
+            this.gbAddUser.Size = new System.Drawing.Size(484, 158);
+            this.gbAddUser.TabIndex = 0;
+            this.gbAddUser.TabStop = false;
+            this.gbAddUser.Text = "Добавить пользователя";
+            // 
+            // cbRole
+            // 
+            this.cbRole.FormattingEnabled = true;
+            this.cbRole.Location = new System.Drawing.Point(338, 30);
+            this.cbRole.Name = "cbRole";
+            this.cbRole.Size = new System.Drawing.Size(129, 21);
+            this.cbRole.TabIndex = 2;
             // 
             // buеCancel
             // 
@@ -431,6 +372,32 @@
             this.buеCancel.UseVisualStyleBackColor = false;
             this.buеCancel.Click += new System.EventHandler(this.buеCancel_Click);
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(202, 34);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(35, 13);
+            this.label4.TabIndex = 7;
+            this.label4.Text = "Роль:";
+            // 
+            // tbPassConfirm
+            // 
+            this.tbPassConfirm.Location = new System.Drawing.Point(338, 55);
+            this.tbPassConfirm.Name = "tbPassConfirm";
+            this.tbPassConfirm.Size = new System.Drawing.Size(129, 20);
+            this.tbPassConfirm.TabIndex = 4;
+            this.tbPassConfirm.UseSystemPasswordChar = true;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(201, 55);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(130, 13);
+            this.label3.TabIndex = 5;
+            this.label3.Text = "Подтверждение пароля:";
+            // 
             // butAdd
             // 
             this.butAdd.BackColor = System.Drawing.Color.Transparent;
@@ -443,32 +410,65 @@
             this.butAdd.UseVisualStyleBackColor = false;
             this.butAdd.Click += new System.EventHandler(this.butAdd_Click);
             // 
+            // tbPassword
+            // 
+            this.tbPassword.Location = new System.Drawing.Point(66, 55);
+            this.tbPassword.Name = "tbPassword";
+            this.tbPassword.Size = new System.Drawing.Size(129, 20);
+            this.tbPassword.TabIndex = 3;
+            this.tbPassword.UseSystemPasswordChar = true;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(14, 58);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(48, 13);
+            this.label2.TabIndex = 3;
+            this.label2.Text = "Пароль:";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(14, 31);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(41, 13);
+            this.label1.TabIndex = 2;
+            this.label1.Text = "Логин:";
+            // 
+            // tbLogin
+            // 
+            this.tbLogin.Location = new System.Drawing.Point(66, 28);
+            this.tbLogin.Name = "tbLogin";
+            this.tbLogin.Size = new System.Drawing.Size(129, 20);
+            this.tbLogin.TabIndex = 1;
+            // 
             // AdminPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.LightSteelBlue;
-            this.ClientSize = new System.Drawing.Size(536, 759);
+            this.ClientSize = new System.Drawing.Size(536, 709);
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(552, 797);
-            this.MinimumSize = new System.Drawing.Size(552, 797);
+            this.MaximumSize = new System.Drawing.Size(552, 747);
+            this.MinimumSize = new System.Drawing.Size(552, 726);
             this.Name = "AdminPanel";
-            this.Text = "AdminPanel";
+            this.Text = "Панель администратора";
             this.panel3.ResumeLayout(false);
             this.gpAddDevice.ResumeLayout(false);
             this.gpAddDevice.PerformLayout();
             this.panel2.ResumeLayout(false);
+            this.gpDelUser.ResumeLayout(false);
+            this.gpDelUser.PerformLayout();
             this.gbDelDevice.ResumeLayout(false);
             this.gbDelDevice.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.gbAddUser.ResumeLayout(false);
             this.gbAddUser.PerformLayout();
-            this.gpDelUser.ResumeLayout(false);
-            this.gpDelUser.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -512,7 +512,5 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox tbLogin;
-        private System.Windows.Forms.Label lNote;
-        private System.Windows.Forms.Button butExit;
     }
 }
